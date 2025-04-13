@@ -1,14 +1,17 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/trigger-db
-    username: devuser
-    password: devpass
+    url: jdbc:postgresql://dpg-cvu0v02dbo4c739cksvg-a.oregon-postgres.render.com:5432/trigger_db_cbv2
+    username: trigger_user
+    password: C7LnXeOiV28TeoiXendt6BaoLRcieEnh
+    driver-class-name: org.postgresql.Driver
+
   jpa:
     hibernate:
       ddl-auto: create
     properties:
       hibernate:
         format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
     open-in-view: false
 
 logging:
