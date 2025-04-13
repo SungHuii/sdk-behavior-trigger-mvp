@@ -1,62 +1,63 @@
-HELP.md
-.gradle
-build/
-!gradle/wrapper/gradle-wrapper.jar
-!**/src/main/**/build/
-!**/src/test/**/build/
+# ========================
+# ✅ 프로젝트 맞춤 .gitignore
+# Spring Boot + Gradle + IntelliJ
+# ========================
 
-### STS ###
-.apt_generated
-.classpath
-.factorypath
-.project
-.settings
-.springBeans
-.sts4-cache
-bin/
-!**/src/main/**/bin/
-!**/src/test/**/bin/
-
-### IntelliJ IDEA ###
-.idea
-*.iws
+# IDEA 관련
+.idea/
 *.iml
 *.ipr
+*.iws
 out/
-!**/src/main/**/out/
-!**/src/test/**/out/
 
-### NetBeans ###
-/nbproject/private/
-/nbbuild/
-/dist/
-/nbdist/
-/.nb-gradle/
-
-### VS Code ###
+# VSCode 관련
 .vscode/
 
-# Package Files #
+# Build 디렉토리 (전체)
+build/
+!gradle/wrapper/gradle-wrapper.jar
+
+# Gradle 관련
+.gradle/
+gradle-app.setting
+
+# Gradle Wrapper 제외 허용
+!gradle/wrapper/gradle-wrapper.properties
+!gradle/wrapper/gradle-wrapper.jar
+
+# Log 파일
+*.log
+
+# 실행 파일 및 패키징 결과물
 *.jar
 *.war
-*.nar
 *.ear
-*.zip
-*.tar.gz
-*.rar
+!build/libs/*.jar  # ✅ Docker에서 사용할 jar 파일은 예외 처리 (옵션)
 
-# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
+# 테스트 디렉토리 내부 빌드 폴더 제외
+**/src/test/**/build/
+**/src/main/**/build/
+
+# OS / IDE 임시 파일
+.DS_Store
+Thumbs.db
+
+# VM 크래시 로그
 hs_err_pid*
 replay_pid*
 
-# Mobile Tools for Java (J2ME)
+# 기타 무시 대상
+bin/
+.classpath
+.project
+.settings/
+.springBeans/
+nbproject/
+nbbuild/
+dist/
+nbdist/
+.nb-gradle/
 .mtj.tmp/
 
-# BlueJ files
+# BlueJ
 *.ctxt
-
-# Log file
-*.log
-
-# Compiled class file
-*.class
