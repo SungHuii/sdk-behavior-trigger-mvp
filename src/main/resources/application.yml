@@ -1,11 +1,11 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/trigger_db
-    username: username
-    password: userpw
+    url: jdbc:postgresql://localhost:5432/trigger-db
+    username: devuser
+    password: devpass
   jpa:
     hibernate:
-      ddl-auto: none
+      ddl-auto: create
     properties:
       hibernate:
         format_sql: true
