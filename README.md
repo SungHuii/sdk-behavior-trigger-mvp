@@ -1,2 +1,24 @@
-# sdk-behavior-trigger-mvp
-사용자 행동 기반 자동화 마케팅 MVP 백엔드
+# Behavior Trigger MVP
+
+사용자 행동 기반 자동화 마케팅 툴 (MVP 개발 중)  
+📦 Java + Spring Boot + PostgreSQL + REST API + Swagger
+
+## 📌 목표 기능
+- 방문자 행동 로그 수집 SDK
+- 조건 기반 이메일 자동 발송
+- 관리자 대시보드 API
+- MCP 호환 설계 준비
+
+## 🚀 기술 스택
+- Java 17 / Spring Boot 3.4.4
+- PostgreSQL / JPA
+- Swagger (springdoc-openapi)
+- Vercel (SDK 정적 배포) + Render (서버 배포 예정)
+
+## 📂 디렉토리 구조
+- `src/main/java` → 백엔드 비즈니스 로직
+- `src/main/resources` → application.yml, static, templates 등
+
+## 📈 프로젝트 진행 방식
+- 개념 정리 → 스택 세팅 → MVP 기능 단위 개발
+- 주 단위 To-Do 기반 진척
