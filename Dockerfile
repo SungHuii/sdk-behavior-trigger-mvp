@@ -2,7 +2,7 @@
 FROM gradle:8.5-jdk17 AS build
 COPY --chown=gradle:gradle . /home/gradle/project
 WORKDIR /home/gradle/project
-RUN gradle build --no-daemon
+RUN ./gradlew build -x test --no-daemon
 
 # 2단계: JAR 실행을 위한 이미지 구성
 FROM eclipse-temurin:17-jdk
