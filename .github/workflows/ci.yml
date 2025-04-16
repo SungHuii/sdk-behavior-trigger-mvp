@@ -1,5 +1,5 @@
 # 워크플로 이름
-name: CI
+name: CI/CD
 
 # 어떤 이벤트에 반응할지 설정
 on:
@@ -34,3 +34,8 @@ jobs:
 
       - name: Run Tests                              # 테스트 실행 (이후 단계에서 조건 분기 가능)
         run: ./gradlew test --no-daemon
+
+      - name: Deploy to Render                     # Render에 배포
+        if: github.ref == 'refs/heads/main'  # main 브랜치에 푸시된 경우에만 실행
+        run: |
+          curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
