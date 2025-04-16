@@ -1,63 +1,53 @@
-# ========================
-# ✅ 프로젝트 맞춤 .gitignore
-# Spring Boot + Gradle + IntelliJ
-# ========================
+# =========================================
+# ✅ Java + Spring Boot + Gradle 프로젝트
+# ✅ Render 배포 (Build Command 기반)
+# ✅ Vercel 정적 SDK (dist/) 포함
+# =========================================
 
-# IDEA 관련
+# === 빌드 결과물 및 캐시 ===
+.gradle/
+build/
+out/
+bin/
+*.class
+*.log
+
+# === Gradle Wrapper는 반드시 포함 ===
+!gradle/wrapper/gradle-wrapper.jar
+!gradle/wrapper/gradle-wrapper.properties
+
+# === SDK 배포 파일 포함 (Vercel용) ===
+!dist/
+!dist/**
+
+# ❌ dist 내 불필요한 파일은 제외
+dist/**/*.map
+dist/**/.DS_Store
+dist/**/*.log
+
+# === 패키징 결과물 제외 (Render가 직접 빌드하므로) ===
+*.jar
+*.war
+*.zip
+*.tar.gz
+*.ear
+
+# === IDE 및 설정 관련 ===
+.vscode/
 .idea/
 *.iml
 *.ipr
 *.iws
-out/
-
-# VSCode 관련
-.vscode/
-
-# Build 디렉토리 (전체)
-build/
-!gradle/wrapper/gradle-wrapper.jar
-
-# Gradle 관련
-.gradle/
-gradle-app.setting
-
-# Gradle Wrapper 제외 허용
-!gradle/wrapper/gradle-wrapper.properties
-!gradle/wrapper/gradle-wrapper.jar
-
-# Log 파일
-*.log
-
-# 실행 파일 및 패키징 결과물
-*.jar
-*.war
-*.ear
-!build/libs/*.jar  # ✅ Docker에서 사용할 jar 파일은 예외 처리 (옵션)
-
-# 테스트 디렉토리 내부 빌드 폴더 제외
-**/src/test/**/build/
-**/src/main/**/build/
-
-# OS / IDE 임시 파일
-.DS_Store
-Thumbs.db
-
-# VM 크래시 로그
-hs_err_pid*
-replay_pid*
-
-# 기타 무시 대상
-bin/
 .classpath
 .project
 .settings/
 .springBeans/
-nbproject/
-nbbuild/
-dist/
-nbdist/
-.nb-gradle/
-.mtj.tmp/
+.sts4-cache
 
-# BlueJ
+# === OS 및 툴 관련 임시파일 ===
+.DS_Store
+Thumbs.db
+hs_err_pid*
+replay_pid*
+.mtj.tmp/
 *.ctxt
