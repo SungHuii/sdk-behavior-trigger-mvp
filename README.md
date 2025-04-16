@@ -1,19 +1,18 @@
 # Behavior Trigger MVP
 
 사용자 행동 기반 자동화 마케팅 툴 (MVP 개발 중)  
-📦 Java + Spring Boot + PostgreSQL + REST API + Swagger
+📦 Java + Spring Boot + PostgreSQL + REST API + Swagger + Vercel + Render
 
 ## 📌 목표 기능
 - 방문자 행동 로그 수집 SDK
 - 조건 기반 이메일 자동 발송
 - 관리자 대시보드 API
-- MCP 호환 설계 준비
 
 ## 🚀 기술 스택
 - Java 17 / Spring Boot 3.4.4
-- PostgreSQL / JPA
+- PostgreSQL 16 / JPA 3.4.4
 - Swagger (springdoc-openapi)
-- Vercel (SDK 정적 배포) + Render (서버 배포 예정)
+- Vercel (SDK 정적 배포 완료) + Render (서버 배포 완료)
 
 ## 📂 디렉토리 구조
 - `src/main/java` → 백엔드 비즈니스 로직
