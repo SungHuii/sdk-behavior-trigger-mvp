@@ -1,0 +1,13 @@
+name: Keep Render Awake
+
+on:
+  schedule:
+    - cron : '*/15 * * * *' # 매 15분마다 실행
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Send ping to Render
+        run: curl -s https://sdk-behavior-trigger-mvp.onrender.com
