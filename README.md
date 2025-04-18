@@ -1,3 +1,7 @@
+# 🏅 VisiLog
+🏅VisiLog는 방문자의 행동을 추적하고,
+여러분의 비즈니스를 더 바쁘게(Busy) 만들어주는 서비스입니다.
+
 # Behavior Trigger MVP
 
 사용자 행동 기반 자동화 마케팅 툴 (MVP 개발 중)  

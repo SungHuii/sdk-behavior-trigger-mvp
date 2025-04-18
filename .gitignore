@@ -51,3 +51,7 @@ hs_err_pid*
 replay_pid*
 .mtj.tmp/
 *.ctxt
+
+# === 환경변수 설정 ===
+.env
+.env.*

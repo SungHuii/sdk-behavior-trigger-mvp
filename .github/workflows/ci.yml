@@ -16,6 +16,26 @@ jobs:
   build:
     runs-on: ubuntu-latest            # GitHub Actions에서 사용할 가상 환경
 
+    services:
+      postgres:                      # PostgreSQL 서비스 설정
+        image: postgres:latest        # 최신 PostgreSQL 이미지 사용
+        ports:
+          - 5432:5432                 # 포트 매핑
+        env:
+          POSTGRES_DB: trigger_db_cbv2     # 데이터베이스 이름
+          POSTGRES_USER: trigger_user  # 사용자 이름
+          POSTGRES_PASSWORD: testpass  # 비밀번호
+        options: >                    # 추가 옵션
+          --health-cmd "pg_isready -U trigger_user" 
+          --health-interval 10s 
+          --health-timeout 5s 
+          --health-retries 5
+
+    env:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/trigger_db_cbv2
+      SPRING_DATASOURCE_USERNAME: trigger_user
+      SPRING_DATASOURCE_PASSWORD: testpass
+
     steps:
       - name: Checkout code           # GitHub 리포지토리에서 소스코드를 가져옴
         uses: actions/checkout@v4
