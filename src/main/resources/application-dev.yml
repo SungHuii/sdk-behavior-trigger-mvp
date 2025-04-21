@@ -2,7 +2,7 @@ spring:
   datasource:
     url: jdbc:postgresql://dpg-cvu0v02dbo4c739cksvg-a.oregon-postgres.render.com:5432/trigger_db_cbv2?sslmode=require
     username: trigger_user
-    password: C7LnXe0iV28TeoiXendt6BaoLRcieEnh
+    password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
 
   jpa:
