@@ -59,4 +59,64 @@ class ProjectServiceImplTest {
         assertThat(responseDto.getOwnerId()).isEqualTo(savedProject.getOwnerId());
         verify(projectRepository, times(1)).save(any(Project.class));
     }
+
+    @Test
+    void getProject_existing_returnDto() {
+        UUID projectId = UUID.randomUUID();
+        Project project = Project.builder()
+              .id(projectId)
+              .name("Test Project")
+              .sdkKey("Test-key")
+              .ownerId(ownerId)
+              .createdAt(LocalDateTime.now())
+              .build();
+
+        when(projectRepository.findById(projectId)).thenReturn(Optional.of(project));
+
+        ProjectResponse dto = projectServiceImpl.getProject(projectId);
+
+        assertThat(dto.getId()).isEqualTo(project.getId());
+        assertThat(dto.getName()).isEqualTo(project.getName());
+    }
+
+    @Test
+    void getProject_notFound_throwsException() {
+        UUID projectid = UUID.randomUUID();
+
+        when(projectRepository.findById(projectid)).thenReturn(Optional.empty());
+
+        assertThrows(IllegalArgumentException.class, () -> projectServiceImpl.getProject(projectid));
+    }
+
+    @Test
+    void deleteProject_softDelete() {
+        UUID projectId = UUID.randomUUID();
+        Project project = Project.builder()
+              .id(projectId)
+              .name("Deleted Project")
+              .ownerId(ownerId)
+              .createdAt(LocalDateTime.now())
+              .build();
+
+        when(projectRepository.findById(projectId)).thenReturn(Optional.of(project));
+
+        projectServiceImpl.deleteProject(projectId);
+
+        assertThat(project.getDeletedAt()).isNotNull();
+        verify(projectRepository).save(project);
+    }
+
+    @Test
+    void getProjectsByOwnerId_filtered_Deleted() {
+        Project project1 = Project.builder().ownerId(ownerId).deletedAt(null).build();
+        Project project2 = Project.builder().ownerId(ownerId).deletedAt(LocalDateTime.now()).build();
+
+        when(projectRepository.findAllByOwnerIdAndDeletedAtIsNull(ownerId)).thenReturn(List.of(project1));
+
+        List<ProjectResponse> list = projectServiceImpl.getProjectsByOwner(ownerId);
+
+        assertThat(list).hasSize(1);
+    }
+
+
 }
