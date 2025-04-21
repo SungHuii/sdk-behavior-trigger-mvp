@@ -1,5 +1,7 @@
 package com.behavior.sdk.trigger.log.dto;
 
+import com.behavior.sdk.trigger.log.enums.EventType;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -11,9 +13,9 @@ import java.time.LocalDateTime;
 @Builder
 public class LogCreateRequest {
 
-   private String projectKey;
-   private String visitorKey;
-   private String eventType;
+
+   @NotNull
+   private EventType eventType;
    private Long durationMs;
    private LocalDateTime occurredAt;
 }

@@ -4,5 +4,5 @@ import com.behavior.sdk.trigger.log.dto.LogCreateRequest;
 import com.behavior.sdk.trigger.log.dto.LogResponse;
 
 public interface LogService {
-   LogResponse createLog(LogCreateRequest request);
+   LogResponse createLog(String projectKey, String visitorKey, LogCreateRequest request);
 }
