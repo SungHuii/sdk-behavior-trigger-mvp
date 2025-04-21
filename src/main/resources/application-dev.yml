@@ -1,8 +1,8 @@
 spring:
   datasource:
-    url: ${SPRING_DATASOURCE_URL}
-    username: ${SPRING_DATASOURCE_USERNAME}
-    password: ${SPRING_DATASOURCE_PASSWORD}
+    url: jdbc:postgresql://dpg-cvu0v02dbo4c739cksvg-a.oregon-postgres.render.com:5432/trigger_db_cbv2?sslmode=require
+    username: trigger_user
+    password: C7LnXe0iV28TeoiXendt6BaoLRcieEnh
     driver-class-name: org.postgresql.Driver
 
   jpa:
