@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -58,6 +59,42 @@ public class LogServiceImpl implements LogService {
             .durationMs(savedLog.getDurationMs())
             .occurredAt(savedLog.getOccurredAt())
             .createdAt(savedLog.getCreatedAt())
+            .build();
+   }
+
+   @Override
+   public List<LogResponse> findLogs(String projectKey, String visitorKey) {
+      UUID projectId = null;
+      UUID visitorId = null;
+
+      if(projectKey != null) {
+         projectId = projectRepository.findBySdkKey(projectKey)
+               .orElseThrow(() -> new EntityNotFoundException("유효하지 않은 프로젝트 키"))
+               .getId();
+      }
+
+      if(visitorKey != null) {
+         visitorId = visitorRepository.findByVisitorKey(visitorKey)
+               .orElseThrow(() -> new EntityNotFoundException("유효하지 않은 방문자 키"))
+               .getId();
+      }
+
+      List<Log> logs = logRepository.findAllByProjectIdAndVisitorId(projectId, visitorId);
+
+      return logs.stream()
+            .map(this::toDto)
+            .toList();
+
+   }
+
+   private LogResponse toDto(Log log) {
+      return LogResponse.builder()
+            .id(log.getId())
+            .projectId(log.getProjectId())
+            .eventType(EventType.valueOf(log.getEventType()))
+            .durationMs(log.getDurationMs())
+            .occurredAt(log.getOccurredAt())
+            .createdAt(log.getCreatedAt())
             .build();
    }
 }
