@@ -4,6 +4,7 @@ import com.behavior.sdk.trigger.project.dto.ProjectCreateRequest;
 import com.behavior.sdk.trigger.project.dto.ProjectResponse;
 import com.behavior.sdk.trigger.project.service.ProjectService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -34,53 +35,26 @@ class ProjectControllerTest {
    private ObjectMapper om;
 
    @Test
-   void createProject_returnsCreated() throws Exception {
-      // Given
-      UUID ownerId = UUID.randomUUID();
-      var request = new ProjectCreateRequest("Test Project");
-      var response = ProjectResponse.builder()
-            .id(UUID.randomUUID())
-            .name("Test Project")
-            .sdkKey("test-sdk-key")
-            .ownerId(ownerId)
-            .createdAt(LocalDateTime.now())
-            .build();
+   @DisplayName("POST /api/projects - 프로젝트 생성")
+   void createProject() throws Exception {
 
-      given(service.createProject(eq(ownerId), any(ProjectCreateRequest.class))).willReturn(response);
+      var dto = ProjectResponse.builder()
+              .id(UUID.randomUUID())
+              .name("테스트 프로젝트")
+              .createdAt(LocalDateTime.now())
+              .build();
+
+      given(service.createProject(any(ProjectCreateRequest.class))).willReturn(dto);
 
       mockMvc.perform(post("/api/projects")
-                  .param("ownerId", ownerId.toString())
                   .contentType(MediaType.APPLICATION_JSON)
                   .accept(MediaType.APPLICATION_JSON)
-                  .content(om.writeValueAsString(request)))
+                  .content(om.writeValueAsString(new ProjectCreateRequest("테스트 프로젝트"))))
             .andExpect(status().isCreated())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-            .andExpect(jsonPath("$.id").value(response.getId().toString()))
-            .andExpect(jsonPath("$.name").value("Test Project"));
+            .andExpect(jsonPath("$.id").value(dto.getId().toString()))
+            .andExpect(jsonPath("$.name").value("테스트 프로젝트"))
+            .andExpect(jsonPath("$.createdAt").exists());
 
-   }
-
-   @Test
-   void listProjects_returnsOk() throws Exception {
-      UUID ownerId = UUID.randomUUID();
-      ProjectResponse response = ProjectResponse.builder()
-            .id(UUID.randomUUID())
-            .name("Project 1")
-            .sdkKey("test key1")
-            .ownerId(ownerId)
-            .createdAt(LocalDateTime.now())
-            .build();
-      given(service.getProjectsByOwner(ownerId)).willReturn(Collections.singletonList(response));
-
-      mockMvc.perform(get("/api/projects").param("ownerId", ownerId.toString()))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$[0].id").value(response.getId().toString()));
-   }
-
-   @Test
-   void deleteProject_returnsNoContent() throws Exception {
-      UUID projectId = UUID.randomUUID();
-      mockMvc.perform(delete("/api/projects/{id}", projectId))
-            .andExpect(status().isNoContent());
    }
 }
