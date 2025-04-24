@@ -14,8 +14,10 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 
+import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
@@ -56,5 +58,21 @@ class ProjectControllerTest {
             .andExpect(jsonPath("$.name").value("테스트 프로젝트"))
             .andExpect(jsonPath("$.createdAt").exists());
 
+   }
+
+   @Test
+   @DisplayName("GET /api/projects/allProjects - 전체 프로젝트 조회")
+   void listProjects() throws Exception {
+      var project1 = ProjectResponse.builder()
+              .id(UUID.randomUUID()).name("프로젝트1").createdAt(LocalDateTime.now()).build();
+      var project2 = ProjectResponse.builder()
+              .id(UUID.randomUUID()).name("프로젝트2").createdAt(LocalDateTime.now()).build();
+
+      given(service.getAllProjects()).willReturn(List.of(project1, project2));
+
+      mockMvc.perform(get("/api/projects/allProjects"))
+              .andExpect(status().isOk())
+              .andExpect(jsonPath("$[0].name").value("프로젝트1"))
+              .andExpect(jsonPath("$", hasSize(2)));
    }
 }
