@@ -6,6 +6,7 @@ import com.behavior.sdk.trigger.project.service.ProjectService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.BDDMockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
@@ -74,5 +75,15 @@ class ProjectControllerTest {
               .andExpect(status().isOk())
               .andExpect(jsonPath("$[0].name").value("프로젝트1"))
               .andExpect(jsonPath("$", hasSize(2)));
+   }
+
+   @Test
+   @DisplayName("DELETE /api/projects/{projectId} - 특정 프로젝트 삭제")
+   void deleteProject() throws Exception {
+        UUID projectId = UUID.randomUUID();
+
+        mockMvc.perform(delete("/api/projects/{projectId}", projectId))
+                .andExpect(status().isNoContent());
+      BDDMockito.then(service).should().deleteProject(projectId);
    }
 }
