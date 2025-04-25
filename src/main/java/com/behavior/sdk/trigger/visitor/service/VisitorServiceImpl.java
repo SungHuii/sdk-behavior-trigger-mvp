@@ -21,25 +21,28 @@ public class VisitorServiceImpl implements VisitorService {
    private final VisitorRepository visitorRepository;
 
    @Override
-   public VisitorResponse createVisitor(String projectKey) {
+   public VisitorResponse createVisitor(UUID projectId) {
 
-      Project project = projectRepository.findBySdkKey(projectKey)
+      projectRepository.findById(projectId)
             .orElseThrow(() -> new EntityNotFoundException("유효하지 않은 프로젝트 키"));
 
       Visitor visitor = Visitor.builder()
-            .projectId(project.getId())
-            .visitorKey(UUID.randomUUID().toString())
-            .build();
+              .projectId(projectId)
+              .build();
 
       Visitor savedVisitor = visitorRepository.save(visitor);
 
       return toDto(savedVisitor);
    }
 
+   @Override
+   public boolean existsVisitor(UUID visitorId) {
+      return visitorRepository.existsByIdAndDeletedAtIsNull(visitorId);
+   }
+
    private VisitorResponse toDto(Visitor v) {
       return VisitorResponse.builder()
             .id(v.getId())
-            .visitorKey(v.getVisitorKey())
             .projectId(v.getProjectId())
             .createdAt(v.getCreatedAt())
             .build();
