@@ -1,4 +1,4 @@
-package com.behavior.sdk.trigger.log.enums;
+package com.behavior.sdk.trigger.log_event.enums;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -6,24 +6,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 
 public enum EventType {
    @JsonProperty("page_view")
-   PAGE_VIEW,
-
-   @JsonProperty("click")
-   CLICK,
-
-   @JsonProperty("scroll")
-   SCROLL,
-
-   @JsonProperty("input")
-   INPUT,
-
-   @JsonProperty("leave")
-   LEAVE,
-
-   @JsonProperty("stay_time")
-   STAY_TIME;
-
-
+   PAGE_VIEW;
 
    private final String value;
 

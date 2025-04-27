@@ -1,5 +1,6 @@
-package com.behavior.sdk.trigger.log.entity;
+package com.behavior.sdk.trigger.log_event.entity;
 
+import com.behavior.sdk.trigger.log_event.enums.EventType;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -7,13 +8,13 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "log")
+@Table(name = "log_event")
 @Getter
 @Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-public class Log {
+public class LogEvent {
 
    @Id
    @GeneratedValue(strategy = GenerationType.UUID)
@@ -26,11 +27,9 @@ public class Log {
    @Column(name="visitor_id", nullable = false, columnDefinition = "uuid")
    private UUID visitorId;
 
+   @Enumerated(EnumType.STRING)
    @Column(name="event_type", nullable = false)
-   private String eventType;
-
-   @Column(name="duration_ms")
-   private Long durationMs;
+   private EventType eventType;
 
    @Column(name="occurred_at", nullable = false)
    private LocalDateTime occurredAt;
@@ -38,8 +37,17 @@ public class Log {
    @Column(name="created_at", nullable = false)
    private LocalDateTime createdAt;
 
+   @Column(name="deleted_at")
+   private LocalDateTime deletedAt;
+
+
    @PrePersist
-   protected void onCreate() {
+   public void onCreated() {
       this.createdAt = LocalDateTime.now();
    }
+
+   public void softDelete() {
+      this.deletedAt = LocalDateTime.now();
+   }
+
 }

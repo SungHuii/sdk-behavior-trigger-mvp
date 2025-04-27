@@ -1,6 +1,6 @@
-package com.behavior.sdk.trigger.log.dto;
+package com.behavior.sdk.trigger.log_event.dto;
 
-import com.behavior.sdk.trigger.log.enums.EventType;
+import com.behavior.sdk.trigger.log_event.enums.EventType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
@@ -13,7 +13,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Schema(name = "LogResponse", description = "로그 응답 객체")
-public class LogResponse {
+public class LogEventResponse {
 
    @Schema(description = "로그 ID", example = "3f8b1c2e-4d3a-4b5e-8c7f-9a0d1e2f3a4b")
    private UUID id;
@@ -26,9 +26,6 @@ public class LogResponse {
 
    @Schema(description = "이벤트 타입", example = "page_view")
    private EventType eventType;
-
-   @Schema(description = "이벤트 지속 시간(Ms)", example = "1000")
-   private Long durationMs;
 
    @Schema(description = "이벤트 발생 시각", example = "2023-10-01T12:00:00")
    private LocalDateTime occurredAt;
