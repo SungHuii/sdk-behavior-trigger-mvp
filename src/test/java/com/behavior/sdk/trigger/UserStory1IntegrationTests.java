@@ -69,7 +69,7 @@ public class UserStory1IntegrationTests {
             .getResponse()
             .getContentAsString();
 
-      visitorId = UUID.fromString(om.readTree(json).get("visitorId").asText());
+      visitorId = UUID.fromString(om.readTree(json).get("id").asText());
    }
 
    @Test
@@ -77,8 +77,8 @@ public class UserStory1IntegrationTests {
    @DisplayName("3. page_view 이벤트 전송 후 로그 저장")
    void t3_sendLogEvent() throws Exception {
       var logEventRequest = new LogEventCreateRequest();
-      logEventRequest.setEventType(EventType.valueOf("page_view"));
-      logEventRequest.setOccurredAt(LocalDateTime.from(Instant.now()));
+      logEventRequest.setEventType(EventType.PAGE_VIEW);
+      logEventRequest.setOccurredAt(LocalDateTime.now());
 
       mockMvc.perform(post("/api/logs")
                   .param("projectId", projectId.toString())
