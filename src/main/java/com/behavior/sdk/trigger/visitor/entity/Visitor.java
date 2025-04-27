@@ -20,17 +20,11 @@ public class Visitor {
    @Column(columnDefinition = "uuid", updatable = false, nullable = false)
    private UUID id;
 
-   @Column(name = "visitor_key", unique = true, nullable = false)
-   private String visitorKey;
-
    @Column(name = "project_id", columnDefinition = "uuid", nullable = false)
    private UUID projectId;
 
    @Column(name = "created_at", nullable = false)
    private LocalDateTime createdAt;
-
-   @Column(name = "updated_at")
-   private LocalDateTime updatedAt;
 
    @Column(name = "deleted_at")
    private LocalDateTime deletedAt;
@@ -38,17 +32,11 @@ public class Visitor {
    @PrePersist
    protected void onCreate() {
       this.createdAt = LocalDateTime.now();
-      if (this.visitorKey == null) {
-         this.visitorKey = UUID.randomUUID().toString();
-      }
-   }
-
-   @PreUpdate
-   protected void onUpdate() {
-      this.updatedAt = LocalDateTime.now();
    }
 
    public void softDelete() {
       this.deletedAt = LocalDateTime.now();
    }
+
+
 }
