@@ -9,7 +9,7 @@ import java.util.UUID;
 
 public interface ProjectRepository extends JpaRepository<Project, UUID> {
 
-   List<Project> findAllByOwnerIdAndDeletedAtIsNull(UUID ownerId);
+   List<Project> findAllByDeletedAtIsNull();
 
-   Optional<Project> findBySdkKey(String sdkKey);
+   Optional<Project> findByIdAndDeletedAtIsNull(UUID id);
 }

@@ -1,22 +1,3 @@
 spring:
-  datasource:
-    url: jdbc:postgresql://localhost:5432/trigger-db
-    username: devuser
-    password: devpass
-  jpa:
-    hibernate:
-      ddl-auto: create
-    properties:
-      hibernate:
-        format_sql: true
-    open-in-view: false
-
-logging:
-  level:
-    org.hibernate.SQL: debug
-
-springdoc:
-  api-docs:
-    path: /api-docs
-  swagger-ui:
-    path: /swagger-ui.html
+  profiles:
+    active: local # 기본 실행 시 local 활성화. Render 에서는 dev 로 덮어씀
