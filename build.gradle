@@ -36,6 +36,7 @@ dependencies {
 	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.1.0'
 	testImplementation 'com.h2database:h2'
 	testRuntimeOnly 'com.h2database:h2'
+	implementation 'org.springframework.boot:spring-boot-starter-redis'
 }
 
 tasks.named('test') {
