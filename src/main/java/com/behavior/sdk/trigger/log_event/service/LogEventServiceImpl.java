@@ -41,6 +41,7 @@ public class LogEventServiceImpl implements LogEventService {
             .visitorId(visitorId)
             .eventType(request.getEventType())
             .occurredAt(request.getOccurredAt() != null ? request.getOccurredAt() : LocalDateTime.now())
+            .pageUrl(request.getPageUrl())
             .build();
       LogEvent savedLogEvent = logEventRepository.save(logEvent);
       return toDto(savedLogEvent);
@@ -70,6 +71,7 @@ public class LogEventServiceImpl implements LogEventService {
             .eventType(logEvent.getEventType())
             .occurredAt(logEvent.getOccurredAt())
             .createdAt(logEvent.getCreatedAt())
+            .pageUrl(logEvent.getPageUrl())
             .build();
    }
 }
