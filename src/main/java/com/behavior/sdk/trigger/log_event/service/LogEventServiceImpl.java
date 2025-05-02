@@ -50,8 +50,27 @@ public class LogEventServiceImpl implements LogEventService {
    @Override
    public List<LogEventResponse> findLogEvents(UUID projectId, UUID visitorId) {
 
-      return logEventRepository.findAllByProjectIdAndVisitorId(projectId,visitorId)
-            .stream().map(this::toDto).toList();
+      if (projectId == null) {
+         throw new IllegalArgumentException("프로젝트 ID는 필수입니다.");
+      }
+      if(!projectRepository.existsById(projectId)) {
+         throw new EntityNotFoundException("프로젝트를 찾을 수 없습니다.");
+      }
+
+      List<LogEvent> logEventList;
+      if (visitorId == null) {
+         logEventList = logEventRepository.findAllByProjectId(projectId);
+      } else {
+         if(!visitorRepository.existsById(visitorId)) {
+            throw new EntityNotFoundException("방문자를 찾을 수 없습니다.");
+         }
+         logEventList = logEventRepository.findAllByProjectIdAndVisitorId(projectId, visitorId);
+      }
+
+
+      return logEventList.stream()
+            .map(this::toDto)
+            .toList();
    }
 
    @Override

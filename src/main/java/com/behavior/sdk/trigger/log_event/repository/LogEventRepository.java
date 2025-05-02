@@ -22,4 +22,6 @@ public interface LogEventRepository extends JpaRepository<LogEvent, UUID> {
    List<LogEvent> findAllByProjectIdAndVisitorId(
          @Param("projectId") UUID projectId,
          @Param("visitorId") UUID visitorId);
+
+   List<LogEvent> findAllByProjectId(UUID projectId);
 }
