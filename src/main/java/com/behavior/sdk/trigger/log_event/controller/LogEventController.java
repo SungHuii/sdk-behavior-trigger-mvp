@@ -56,7 +56,7 @@ public class LogEventController {
                content = @Content)
    })
    public ResponseEntity<List<LogEventResponse>> listLogs(
-         @Parameter(description = "프로젝트 키") @RequestParam(required = false) UUID projectId,
+         @Parameter(description = "프로젝트 키") @RequestParam UUID projectId,
          @Parameter(description = "방문자 키") @RequestParam(required = false) UUID visitorId) {
 
       List<LogEventResponse> logs = logEventService.findLogEvents(projectId, visitorId);
