@@ -32,4 +32,7 @@ public class LogEventResponse {
 
    @Schema(description = "로그 생성 시각", example = "2023-10-01T12:00:00")
    private LocalDateTime createdAt;
+
+   @Schema(description = "이벤트 발생 URL", example = "https://example.com")
+   private String pageUrl;
 }
