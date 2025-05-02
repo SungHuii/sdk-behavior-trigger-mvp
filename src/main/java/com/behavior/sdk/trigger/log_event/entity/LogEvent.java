@@ -40,6 +40,9 @@ public class LogEvent {
    @Column(name="deleted_at")
    private LocalDateTime deletedAt;
 
+   @Column(name="page_url", nullable = false, length = 2048)
+   private String pageUrl;
+
 
    @PrePersist
    public void onCreated() {
