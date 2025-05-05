@@ -8,6 +8,7 @@ import java.util.UUID;
 
 public interface VisitorRepository extends JpaRepository<Visitor, UUID> {
 
+
     boolean existsByIdAndDeletedAtIsNull(UUID id);
 
 }
