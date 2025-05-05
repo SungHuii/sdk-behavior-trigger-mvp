@@ -8,11 +8,9 @@ import java.util.UUID;
 
 public interface ProjectService {
 
-    ProjectResponse createProject(UUID ownerId, ProjectCreateRequest request);
+    ProjectResponse createProject(ProjectCreateRequest request);
 
     ProjectResponse getProject(UUID projectId);
-
-    List<ProjectResponse> getProjectsByOwner(UUID ownerId);
 
     List<ProjectResponse> getAllProjects();
 
