@@ -53,6 +53,8 @@ jobs:
         run: ./gradlew build -x test --no-daemon
 
       - name: Run Tests                              # 테스트 실행 (이후 단계에서 조건 분기 가능)
+        env:
+          SPRING_PROFILES_ACTIVE: test
         run: ./gradlew test --no-daemon
 
       - name: Deploy to Render                     # Render에 배포
