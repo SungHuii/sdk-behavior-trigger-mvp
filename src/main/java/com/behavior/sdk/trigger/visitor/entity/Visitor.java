@@ -1,26 +1,27 @@
-package com.behavior.sdk.trigger.project.entity;
+package com.behavior.sdk.trigger.visitor.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "project")
-@Setter
+@Table(name = "visitor")
 @Getter
+@Setter
+@Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-@Builder
-public class Project {
+public class Visitor {
 
    @Id
    @GeneratedValue(strategy = GenerationType.UUID)
    @Column(columnDefinition = "uuid", updatable = false, nullable = false)
-   private UUID id;  // SDK 키 겸용
+   private UUID id;
 
-   @Column(nullable = false)
-   private String name;
+   @Column(name = "project_id", columnDefinition = "uuid", nullable = false)
+   private UUID projectId;
 
    @Column(name = "created_at", nullable = false)
    private LocalDateTime createdAt;
