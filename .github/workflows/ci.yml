@@ -1,63 +1,64 @@
-# 워크플로 이름
-name: CI/CD
+# .github/workflows/ci.yml
 
-# 어떤 이벤트에 반응할지 설정
-on:
+name: CI/CD  # 워크플로우 이름: CI/CD
+
+on:  # 어떤 이벤트에서 워크플로우를 실행할지 정의
   push:
-    branches:
-      - main      # main에 push될 때 (배포 전 최종 테스트)
-      - dev       # dev에 push될 때 (통합 테스트)
+    branches:                # 푸시된 브랜치를 감시
+      - main                 # main 브랜치에 푸시될 때 (최종 빌드 및 배포)
+      - dev                  # dev 브랜치에 푸시될 때 (통합 테스트)
   pull_request:
     branches:
-      - dev       # feat/* 브랜치 → dev PR 생성 시 테스트 트리거
+      - dev                  # dev 브랜치 대상 PR 생성 시에도 테스트 실행
 
-# 실제 실행될 작업 정의
 jobs:
-  build:
-    runs-on: ubuntu-latest            # GitHub Actions에서 사용할 가상 환경
+  build:                     # 'build'라는 이름의 job 정의
+    runs-on: ubuntu-latest   # 우분투 최신 환경에서 실행
 
-    services:
-      postgres:                      # PostgreSQL 서비스 설정
-        image: postgres:16           # 최신 PostgreSQL 이미지 사용
-        ports:
-          - 5432:5432                 # 포트 매핑
-        env:
-          POSTGRES_DB: trigger_db_cbv2     # 데이터베이스 이름
-          POSTGRES_USER: trigger_user  # 사용자 이름
-          POSTGRES_PASSWORD: testpass  # 비밀번호
-        options: >-
+    services:                # CI 내에서 함께 실행할 추가 서비스
+      postgres:              # PostgreSQL 데이터베이스 컨테이너 설정
+        image: postgres:16   # 사용할 Docker 이미지 버전
+        ports:               # 호스트와 컨테이너 간 포트 매핑
+          - 5432:5432
+        env:                 # 컨테이너 내부 환경변수 (데이터베이스 설정)
+          POSTGRES_DB: trigger_db_cbv2
+          POSTGRES_USER: trigger_user
+          POSTGRES_PASSWORD: testpass
+        options: >-          # 헬스체크 옵션
           --health-cmd pg_isready
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
 
-    env:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/trigger_db_cbv2
-      SPRING_DATASOURCE_USERNAME: trigger_user
-      SPRING_DATASOURCE_PASSWORD: testpass
+    steps:                   # 이 job이 수행할 단계들
+      - name: Checkout code               # 1) 코드 체크아웃
+        uses: actions/checkout@v4         #    깃허브 저장소에서 소스 가져오기
 
-    steps:
-      - name: Checkout code           # GitHub 리포지토리에서 소스코드를 가져옴
-        uses: actions/checkout@v4
-
-      - name: Set up JDK 17           # Java 17 버전 설치
+      - name: Set up JDK 17               # 2) Java 설치
         uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'     # OpenJDK 배포판
-          java-version: '17'
+          distribution: temurin           #    Temurin OpenJDK 배포판 사용
+          java-version: '17'             #    Java 17 버전
 
-      - name: Grant execute permission for gradlew   # gradlew 실행 권한 부여
+      - name: Grant execute permission for gradlew  # 3) gradlew 실행 권한 부여
         run: chmod +x ./gradlew
 
-      - name: Build with Gradle without test         # 테스트 생략 빌드 (개발 중 빠른 피드백용)
-        run: ./gradlew build -x test --no-daemon
+      - name: Build (skip tests)          # 4) 빌드 단계 (테스트 제외)
+        env:                              #    이 단계에서만 적용할 환경변수
+          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/trigger_db_cbv2
+          SPRING_DATASOURCE_USERNAME: trigger_user
+          SPRING_DATASOURCE_PASSWORD: testpass
+        run: ./gradlew build -x test --no-daemon  #    테스트를 생략하고 빌드
 
-      - name: Run Tests                              # 테스트 실행 (이후 단계에서 조건 분기 가능)
-        env:
-          SPRING_PROFILES_ACTIVE: test
-        run: ./gradlew test --no-daemon
+      - name: Run Tests                   # 5) 테스트 단계
+        env:                              #    이 단계에서만 적용할 환경변수
+          SPRING_PROFILES_ACTIVE: test    #    test 프로파일 활성화 → application-test.yml 사용
+          SPRING_DATASOURCE_URL: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;MODE=PostgreSQL
+          SPRING_DATASOURCE_USERNAME: sa
+          SPRING_DATASOURCE_PASSWORD:      #    H2는 비밀번호 없음
+        run: ./gradlew test --no-daemon   #    실제 테스트 실행
 
-      - name: Deploy to Render                     # Render에 배포
-        if: github.ref == 'refs/heads/main'  # main 브랜치에 푸시된 경우에만 실행
+      - name: Deploy to Render            # 6) 배포 단계 (main 브랜치에만)
+        if: github.ref == 'refs/heads/main'  #    조건: 브랜치가 main 일 때만
         run: |
-          curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+          curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK_URL }}  # Render 배포 훅 호출
