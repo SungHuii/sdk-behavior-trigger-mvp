@@ -18,12 +18,8 @@ public class ProjectResponse {
     private UUID id;
     @Schema(description = "프로젝트 이름", example = "My Project")
     private String name;
-    @Schema(description = "프로젝트 SDK Key", example = "3fb8c9e0-4d2f-4a3b-8c9e-0f4a3b8c9e0f")
-    private String sdkKey;
-    @Schema(description = "프로젝트 소유자 ID", example = "3fb8c9e0-4d2f-4a3b-8c9e-0f4a3b8c9e0f")
-    private UUID ownerId;
-    @Schema(description = "프로젝트 생성일", example = "2023-10-01T12:00:00")
+    @Schema(description = "프로젝트 생성일", example = "2025-04-24T12:00:00")
     private LocalDateTime createdAt;
-    @Schema(description = "프로젝트 수정일", example = "2023-10-01T12:00:00")
-    private LocalDateTime updatedAt;
+    @Schema(description = "프로젝트 삭제일", example = "2025-04-24T12:00:00")
+    private LocalDateTime deletedAt;
 }

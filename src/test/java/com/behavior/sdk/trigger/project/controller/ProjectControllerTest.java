@@ -4,7 +4,9 @@ import com.behavior.sdk.trigger.project.dto.ProjectCreateRequest;
 import com.behavior.sdk.trigger.project.dto.ProjectResponse;
 import com.behavior.sdk.trigger.project.service.ProjectService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.BDDMockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
@@ -13,8 +15,10 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 
+import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
@@ -34,53 +38,52 @@ class ProjectControllerTest {
    private ObjectMapper om;
 
    @Test
-   void createProject_returnsCreated() throws Exception {
-      // Given
-      UUID ownerId = UUID.randomUUID();
-      var request = new ProjectCreateRequest("Test Project");
-      var response = ProjectResponse.builder()
-            .id(UUID.randomUUID())
-            .name("Test Project")
-            .sdkKey("test-sdk-key")
-            .ownerId(ownerId)
-            .createdAt(LocalDateTime.now())
-            .build();
+   @DisplayName("POST /api/projects - 프로젝트 생성")
+   void createProject() throws Exception {
 
-      given(service.createProject(eq(ownerId), any(ProjectCreateRequest.class))).willReturn(response);
+      var dto = ProjectResponse.builder()
+              .id(UUID.randomUUID())
+              .name("테스트 프로젝트")
+              .createdAt(LocalDateTime.now())
+              .build();
+
+      given(service.createProject(any(ProjectCreateRequest.class))).willReturn(dto);
 
       mockMvc.perform(post("/api/projects")
-                  .param("ownerId", ownerId.toString())
                   .contentType(MediaType.APPLICATION_JSON)
                   .accept(MediaType.APPLICATION_JSON)
-                  .content(om.writeValueAsString(request)))
+                  .content(om.writeValueAsString(new ProjectCreateRequest("테스트 프로젝트"))))
             .andExpect(status().isCreated())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-            .andExpect(jsonPath("$.id").value(response.getId().toString()))
-            .andExpect(jsonPath("$.name").value("Test Project"));
+            .andExpect(jsonPath("$.id").value(dto.getId().toString()))
+            .andExpect(jsonPath("$.name").value("테스트 프로젝트"))
+            .andExpect(jsonPath("$.createdAt").exists());
 
    }
 
    @Test
-   void listProjects_returnsOk() throws Exception {
-      UUID ownerId = UUID.randomUUID();
-      ProjectResponse response = ProjectResponse.builder()
-            .id(UUID.randomUUID())
-            .name("Project 1")
-            .sdkKey("test key1")
-            .ownerId(ownerId)
-            .createdAt(LocalDateTime.now())
-            .build();
-      given(service.getProjectsByOwner(ownerId)).willReturn(Collections.singletonList(response));
+   @DisplayName("GET /api/projects/allProjects - 전체 프로젝트 조회")
+   void listProjects() throws Exception {
+      var project1 = ProjectResponse.builder()
+              .id(UUID.randomUUID()).name("프로젝트1").createdAt(LocalDateTime.now()).build();
+      var project2 = ProjectResponse.builder()
+              .id(UUID.randomUUID()).name("프로젝트2").createdAt(LocalDateTime.now()).build();
 
-      mockMvc.perform(get("/api/projects").param("ownerId", ownerId.toString()))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$[0].id").value(response.getId().toString()));
+      given(service.getAllProjects()).willReturn(List.of(project1, project2));
+
+      mockMvc.perform(get("/api/projects/allProjects"))
+              .andExpect(status().isOk())
+              .andExpect(jsonPath("$[0].name").value("프로젝트1"))
+              .andExpect(jsonPath("$", hasSize(2)));
    }
 
    @Test
-   void deleteProject_returnsNoContent() throws Exception {
-      UUID projectId = UUID.randomUUID();
-      mockMvc.perform(delete("/api/projects/{id}", projectId))
-            .andExpect(status().isNoContent());
+   @DisplayName("DELETE /api/projects/{projectId} - 특정 프로젝트 삭제")
+   void deleteProject() throws Exception {
+        UUID projectId = UUID.randomUUID();
+
+        mockMvc.perform(delete("/api/projects/{projectId}", projectId))
+                .andExpect(status().isNoContent());
+      BDDMockito.then(service).should().deleteProject(projectId);
    }
 }
