@@ -10,10 +10,9 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/visitors")
@@ -30,8 +29,19 @@ public class VisitorController {
       @ApiResponse(responseCode = "400", description = "잘못된 요청"),
       @ApiResponse(responseCode = "404", description = "프로젝트를 찾을 수 없음")
    })
-   public ResponseEntity<VisitorResponse> create(@Parameter(description = "해당 프로젝트 키") @RequestParam String projectKey) {
-      VisitorResponse response = visitorService.createVisitor(projectKey);
+   public ResponseEntity<VisitorResponse> create(@Parameter(description = "해당 프로젝트 키") @RequestParam UUID projectId) {
+      VisitorResponse response = visitorService.createVisitor(projectId);
       return ResponseEntity.status(HttpStatus.CREATED).body(response);
+   }
+
+   @GetMapping("/exists/{visitorId}")
+   @Operation(summary = "방문자 존재 여부 확인", description = "방문자가 존재하는지 확인합니다.")
+   @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "방문자 존재 여부 확인 성공"),
+        @ApiResponse(responseCode = "404", description = "방문자를 찾을 수 없음")
+   })
+   public ResponseEntity<Boolean> exists(@Parameter(description = "방문자 ID") @PathVariable UUID visitorId) {
+      boolean exists = visitorService.existsVisitor(visitorId);
+      return ResponseEntity.ok(exists);
    }
 }
