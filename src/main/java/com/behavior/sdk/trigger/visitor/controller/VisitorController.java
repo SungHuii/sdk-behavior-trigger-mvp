@@ -1,5 +1,6 @@
 package com.behavior.sdk.trigger.visitor.controller;
 
+import com.behavior.sdk.trigger.visitor.dto.VisitorEmailRequest;
 import com.behavior.sdk.trigger.visitor.dto.VisitorResponse;
 import com.behavior.sdk.trigger.visitor.service.VisitorService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -55,9 +56,9 @@ public class VisitorController {
     })
    public ResponseEntity<Void> updateEmail(
            @Parameter(description = "방문자 ID") @PathVariable UUID visitorId,
-           @Parameter(description = "이메일") @Valid @RequestParam String email) {
+           @Parameter(description = "이메일") @Valid @RequestBody VisitorEmailRequest emailRequest) {
 
-      visitorService.updateEmail(visitorId, email);
+      visitorService.updateEmail(visitorId, emailRequest.getEmail());
       return ResponseEntity.ok().build();
    }
 }
