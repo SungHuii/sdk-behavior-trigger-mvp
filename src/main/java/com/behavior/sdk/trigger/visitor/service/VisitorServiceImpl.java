@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -46,5 +47,14 @@ public class VisitorServiceImpl implements VisitorService {
             .projectId(v.getProjectId())
             .createdAt(v.getCreatedAt())
             .build();
+   }
+
+   @Override
+   public void updateEmail(UUID visitorId, String email) {
+      Visitor visitor = visitorRepository.findById(visitorId)
+              .orElseThrow(() -> new EntityNotFoundException("유효하지 않은 방문자 키 :" + visitorId));
+
+      visitor.setEmail(email);
+      visitorRepository.save(visitor);
    }
 }

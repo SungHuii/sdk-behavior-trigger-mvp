@@ -8,6 +8,7 @@ public interface VisitorService {
 
    VisitorResponse createVisitor(UUID projectId);
    boolean existsVisitor(UUID visitorId);
+   void updateEmail(UUID visitorId, String email);
 
 
 }
