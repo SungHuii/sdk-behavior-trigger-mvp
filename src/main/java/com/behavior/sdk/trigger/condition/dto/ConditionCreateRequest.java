@@ -1,8 +1,7 @@
 package com.behavior.sdk.trigger.condition.dto;
 
+import com.behavior.sdk.trigger.log_event.enums.EventType;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Id;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -24,7 +23,7 @@ public class ConditionCreateRequest {
 
     @NotNull
     @Schema(description = "이벤트 타입", example = "PAGE_VIEW")
-    private EnumType eventType;
+    private EventType eventType;
 
     @NotBlank
     @Schema(description = "비교 연산자", example = "GREATER_THAN")
