@@ -42,10 +42,15 @@ public class EmailTemplate {
     @PrePersist
     public void onCreated() {
         this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
     }
 
     @PreUpdate
     public void onUpdated() {
         this.updatedAt = LocalDateTime.now();
+    }
+
+    public void softDelete() {
+        this.deletedAt = LocalDateTime.now();
     }
 }
