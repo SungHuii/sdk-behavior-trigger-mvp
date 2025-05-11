@@ -10,6 +10,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.Map;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -29,17 +30,34 @@ public class EmailTemplateIntegrationTests {
     @Autowired
     ObjectMapper om;
 
+    private UUID projectId;
     private UUID conditionId;
     private UUID templateId;
 
     @BeforeAll
     void setUpCondition() throws Exception {
-        // Create a condition and set conditionId
-        String conditionJson = mockMvc.perform(post("/api/conditions")
+        // Project 생성
+        String projectJson = mockMvc.perform(post("/api/projects")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"name\": \"Test Condition\"}"))
+                        .content("{\"name\": \"EmailTemplate 테스트용 프로젝트\"}"))
                 .andExpect(status().isCreated())
                 .andReturn().getResponse().getContentAsString();
+        projectId = UUID.fromString(om.readTree(projectJson).get("id").asText());
+
+        // Condition 생성
+        Map<String, Object> conditionRequest = Map.of(
+              "projectId", projectId.toString(),
+              "eventType", "page_view",
+              "operator", "GREATER_THAN",
+              "threshold", 60,
+              "pageUrl", "https://example.com/event"
+        );
+        String conditionJson = mockMvc.perform(post("/api/conditions")
+              .contentType(MediaType.APPLICATION_JSON)
+              .content(om.writeValueAsString(conditionRequest)))
+              .andExpect(status().isCreated())
+              .andReturn().getResponse().getContentAsString();
+
         conditionId = UUID.fromString(om.readTree(conditionJson).get("id").asText());
     }
 
