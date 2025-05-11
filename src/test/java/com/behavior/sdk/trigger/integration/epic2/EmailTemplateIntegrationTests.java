@@ -14,7 +14,8 @@ import java.util.Map;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.hamcrest.Matchers.hasSize;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -87,5 +88,31 @@ public class EmailTemplateIntegrationTests {
 
         templateId = UUID.fromString(om.readTree(json).get("id").asText());
         assertThat(templateId).isNotNull();
+    }
+
+    @Test
+    @Order(2)
+    @DisplayName("2. 이메일 템플릿 목록 조회")
+    void t2_listEmailTemplates() throws Exception{
+        mockMvc.perform(get("/api/email-templates/{conditionId}", conditionId))
+              .andExpect(status().isOk())
+              .andExpect(jsonPath("$", hasSize(1)))
+              .andExpect(jsonPath("$[0].id").value(templateId.toString()))
+              .andExpect(jsonPath("$[0].conditionId").value(conditionId.toString()))
+              .andExpect(jsonPath("$[0].subject").value("테스트 이벤트 제목"))
+              .andExpect(jsonPath("$[0].body").value("안녕하세요, {{visitorName}}님! 테스트 이벤트에 초대합니다."));
+    }
+
+    @Test
+    @Order(3)
+    @DisplayName("3. 이메일 템플릿 삭제(soft delete)")
+    void t3_softDeleteEmailTemplate() throws Exception {
+         mockMvc.perform(delete("/api/email-templates/{templateId}", templateId))
+                  .andExpect(status().isNoContent());
+
+         // 삭제된 템플릿 조회
+         mockMvc.perform(get("/api/email-templates/{conditionId}", conditionId))
+                  .andExpect(status().isOk())
+                  .andExpect(jsonPath("$", hasSize(0)));
     }
 }
