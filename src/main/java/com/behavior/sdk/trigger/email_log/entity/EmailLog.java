@@ -27,6 +27,7 @@ public class EmailLog {
     @Column(name = "template_id", columnDefinition = "uuid", nullable = false)
     private UUID templateId;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
     private EmailStatus status;
 

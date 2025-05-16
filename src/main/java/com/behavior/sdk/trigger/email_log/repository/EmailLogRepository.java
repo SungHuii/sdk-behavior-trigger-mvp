@@ -8,5 +8,5 @@ import java.util.UUID;
 
 public interface EmailLogRepository extends JpaRepository<EmailLog, UUID> {
 
-    List<EmailLog> findAllByVisitorAndDeletedAtIsNull(UUID visitorId);
+    List<EmailLog> findAllByVisitorIdAndDeletedAtIsNull(UUID visitorId);
 }
