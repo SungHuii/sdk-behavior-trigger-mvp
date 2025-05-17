@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -124,5 +125,35 @@ public class SendEmailAndLogEmailIntegrationTests {
         assertThat(emailLog.getVisitorId()).isEqualTo(visitorId);
         assertThat(emailLog.getTemplateId()).isEqualTo(templateId);
         assertThat(emailLog.getStatus()).isEqualTo(EmailStatus.SENT);
+    }
+
+    @Test
+    @Order(2)
+    @DisplayName("이메일 로그 조회")
+    void t2_getEmailLogs() throws Exception {
+        mockMvc.perform(get("/api/email-logs")
+                .param("visitorId", visitorId.toString()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].visitorId").value(visitorId.toString()))
+                .andExpect(jsonPath("$[0].templateId").value(templateId.toString()))
+                .andExpect(jsonPath("$[0].status").value(EmailStatus.SENT.toString()))
+                .andExpect(jsonPath("$[0].createdAt").exists())
+                .andReturn().getResponse().getContentAsString();
+    }
+
+    @Test
+    @Order(3)
+    @DisplayName("이메일 로그 삭제")
+    void t3_softDeleteEmailLog() throws Exception {
+        String logId = emailLogRepository.findAll().get(0).getId().toString();
+
+        mockMvc.perform(delete("/api/email-logs/{logId}", logId))
+                .andExpect(status().isNoContent());
+
+        mockMvc.perform(get("/api/email-logs")
+                .param("visitorId", visitorId.toString()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(0)));
     }
 }
