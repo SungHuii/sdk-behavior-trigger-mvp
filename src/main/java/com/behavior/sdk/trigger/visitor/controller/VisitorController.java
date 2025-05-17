@@ -1,5 +1,6 @@
 package com.behavior.sdk.trigger.visitor.controller;
 
+import com.behavior.sdk.trigger.visitor.dto.VisitorEmailRequest;
 import com.behavior.sdk.trigger.visitor.dto.VisitorResponse;
 import com.behavior.sdk.trigger.visitor.service.VisitorService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -7,6 +8,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -43,5 +45,20 @@ public class VisitorController {
    public ResponseEntity<Boolean> exists(@Parameter(description = "방문자 ID") @PathVariable UUID visitorId) {
       boolean exists = visitorService.existsVisitor(visitorId);
       return ResponseEntity.ok(exists);
+   }
+
+   @PostMapping("/{visitorId}/email")
+   @Operation(summary = "방문자 이메일 업데이트", description = "방문자의 이메일을 업데이트합니다.")
+    @ApiResponses(value = {
+          @ApiResponse(responseCode = "200", description = "방문자 이메일 업데이트 성공"),
+          @ApiResponse(responseCode = "400", description = "잘못된 요청"),
+          @ApiResponse(responseCode = "404", description = "방문자를 찾을 수 없음")
+    })
+   public ResponseEntity<Void> updateEmail(
+           @Parameter(description = "방문자 ID") @PathVariable UUID visitorId,
+           @Parameter(description = "이메일") @Valid @RequestBody VisitorEmailRequest emailRequest) {
+
+      visitorService.updateEmail(visitorId, emailRequest.getEmail());
+      return ResponseEntity.ok().build();
    }
 }

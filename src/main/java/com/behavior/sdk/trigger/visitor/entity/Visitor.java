@@ -23,6 +23,9 @@ public class Visitor {
    @Column(name = "project_id", columnDefinition = "uuid", nullable = false)
    private UUID projectId;
 
+   @Column(name = "email", nullable = true)
+   private String email;
+
    @Column(name = "created_at", nullable = false)
    private LocalDateTime createdAt;
 
