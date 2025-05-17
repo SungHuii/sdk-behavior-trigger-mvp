@@ -1,4 +1,15 @@
 spring:
+  mail:
+    host: smtp.your-mail-server.com
+    port: 587
+    username: localhost
+    password: localhost
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
   datasource:
     url: ${SPRING_DATASOURCE_URL}
     username: ${SPRING_DATASOURCE_USERNAME}
