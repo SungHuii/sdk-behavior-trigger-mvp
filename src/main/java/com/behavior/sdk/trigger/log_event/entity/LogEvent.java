@@ -1,5 +1,6 @@
 package com.behavior.sdk.trigger.log_event.entity;
 
+import com.behavior.sdk.trigger.condition.entity.Condition;
 import com.behavior.sdk.trigger.log_event.enums.EventType;
 import jakarta.persistence.*;
 import lombok.*;
@@ -26,6 +27,10 @@ public class LogEvent {
 
    @Column(name="visitor_id", nullable = false, columnDefinition = "uuid")
    private UUID visitorId;
+
+   @ManyToOne(optional = false)
+   @JoinColumn(name = "condition_id", nullable = true)
+   private Condition condition;
 
    @Enumerated(EnumType.STRING)
    @Column(name="event_type", nullable = false)
