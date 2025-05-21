@@ -40,7 +40,8 @@ public class SegmentController {
                 segment.getId(),
                 segment.getProjectId(),
                 segment.getConditionId(),
-                visitorIds
+                visitorIds,
+                segment.getDeletedAt()
         );
 
         return ResponseEntity.status(HttpStatus.CREATED).body(segmentResponse);

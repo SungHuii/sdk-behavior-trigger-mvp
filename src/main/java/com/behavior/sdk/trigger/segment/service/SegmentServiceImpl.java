@@ -14,7 +14,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -45,6 +44,7 @@ public class SegmentServiceImpl implements SegmentService{
         segment.setConditionId(request.getConditionId());
         segment.addVisitorsByIds(visitorIds);
 
+
         return segmentRepository.save(segment);
     }
 
@@ -60,7 +60,8 @@ public class SegmentServiceImpl implements SegmentService{
                            s.getId(),
                            s.getProjectId(),
                            s.getConditionId(),
-                           visitorIds
+                           visitorIds,
+                           s.getDeletedAt()
                    );
                 })
                 .toList();
@@ -77,7 +78,8 @@ public class SegmentServiceImpl implements SegmentService{
                 segment.getId(),
                 segment.getProjectId(),
                 segment.getConditionId(),
-                visitorIds
+                visitorIds,
+                segment.getDeletedAt()
         );
     }
 

@@ -1,7 +1,6 @@
 package com.behavior.sdk.trigger.segment.entity;
 
 import jakarta.persistence.*;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -11,24 +10,26 @@ import java.util.UUID;
 @Entity
 @Getter
 @Setter
-@Builder
 @NoArgsConstructor
-@IdClass(SegmentVisitorKey.class)
 @Table(name = "segment_visitors")
 public class SegmentVisitor {
 
-    @Id
+    @EmbeddedId
+    private SegmentVisitorKey id;
+
+    @MapsId("segmentId")
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "segment_id", nullable = false, columnDefinition = "uuid")
+    @JoinColumn(name = "segment_id", nullable = false)
     private Segment segment;
 
-    @Id
-    @Column(name = "visitor_id", nullable = false, columnDefinition = "uuid")
+//    @MapsId("visitorId")
+    @Column(name = "visitor_id", nullable = false, insertable = false, updatable = false)
     private UUID visitorId;
 
 
     public SegmentVisitor(Segment segment, UUID visitorId) {
         this.segment = segment;
         this.visitorId = visitorId;
+        this.id = new SegmentVisitorKey(segment.getId(), visitorId);
     }
 }

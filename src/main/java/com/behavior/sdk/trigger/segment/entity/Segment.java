@@ -35,6 +35,7 @@ public class Segment {
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
 
+    @Builder.Default
     @OneToMany(mappedBy = "segment", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<SegmentVisitor> segmentVisitors = new HashSet<>();
 
