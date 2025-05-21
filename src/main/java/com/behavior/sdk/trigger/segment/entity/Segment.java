@@ -4,6 +4,9 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Entity
@@ -32,6 +35,9 @@ public class Segment {
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
 
+    @OneToMany(mappedBy = "segment", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<SegmentVisitor> segmentVisitors = new HashSet<>();
+
     @PrePersist
     public void onCreated() {
         this.createdAt = LocalDateTime.now();
@@ -39,5 +45,12 @@ public class Segment {
 
     public void softDelete() {
         this.deletedAt = LocalDateTime.now();
+    }
+
+    public void addVisitorsByIds(List<UUID> visitorIds) {
+        visitorIds.forEach(visitorId -> {
+            SegmentVisitor sv = new SegmentVisitor(this, visitorId);
+            this.segmentVisitors.add(sv);
+        });
     }
 }

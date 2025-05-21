@@ -1,42 +1,34 @@
 package com.behavior.sdk.trigger.segment.entity;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-import java.io.Serializable;
+import java.util.UUID;
 
 @Entity
 @Getter
 @Setter
 @Builder
 @NoArgsConstructor
-@AllArgsConstructor
+@IdClass(SegmentVisitorKey.class)
 @Table(name = "segment_visitors")
 public class SegmentVisitor {
 
-    @EmbeddedId
-    private SegmentVisitorKey id;
+    @Id
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "segment_id", nullable = false, columnDefinition = "uuid")
+    private Segment segment;
 
-    @Embeddable
-    public static class SegmentVisitorKey implements Serializable {
-        @Column(name = "segment_id", nullable = false)
-        private Long segmentId;
+    @Id
+    @Column(name = "visitor_id", nullable = false, columnDefinition = "uuid")
+    private UUID visitorId;
 
-        @Column(name = "visitor_id", nullable = false)
-        private Long visitorId;
 
-        // equals() and hashCode() methods
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (!(o instanceof SegmentVisitorKey)) return false;
-            SegmentVisitorKey that = (SegmentVisitorKey) o;
-            return segmentId.equals(that.segmentId) && visitorId.equals(that.visitorId);
-        }
-
-        @Override
-        public int hashCode() {
-            return 31 * segmentId.hashCode() + visitorId.hashCode();
-        }
+    public SegmentVisitor(Segment segment, UUID visitorId) {
+        this.segment = segment;
+        this.visitorId = visitorId;
     }
 }
