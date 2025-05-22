@@ -1,8 +1,12 @@
 package com.behavior.sdk.trigger.integration.epic2;
 
+import com.behavior.sdk.trigger.email_template.entity.EmailTemplate;
+import com.behavior.sdk.trigger.email_template.repository.EmailTemplateRepository;
 import com.behavior.sdk.trigger.segment.dto.SegmentCreateRequest;
 import com.behavior.sdk.trigger.segment.entity.Segment;
 import com.behavior.sdk.trigger.segment.repository.SegmentRepository;
+import com.behavior.sdk.trigger.visitor.entity.Visitor;
+import com.behavior.sdk.trigger.visitor.repository.VisitorRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,9 +40,17 @@ public class SegmentIntegrationTests {
     @Autowired
     private SegmentRepository segmentRepository;
 
+    @Autowired
+    private VisitorRepository visitorRepository;
+    @Autowired
+    private EmailTemplateRepository emailTemplateRepository;
+
     private UUID projectId;
     private UUID conditionId;
     private UUID segmentId;
+
+    private UUID visitorId;
+    private UUID templateId;
 
     @BeforeAll
     void setup() throws Exception {
@@ -84,6 +96,19 @@ public class SegmentIntegrationTests {
             }
             """.formatted(conditionId)))
         .andExpect(status().isCreated());
+
+        visitorId = UUID.fromString(om.readTree(visitorJson).get("id").asText());
+        Visitor visitor = visitorRepository.findById(visitorId).orElseThrow();
+        visitor.setEmail("test@example.com");
+        visitorRepository.save(visitor);
+
+        EmailTemplate template = EmailTemplate.builder()
+                .conditionId(conditionId)
+                .subject("테스트 이메일입니다.")
+                .body("테스트 이메일 본문입니다.")
+                .build();
+        template = emailTemplateRepository.save(template);
+        templateId = template.getId();
     }
 
     @Test
@@ -140,5 +165,24 @@ public class SegmentIntegrationTests {
         mockMvc.perform(get("/api/segments/{id}", segmentId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.deletedAt").exists());
+    }
+
+    @Test
+    @Order(5)
+    @DisplayName("세그먼트 대상 일괄 이메일 전송")
+    void t5_sendSegmentEmailBatch() throws Exception {
+        String payload = """
+        {
+          "templateId": "%s"
+        }
+        """.formatted(templateId);
+
+        mockMvc.perform(post("/api/segments/{id}/send-email", segmentId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(payload))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.batchId").exists())
+                .andExpect(jsonPath("$.sentCount").value(1))
+                .andExpect(jsonPath("$.failedCount").value(0));
     }
 }
