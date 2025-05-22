@@ -12,6 +12,6 @@ import java.util.UUID;
 public interface SegmentVisitorRepository extends JpaRepository<SegmentVisitor, SegmentVisitorKey> {
     List<SegmentVisitor> findByIdSegmentId(UUID segmentId);
 
-    @Query("select sv.segmentVisitorKey.visitorId from SegmentVisitor sv where sv.segmentVisitorKey.segmentId = :segmentId")
+    @Query("select sv.id.visitorId from SegmentVisitor sv where sv.id.segmentId = :segmentId")
     List<UUID> findVisitorIdsBySegmentId(@Param("segmentId") UUID segmentId);
 }
