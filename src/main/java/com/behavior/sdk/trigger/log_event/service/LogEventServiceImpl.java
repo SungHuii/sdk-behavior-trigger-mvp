@@ -1,9 +1,10 @@
 package com.behavior.sdk.trigger.log_event.service;
 
+import com.behavior.sdk.trigger.condition.entity.Condition;
+import com.behavior.sdk.trigger.condition.repository.ConditionRepository;
 import com.behavior.sdk.trigger.log_event.dto.LogEventCreateRequest;
 import com.behavior.sdk.trigger.log_event.dto.LogEventResponse;
 import com.behavior.sdk.trigger.log_event.entity.LogEvent;
-import com.behavior.sdk.trigger.log_event.enums.EventType;
 import com.behavior.sdk.trigger.log_event.repository.LogEventRepository;
 import com.behavior.sdk.trigger.project.repository.ProjectRepository;
 import com.behavior.sdk.trigger.visitor.repository.VisitorRepository;
@@ -24,6 +25,7 @@ public class LogEventServiceImpl implements LogEventService {
    private final LogEventRepository logEventRepository;
    private final ProjectRepository projectRepository;
    private final VisitorRepository visitorRepository;
+   private final ConditionRepository conditionRepository;
 
    @Override
    public LogEventResponse createLogEvent(UUID projectId, UUID visitorId, LogEventCreateRequest request) {
@@ -36,9 +38,18 @@ public class LogEventServiceImpl implements LogEventService {
          throw new EntityNotFoundException("방문자를 찾을 수 없습니다.");
       }
 
+      Condition condition = null;
+      if (request.getConditionId() != null) {
+         condition = conditionRepository.findById(request.getConditionId())
+                 .orElseThrow(() -> new EntityNotFoundException("조건을 찾을 수 없습니다."));
+      } else {
+         throw new IllegalArgumentException("conditionId는 null일 수 없습니다.");
+      }
+
       LogEvent logEvent = LogEvent.builder()
             .projectId(projectId)
             .visitorId(visitorId)
+            .condition(condition)
             .eventType(request.getEventType())
             .occurredAt(request.getOccurredAt() != null ? request.getOccurredAt() : LocalDateTime.now())
             .pageUrl(request.getPageUrl())
@@ -87,6 +98,7 @@ public class LogEventServiceImpl implements LogEventService {
             .id(logEvent.getId())
             .projectId(logEvent.getProjectId())
             .visitorId(logEvent.getVisitorId())
+            .conditionId(logEvent.getCondition() != null ? logEvent.getCondition().getId() : null)
             .eventType(logEvent.getEventType())
             .occurredAt(logEvent.getOccurredAt())
             .createdAt(logEvent.getCreatedAt())

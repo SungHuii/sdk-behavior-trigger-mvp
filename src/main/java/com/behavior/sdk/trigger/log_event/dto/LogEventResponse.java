@@ -24,6 +24,9 @@ public class LogEventResponse {
    @Schema(description = "방문자 ID", example = "3f8b1c2e-4d3a-4b5e-8c7f-9a0d1e2f3a4b")
    private UUID visitorId;
 
+   @Schema(description = "Condition ID", example = "3f8b1c2e-4d3a-4b5e-8c7f-9a0d1e2f3a4b")
+   private UUID conditionId;
+
    @Schema(description = "이벤트 타입", example = "page_view")
    private EventType eventType;
 

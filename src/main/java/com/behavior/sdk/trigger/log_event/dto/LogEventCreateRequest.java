@@ -7,6 +7,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -27,4 +28,8 @@ public class LogEventCreateRequest {
    @NotBlank
    @Schema(description = "이벤트 발생한 URL", example = "https://example.com")
    private String pageUrl;
+
+   @NotNull
+   @Schema(description = "Condition ID", example = "123e4567-e89b-12d3-a456-426614174000")
+   private UUID conditionId;
 }
