@@ -28,7 +28,7 @@ public class LogEvent {
    @Column(name="visitor_id", nullable = false, columnDefinition = "uuid")
    private UUID visitorId;
 
-   @ManyToOne(optional = false)
+   @ManyToOne(optional = true, fetch = FetchType.LAZY)
    @JoinColumn(name = "condition_id", nullable = true)
    private Condition condition;
 
@@ -45,7 +45,7 @@ public class LogEvent {
    @Column(name="deleted_at")
    private LocalDateTime deletedAt;
 
-   @Column(name="page_url", nullable = false, length = 2048)
+   @Column(name="page_url", nullable = true, length = 2048)
    private String pageUrl;
 
 
