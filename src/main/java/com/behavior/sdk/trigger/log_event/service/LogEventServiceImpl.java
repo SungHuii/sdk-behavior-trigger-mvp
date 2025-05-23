@@ -42,8 +42,6 @@ public class LogEventServiceImpl implements LogEventService {
       if (request.getConditionId() != null) {
          condition = conditionRepository.findById(request.getConditionId())
                  .orElseThrow(() -> new EntityNotFoundException("조건을 찾을 수 없습니다."));
-      } else {
-         throw new IllegalArgumentException("conditionId는 null일 수 없습니다.");
       }
 
       LogEvent logEvent = LogEvent.builder()
