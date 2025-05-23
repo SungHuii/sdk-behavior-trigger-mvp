@@ -26,7 +26,7 @@ public class SegmentEmailServiceImpl implements SegmentEmailService{
     @Override
     public EmailBatchResponse sendEmailBatch(UUID segmentId, UUID templateId) {
 
-        List<UUID> visitorIds = segmentVisitorRepository.findVisitorIdsBySegmentId(segmentId);
+        List<UUID> visitorIds = segmentVisitorRepository.findIdVisitorIdByIdSegmentId(segmentId);
 
         int sentCount = 0;
         int failedCount = 0;
