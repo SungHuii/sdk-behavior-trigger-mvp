@@ -51,6 +51,9 @@ public class SendEmailAndLogEmailIntegrationTests {
 
     @BeforeAll
     void setup() throws Exception {
+
+        emailLogRepository.deleteAll();
+
         String project = mockMvc.perform(post("/api/projects")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"name\": \"Email Test Project\"}"))
