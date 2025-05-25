@@ -34,3 +34,7 @@ springdoc:
     path: /api-docs
   swagger-ui:
     path: /swagger-ui.html
+
+app:
+  sdk:
+    projectId: ${APP_SDK_PROJECT_ID}
