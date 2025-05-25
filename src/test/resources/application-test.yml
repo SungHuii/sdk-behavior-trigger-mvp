@@ -12,7 +12,11 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.H2Dialect
-        logging:
-          level:
-            org:
-              hibernate=DEBUG:
+  # Hibernate SQL 로그
+  logging:
+    level:
+      org.hibernate: DEBUG
+
+app:
+  sdk:
+    projectId: test-project-id
