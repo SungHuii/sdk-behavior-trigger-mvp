@@ -19,4 +19,4 @@ spring:
 
 app:
   sdk:
-    projectId: test-project-id
+    projectId: 00000000-0000-0000-0000-000000000000
