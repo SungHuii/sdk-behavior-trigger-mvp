@@ -1,15 +1,16 @@
-<!-- src/main/resources/templates/test.html -->
+<!--
+&lt;!&ndash; src/main/resources/templates/test.html &ndash;&gt;
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <title>SDK 테스트 페이지</title>
 
-    <!-- 1) SDK 스니펫 삽입 (projectId 가 동적으로 채워짐) -->
+    &lt;!&ndash; 1) SDK 스니펫 삽입 (projectId 가 동적으로 채워짐) &ndash;&gt;
     <script th:src="@{https://behavior-tracking-sdk.vercel.app/sdk.js}"
     th:attr="data-key=${projectId}"></script>
 
-    <!-- 2) SDK 초기화 (projectId 가 동적으로 채워짐) -->
+    &lt;!&ndash; 2) SDK 초기화 (projectId 가 동적으로 채워짐) &ndash;&gt;
     <script th:inline="javascript">
         /*<![CDATA[*/
         window.addEventListener('DOMContentLoaded', function() {
@@ -38,7 +39,7 @@
 
 <hr/>
 
-<!-- 3) DB 에 쌓인 로그를 조회해 보여주는 버튼/영역 -->
+&lt;!&ndash; 3) DB 에 쌓인 로그를 조회해 보여주는 버튼/영역 &ndash;&gt;
 <button id="btnFetchLogs">로그 조회</button>
 <pre id="logOutput" style="background:#eee;padding:10px;max-height:200px;overflow:auto;"></pre>
 
@@ -58,5 +59,76 @@
       document.getElementById('logOutput').textContent = JSON.stringify(body, null, 2);
     });
 </script>
+</body>
+</html>-->
+
+
+<!-- src/main/resources/static/test.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SDK 테스트 페이지</title>
+
+    <!-- 1) SDK 스니펫 삽입 -->
+    <!-- projectKey 자리에 실제 발급받은 UUID를 넣어주세요 -->
+    <script src="https://behavior-tracking-sdk.vercel.app/sdk.js"
+            data-key="ef876753-937f-43a1-8302-b99c050e1bca"></script>
+
+    <!-- 2) SDK 초기화 -->
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+          BehaviorSDK.init({
+            // 배포된 API 서버의 엔드포인트
+            apiUrl: 'https://sdk-behavior-trigger-mvp.onrender.com',
+            // projectKey(=UUID)
+            projectKey: 'ef876753-937f-43a1-8302-b99c050e1bca',
+            scrollThreshold: 0.3
+          });
+        });
+    </script>
+</head>
+<body>
+
+<h1>SDK 동작 확인용 테스트 페이지</h1>
+<p>
+    • 페이지를 스크롤 해 보세요.<br>
+    • 버튼을 눌러 보세요.<br>
+    • 5초 이상 체류해 보세요.
+</p>
+
+<button id="btnClick">버튼 클릭 테스트</button>
+<div style="height:2000px; background:#f0f0f0; margin-top:20px;">
+    스크롤 영역 — 스크롤 내려 보세요…
+</div>
+
+<hr>
+
+<!-- 3) DB 에 쌓인 로그를 조회해 보여주는 버튼/영역 -->
+<button id="btnFetchLogs">로그 조회</button>
+<pre id="logOutput"
+     style="background:#eee; padding:10px; max-height:200px; overflow:auto;"></pre>
+
+<script>
+    // (1) 클릭 콘솔 확인
+    document.getElementById('btnClick')
+      .addEventListener('click', () => console.log('버튼 클릭!'));
+
+    // (2) 로그 조회 API 호출
+    document.getElementById('btnFetchLogs')
+      .addEventListener('click', async () => {
+        const projectId  = 'ef876753-937f-43a1-8302-b99c050e1bca';
+        // SDK가 localStorage/cookie에 저장한 visitorId
+        const visitorId  = localStorage.getItem('visitorId')
+                         || document.cookie.match(/visitorId=([^;]+)/)?.[1];
+        const res = await fetch(
+          `/api/logs?projectId=${projectId}&visitorId=${visitorId}`
+        );
+        const logs = await res.json();
+        document.getElementById('logOutput')
+                .textContent = JSON.stringify(logs, null, 2);
+      });
+</script>
+
 </body>
 </html>
