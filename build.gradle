@@ -37,6 +37,7 @@ dependencies {
 	testImplementation 'com.h2database:h2'
 	testRuntimeOnly 'com.h2database:h2'
 	implementation 'org.springframework.boot:spring-boot-starter-mail'
+	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
 }
 
 tasks.named('test') {
