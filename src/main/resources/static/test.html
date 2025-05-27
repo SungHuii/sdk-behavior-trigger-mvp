@@ -9,6 +9,19 @@
     <script th:src="@{https://behavior-tracking-sdk.vercel.app/sdk.js}"
     th:attr="data-key=${projectId}"></script>
 
+    <!-- 2) SDK 초기화 (projectId 가 동적으로 채워짐) -->
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        window.addEventListener('DOMContentLoaded', function() {
+          BehaviorSDK.init({
+            apiUrl: /*[[${#httpServletRequest.getScheme()}]]*/ 'https://sdk-behavior-trigger-mvp.onrender.com',
+            projectKey: /*[[${projectId}]]*/ 'UNKNOWN',
+            scrollThreshold: 0.3
+          });
+        });
+        /*]]>*/
+    </script>
+
 </head>
 <body>
 <h1>SDK 동작 확인용 테스트 페이지</h1>
@@ -47,4 +60,3 @@
 </script>
 </body>
 </html>
-x
