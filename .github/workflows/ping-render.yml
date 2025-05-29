@@ -11,3 +11,5 @@ jobs:
     steps:
       - name: Send ping to Render
         run: curl -s https://sdk-behavior-trigger-mvp.onrender.com
+      - name: Send ping to Render Dev
+        run: curl -s https://sdk-behavior-trigger-mvp-dev.onrender.com
