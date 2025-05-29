@@ -6,64 +6,67 @@
     <title>SDK 테스트 페이지</title>
 
     <!-- 1) SDK 스니펫 삽입 -->
-    <!-- projectKey 자리에 실제 발급받은 UUID를 넣어주세요 -->
     <script src="https://behavior-tracking-sdk.vercel.app/sdk.js"
-            data-key="c7fbd9f0-38a9-4802-8859-c669bd5ca7d6"></script>
+            data-key-prod="478a7347-9049-441e-9aff-bb0a3c01c882"
+            data-key-dev ="c7fbd9f0-38a9-4802-8859-c669bd5ca7d6">
+    </script>
 
     <!-- 2) SDK 초기화 -->
     <script>
         window.addEventListener('DOMContentLoaded', function() {
+          const host = window.location.hostname;
+
+          // 1) apiUrl 분기
+          const apiUrl = host.includes('-dev.')
+            ? 'https://sdk-behavior-trigger-mvp-dev.onrender.com'
+            : 'https://sdk-behavior-trigger-mvp.onrender.com';
+
+          // 2) projectKey 분기 (data-key-* 어트리뷰트에서 읽기)
+          const sdkScript = document.querySelector('script[src*="sdk.js"]');
+          const projectKey = host.includes('-dev.')
+            ? sdkScript.dataset.keyDev
+            : sdkScript.dataset.keyProd;
+
           BehaviorSDK.init({
-            // 배포된 API 서버의 엔드포인트
-            apiUrl: 'https://sdk-behavior-trigger-mvp.onrender.com',
-            // projectKey(=UUID)
-            projectKey: 'c7fbd9f0-38a9-4802-8859-c669bd5ca7d6',
+            apiUrl,
+            projectKey,
             scrollThreshold: 0.3
           });
         });
     </script>
 </head>
 <body>
-
 <h1>SDK 동작 확인용 테스트 페이지</h1>
-<p>
-    • 페이지를 스크롤 해 보세요.<br>
-    • 버튼을 눌러 보세요.<br>
-    • 5초 이상 체류해 보세요.
-</p>
+<!-- ... 나머지 UI ... -->
 
-<button id="btnClick">버튼 클릭 테스트</button>
-<div style="height:2000px; background:#f0f0f0; margin-top:20px;">
-    스크롤 영역 — 스크롤 내려 보세요…
-</div>
-
-<hr>
-
-<!-- 3) DB 에 쌓인 로그를 조회해 보여주는 버튼/영역 -->
-<button id="btnFetchLogs">로그 조회</button>
-<pre id="logOutput"
-     style="background:#eee; padding:10px; max-height:200px; overflow:auto;"></pre>
-
+<!-- 3) 로그 조회 분기 -->
 <script>
-    // (1) 클릭 콘솔 확인
-    document.getElementById('btnClick')
-      .addEventListener('click', () => console.log('버튼 클릭!'));
-
-    // (2) 로그 조회 API 호출
     document.getElementById('btnFetchLogs')
       .addEventListener('click', async () => {
-        const projectId  = 'c7fbd9f0-38a9-4802-8859-c669bd5ca7d6';
-        // SDK가 localStorage/cookie에 저장한 visitorId
-        const visitorId  = localStorage.getItem('visitorId')
+        const host = window.location.hostname;
+        const apiUrl = host.includes('-dev.')
+          ? 'https://sdk-behavior-trigger-mvp-dev.onrender.com'
+          : 'https://sdk-behavior-trigger-mvp.onrender.com';
+
+        // 위 init 코드와 똑같은 로직으로 projectKey 뽑아 써도 되고,
+        // 단순 조회이므로 URL에만 필요하다면 세팅 안 해도 됩니다.
+        const visitorId = localStorage.getItem('visitorId')
                          || document.cookie.match(/visitorId=([^;]+)/)?.[1];
+        if (!visitorId) {
+          return alert('visitorId가 없습니다. 새로고침 후 다시 시도하세요.');
+        }
+
         const res = await fetch(
-          `/api/logs?projectId=${projectId}&visitorId=${visitorId}`
+          `${apiUrl}/api/logs?projectId=${host.includes('-dev.')
+            ? sdkScript.dataset.keyDev
+            : sdkScript.dataset.keyProd
+          }&visitorId=${visitorId}`
         );
-        const logs = await res.json();
-        document.getElementById('logOutput')
-                .textContent = JSON.stringify(logs, null, 2);
+        const text = await res.text();
+        document.getElementById('logOutput').textContent =
+          res.ok ? JSON.stringify(JSON.parse(text), null, 2)
+                : `Error ${res.status}:\n${text}`;
       });
 </script>
-
 </body>
 </html>
