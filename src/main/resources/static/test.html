@@ -8,7 +8,7 @@
     <!-- 1) SDK 스니펫 삽입 -->
     <!-- projectKey 자리에 실제 발급받은 UUID를 넣어주세요 -->
     <script src="https://behavior-tracking-sdk.vercel.app/sdk.js"
-            data-key="478a7347-9049-441e-9aff-bb0a3c01c882"></script>
+            data-key="c7fbd9f0-38a9-4802-8859-c669bd5ca7d6"></script>
 
     <!-- 2) SDK 초기화 -->
     <script>
@@ -17,7 +17,7 @@
             // 배포된 API 서버의 엔드포인트
             apiUrl: 'https://sdk-behavior-trigger-mvp.onrender.com',
             // projectKey(=UUID)
-            projectKey: '478a7347-9049-441e-9aff-bb0a3c01c882',
+            projectKey: 'c7fbd9f0-38a9-4802-8859-c669bd5ca7d6',
             scrollThreshold: 0.3
           });
         });
@@ -52,7 +52,7 @@
     // (2) 로그 조회 API 호출
     document.getElementById('btnFetchLogs')
       .addEventListener('click', async () => {
-        const projectId  = '478a7347-9049-441e-9aff-bb0a3c01c882';
+        const projectId  = 'c7fbd9f0-38a9-4802-8859-c669bd5ca7d6';
         // SDK가 localStorage/cookie에 저장한 visitorId
         const visitorId  = localStorage.getItem('visitorId')
                          || document.cookie.match(/visitorId=([^;]+)/)?.[1];
