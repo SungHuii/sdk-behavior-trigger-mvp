@@ -6,12 +6,13 @@
     <title>SDK 테스트 페이지</title>
 
     <!-- 1) SDK 스니펫 삽입 -->
+    <!-- data-key-prod / data-key-dev 에는 각각 프로덕션·개발용 projectKey(UUID)를 넣어주세요 -->
     <script src="https://behavior-tracking-sdk.vercel.app/sdk.js"
             data-key-prod="478a7347-9049-441e-9aff-bb0a3c01c882"
             data-key-dev ="c7fbd9f0-38a9-4802-8859-c669bd5ca7d6">
     </script>
 
-    <!-- 2) SDK 초기화 -->
+    <!-- 2) SDK 초기화 & 분기 로직 -->
     <script>
         window.addEventListener('DOMContentLoaded', function() {
           const host = window.location.hostname;
@@ -21,13 +22,14 @@
             ? 'https://sdk-behavior-trigger-mvp-dev.onrender.com'
             : 'https://sdk-behavior-trigger-mvp.onrender.com';
 
-          // 2) projectKey 분기 (data-key-* 어트리뷰트에서 읽기)
-          const sdkScript = document.querySelector('script[src*="sdk.js"]');
-          const projectKey = host.includes('-dev.')
+          // 2) projectKey 분기 (data-key-* 속성에서 읽어오기)
+          const sdkScript   = document.querySelector('script[src*="sdk.js"]');
+          const projectKey  = host.includes('-dev.')
             ? sdkScript.dataset.keyDev
             : sdkScript.dataset.keyProd;
 
-          BehaviorSDK.init({
+          // SDK 초기화
+          window.BehaviorSDK.init({
             apiUrl,
             projectKey,
             scrollThreshold: 0.3
@@ -37,35 +39,131 @@
 </head>
 <body>
 <h1>SDK 동작 확인용 테스트 페이지</h1>
-<!-- ... 나머지 UI ... -->
+<p>
+    • 페이지를 스크롤 해 보세요.<br>
+    • 버튼을 눌러 보세요.<br>
+    • 5초 이상 체류해 보세요.
+</p>
 
-<!-- 3) 로그 조회 분기 -->
+<!-- 3) 클릭 이벤트 테스트 -->
+<button id="btnClick">버튼 클릭 테스트</button>
+
+<!-- 스크롤 테스트 영역 -->
+<div style="height:2000px; background:#f0f0f0; margin-top:20px;">
+    스크롤 영역 — 스크롤 내려 보세요…
+</div>
+
+<hr>
+
+<!-- 4) 이메일 입력 칸 & 보내기 버튼 -->
+<label for="emailInput">테스트용 이메일:</label>
+<input type="email" id="emailInput" placeholder="you@example.com" style="margin-right:8px;"/>
+<button id="btnSendEmail">보내기</button>
+
+<hr>
+
+<!-- 5) DB에 쌓인 로그를 조회해 보여주는 버튼/영역 -->
+<button id="btnFetchLogs">로그 조회</button>
+<pre id="logOutput"
+     style="background:#eee; padding:10px; max-height:300px; overflow:auto;"></pre>
+
+<!-- 6) 스크립트: 클릭 확인, 이메일 발송, 로그 조회 -->
 <script>
-    document.getElementById('btnFetchLogs')
+    // (1) 클릭 콘솔 확인
+    document.getElementById('btnClick')
+      .addEventListener('click', () => console.log('버튼 클릭!'));
+
+    // (2) 이메일 발송 API 호출
+    document.getElementById('btnSendEmail')
       .addEventListener('click', async () => {
         const host = window.location.hostname;
         const apiUrl = host.includes('-dev.')
           ? 'https://sdk-behavior-trigger-mvp-dev.onrender.com'
           : 'https://sdk-behavior-trigger-mvp.onrender.com';
 
-        // 위 init 코드와 똑같은 로직으로 projectKey 뽑아 써도 되고,
-        // 단순 조회이므로 URL에만 필요하다면 세팅 안 해도 됩니다.
+        // projectKey 분기 (SDK init 때와 동일 로직)
+        const sdkScript  = document.querySelector('script[src*="sdk.js"]');
+        const projectKey = host.includes('-dev.')
+          ? sdkScript.dataset.keyDev
+          : sdkScript.dataset.keyProd;
+
+        // 입력된 이메일 가져오기
+        const email = document.getElementById('emailInput').value.trim();
+        if (!email) {
+          return alert('이메일을 입력해 주세요.');
+        }
+
+        // visitorId는 SDK가 localStorage/cookie에 저장해 둔 값
+        const visitorId = localStorage.getItem('visitorId')
+                         || document.cookie.match(/visitorId=([^;]+)/)?.[1];
+        if (!visitorId) {
+          return alert('visitorId가 없습니다. 페이지 새로고침 후 다시 시도하세요.');
+        }
+
+        // 발송 요청
+        try {
+          const res = await fetch(
+            `${apiUrl}/api/test/send-email`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                projectId: projectKey,
+                visitorId: visitorId,
+                email: email
+              })
+            }
+          );
+          const json = await res.json();
+          if (res.ok) {
+            alert(`메일 발송 상태: ${json.status}`);
+          } else {
+            alert(`발송 실패: ${json.status}`);
+          }
+        } catch(err) {
+          console.error(err);
+          alert('메일을 발송하는 중 오류가 발생했습니다.');
+        }
+      });
+
+    // (3) 로그 조회 API 호출
+    document.getElementById('btnFetchLogs')
+      .addEventListener('click', async () => {
+        const host   = window.location.hostname;
+        const apiUrl = host.includes('-dev.')
+          ? 'https://sdk-behavior-trigger-mvp-dev.onrender.com'
+          : 'https://sdk-behavior-trigger-mvp.onrender.com';
+
+        // projectKey 분기 (로그 조회 시에도 필요하면 URL에 포함)
+        const sdkScript  = document.querySelector('script[src*="sdk.js"]');
+        const projectKey = host.includes('-dev.')
+          ? sdkScript.dataset.keyDev
+          : sdkScript.dataset.keyProd;
+
         const visitorId = localStorage.getItem('visitorId')
                          || document.cookie.match(/visitorId=([^;]+)/)?.[1];
         if (!visitorId) {
           return alert('visitorId가 없습니다. 새로고침 후 다시 시도하세요.');
         }
 
-        const res = await fetch(
-          `${apiUrl}/api/logs?projectId=${host.includes('-dev.')
-            ? sdkScript.dataset.keyDev
-            : sdkScript.dataset.keyProd
-          }&visitorId=${visitorId}`
-        );
-        const text = await res.text();
-        document.getElementById('logOutput').textContent =
-          res.ok ? JSON.stringify(JSON.parse(text), null, 2)
-                : `Error ${res.status}:\n${text}`;
+        try {
+          const res = await fetch(
+            `${apiUrl}/api/logs?projectId=${projectKey}&visitorId=${visitorId}`
+          );
+          const text = await res.text();
+          if (!res.ok) {
+            document.getElementById('logOutput').textContent =
+              `Error ${res.status}:\n${text}`;
+            return;
+          }
+          // 정상적으로 JSON 배열이 내려올 경우 보기 좋게 포맷
+          const logs = JSON.parse(text);
+          document.getElementById('logOutput')
+                  .textContent = JSON.stringify(logs, null, 2);
+        } catch(err) {
+          console.error(err);
+          document.getElementById('logOutput')
+            .textContent = '로그 조회 중 오류가 발생했습니다.';
+        }
       });
 </script>
 </body>
