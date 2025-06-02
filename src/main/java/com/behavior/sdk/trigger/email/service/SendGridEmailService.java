@@ -18,7 +18,7 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class SendGridEmailService {
 
-    @Value("${sendgrid.api-key}")
+    @Value("${sendgrid.api-key:dummy-key}")
     private String sendGridApiKey;
 
     public void sendEmail(String to, String subject, String body) {

@@ -20,3 +20,6 @@ spring:
 app:
   sdk:
     projectId: 00000000-0000-0000-0000-000000000000
+
+sendgrid:
+  api-key: dummy
