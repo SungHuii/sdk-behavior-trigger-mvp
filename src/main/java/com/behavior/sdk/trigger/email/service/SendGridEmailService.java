@@ -22,10 +22,7 @@ public class SendGridEmailService {
     private String sendGridApiKey;
 
     public void sendEmail(String to, String subject, String body) {
-        // SendGrid API를 사용하여 이메일을 전송하는 로직을 구현합니다.
-        // 예시로 SendGrid 클라이언트를 사용하여 이메일을 전송할 수 있습니다.
-        // SendGrid 클라이언트 초기화 및 이메일 전송 코드 작성 필요
-        Email fromEmail = new Email("noreply@visiLog.com");
+        Email fromEmail = new Email("gkemg2017@gmail.com");
         Email toEmail = new Email(to);
 
         Content content = new Content("text/plain", body);
