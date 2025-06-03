@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>Condition 생성</title>
+</head>
+<body>
+<h1>조건 생성</h1>
+
+<label>EventType:</label>
+<select id="eventType">
+  <option value="PAGE_VIEW">PAGE_VIEW</option>
+  <option value="CLICK">CLICK</option>
+</select><br>
+
+<label>Operator:</label>
+<select id="operator">
+  <option value="GREATER_THAN">GREATER_THAN</option>
+  <option value="EQUALS">EQUALS</option>
+</select><br>
+
+<label>Threshold:</label>
+<input type="number" id="threshold"><br>
+
+<label>Page URL:</label>
+<input type="text" id="pageUrl"><br>
+
+<button id="createBtn">생성</button>
+
+<script>
+  document.getElementById('createBtn').addEventListener('click', async () => {
+    const host = window.location.hostname;
+    const apiUrl = host.includes('-dev.')
+      ? 'https://sdk-behavior-trigger-mvp-dev.onrender.com'
+      : 'https://sdk-behavior-trigger-mvp.onrender.com';
+
+    const projectKey = host.includes('-dev.')
+      ? document.querySelector('script[data-key-dev]')?.dataset.keyDev
+      : document.querySelector('script[data-key-prod]')?.dataset.keyProd;
+
+    const payload = {
+      projectId: projectKey,
+      eventType: document.getElementById('eventType').value,
+      operator: document.getElementById('operator').value,
+      threshold: parseInt(document.getElementById('threshold').value),
+      pageUrl: document.getElementById('pageUrl').value
+    };
+
+    try {
+      const res = await fetch(`${apiUrl}/api/conditions`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (res.ok) {
+        alert('조건 생성 성공! test.html로 이동합니다');
+        window.location.href = '/test.html';
+      } else {
+        const errorText = await res.text();
+        alert('생성 실패: ' + errorText);
+      }
+    } catch (e) {
+      alert('에러: ' + e.message);
+    }
+  });
+</script>
+</body>
+</html>
