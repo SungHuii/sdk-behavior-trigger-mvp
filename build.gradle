@@ -38,6 +38,7 @@ dependencies {
 	testRuntimeOnly 'com.h2database:h2'
 	implementation 'org.springframework.boot:spring-boot-starter-mail'
 	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+	implementation 'com.sendgrid:sendgrid-java:4.10.1' // SendGrid 이메일 전송 라이브러리
 }
 
 tasks.named('test') {

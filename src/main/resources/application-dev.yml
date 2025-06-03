@@ -38,3 +38,6 @@ springdoc:
 app:
   sdk:
     projectId: ${APP_SDK_PROJECT_ID}
+
+sendgrid:
+  api-key: ${SENDGRID_API_KEY}
