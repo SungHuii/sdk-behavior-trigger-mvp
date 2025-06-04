@@ -6,7 +6,17 @@ import com.fasterxml.jackson.annotation.JsonValue;
 
 public enum EventType {
    @JsonProperty("page_view")
-   PAGE_VIEW;
+   PAGE_VIEW,
+
+   @JsonProperty("click")
+   CLICK,
+
+   @JsonProperty("stay_time")
+   STAY_TIME,
+
+   @JsonProperty("scroll_depth")
+   SCROLL_DEPTH;
+
 
    private final String value;
 
