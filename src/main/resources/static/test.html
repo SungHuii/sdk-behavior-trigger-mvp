@@ -35,6 +35,26 @@
             scrollThreshold: 0.3
           });
         });
+
+        // 조건 평가 함수
+        function findMatchingCondition(eventType, pageUrl, actualValue) {
+          return window.BehaviorConditions?.find(condition => {
+            return (
+              condition.eventType === eventType &&
+              pageUrl.includes(condition.pageUrl) &&
+              evaluateOperator(condition.operator, actualValue, condition.threshold)
+            );
+          });
+        }
+
+        function evaluateOperator(operator, a, b) {
+          switch (operator) {
+            case 'EQUAL': return a === b;
+            case 'GREATER_THAN': return a > b;
+            case 'LESS_THAN': return a < b;
+            default: return false;
+          }
+        }
     </script>
 </head>
 <body>
