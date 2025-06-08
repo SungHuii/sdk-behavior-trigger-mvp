@@ -28,7 +28,10 @@ public class SegmentTriggerJob {
     @Scheduled(fixedDelay = 60000) // 1분마다 실행
     @Transactional
     public void run() {
+        log.info("[SegmentTriggerJob] 세그먼트 자동 생성 스케줄러 실행 시작");
+
         List<Condition> conditions = conditionRepository.findAll();
+        log.info("총 조건 수 : {}", conditions.size());
 
         for (Condition condition : conditions) {
 
@@ -40,14 +43,20 @@ public class SegmentTriggerJob {
             List<UUID> visitorIds = logEventRepository.findVisitorIdsByCondition(conditionId, threshold, pageUrl);
             List<String> uniqueEmails = visitorRepository.findDistinctEmailsByVisitorIds(visitorIds);
 
+            log.info("조건 ID : {} -> 유효 visitor 수 : {}, 유니크 이메일 수 : {} ", conditionId, visitorIds.size(), uniqueEmails.size());
+
             if (uniqueEmails.size() >= 5) {
                 Segment segment = new Segment();
                 segment.setProjectId(projectId);
                 segment.setConditionId(conditionId);
                 segment.addVisitorsByIds(visitorIds);
                 segmentRepository.save(segment);
-                log.info("[Segment Trigger] Created segment for conditionId={} with {} unique visitors", conditionId, uniqueEmails.size());
+                log.info("[Segment Trigger] 세그먼트 생성 완료 → conditionId={}, visitor 수: {}, 이메일 수: {}", conditionId, visitorIds.size(), uniqueEmails.size());
+            } else {
+                log.info("[Segment Trigger] 조건 불충족 → conditionId={}, 유니크 이메일 수: {} < 기준값(5)", conditionId, uniqueEmails.size());
             }
+            
+            log.info("[SegmentTriggerJob] 세그먼트 자동 생성 스케줄러 실행 완료");
         }
     }
 }
