@@ -75,6 +75,10 @@
 
 <hr>
 
+<label>이메일 등록: </label>
+<input type="email" id="emailInput">
+<button onclick="updateEmail()">등록</button>
+
 <!-- 4) 이메일 입력 칸 & 보내기 버튼 -->
 <label for="emailInput">테스트용 이메일:</label>
 <input type="email" id="emailInput" placeholder="you@example.com" style="margin-right:8px;"/>
@@ -169,6 +173,24 @@
             .textContent = '로그 조회 중 오류가 발생했습니다.';
         }
       });
+
+      async function updateEmail() {
+        const email = document.getElementById('emailInput').value;
+        const visitorId = localStorage.getItem("visitorId");
+        if (!visitorId || !email) return alert("visitorId 또는 email 누락");
+
+        const res = await fetch(`/api/visitors/${visitorId}/email`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email })
+        });
+
+        if (res.ok) {
+          alert("이메일이 등록되었습니다!");
+        } else {
+          alert("등록 실패");
+        }
+      }
 </script>
 </body>
 </html>
