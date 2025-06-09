@@ -55,7 +55,8 @@ public class SegmentTriggerJob {
             } else {
                 log.info("[Segment Trigger] 조건 불충족 → conditionId={}, 유니크 이메일 수: {} < 기준값(5)", conditionId, uniqueEmails.size());
             }
-            
+            log.info("실제 visitorIds: {}", visitorIds);
+            log.info("이메일이 있는 visitorIds: {}", uniqueEmails);
             log.info("[SegmentTriggerJob] 세그먼트 자동 생성 스케줄러 실행 완료");
         }
     }
