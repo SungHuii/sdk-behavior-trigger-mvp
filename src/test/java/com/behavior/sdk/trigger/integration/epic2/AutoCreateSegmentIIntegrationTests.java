@@ -83,6 +83,7 @@ public class AutoCreateSegmentIIntegrationTests {
         }
     }
 
+    // 자동 세그먼트 생성 테스트
     @Test
     @Order(1)
     @Transactional
@@ -98,5 +99,132 @@ public class AutoCreateSegmentIIntegrationTests {
         assertThat(createdSegment.getProjectId()).isEqualTo(projectId);
         assertThat(createdSegment.getConditionId()).isEqualTo(conditionId);
         assertThat(createdSegment.getSegmentVisitors()).hasSize(6);
+    }
+
+    // Condition 미충족 시 Segment 생성 불가 테스트
+    @Test
+    @Order(2)
+    @Transactional
+    void t2_doNotCreateSegmentWhenConditionNotMet() {
+
+        // given
+        Condition condition = Condition.builder()
+                .projectId(projectId)
+                .eventType(EventType.PAGE_VIEW)
+                .operator("greater_than")
+                .threshold(10) // threshold를 10으로 설정하여 조건 미충족
+                .pageUrl("https://example.com/test")
+                .build();
+
+        conditionRepository.save(condition);
+
+        // when
+        segmentTriggerJob.run();
+
+        // then
+        List<Segment> segments = segmentRepository.findAll();
+        assertThat(segments).noneMatch(s -> s.getConditionId().equals(condition.getId()));
+    }
+
+    // 중복 세그먼트 생성 방지 테스트
+    @Test
+    @Order(3)
+    @Transactional
+    void t3_doNotCreateDuplicateSegments() {
+
+        // when
+        segmentTriggerJob.run();
+
+        // then
+        List<Segment> segments = segmentRepository.findAll();
+        assertThat(segments).hasSize(1); // 이전에 생성된 세그먼트는 유지되어야 함
+    }
+
+    // 조건이 여러 개일 때 각각의 조건에 맞는 세그먼트 생성 테스트
+    @Test
+    @Order(4)
+    @Transactional
+    void t4_createMultipleSegmentsForMultipleConditions() {
+
+        // given
+        Condition anotherCondition = Condition.builder()
+                .projectId(projectId)
+                .eventType(EventType.PAGE_VIEW)
+                .operator("greater_than")
+                .threshold(1)
+                .pageUrl("https://example.com/another-test")
+                .build();
+        conditionRepository.save(anotherCondition);
+
+        // 로그 6개 생성 (다른 URL)
+        for (int i = 0; i < 6; i++) {
+            Visitor visitor =Visitor.builder()
+                    .projectId(projectId)
+                    .email("another" + i + "@example.com")
+                    .build();
+            visitorRepository.save(visitor);
+
+            logEventRepository.save(LogEvent.builder()
+                    .projectId(projectId)
+                    .visitorId(visitor.getId())
+                    .eventType(EventType.PAGE_VIEW)
+                    .pageUrl("https://example.com/another-test")
+                    .occurredAt(LocalDateTime.now())
+                    .condition(anotherCondition)
+                    .build());
+        }
+
+        // when
+        segmentTriggerJob.run();
+
+        // then
+        List<Segment> segments = segmentRepository.findAll();
+        assertThat(segments).hasSize(2); // 두 개의 조건에 대해 각각 세그먼트가 생성되어야 함
+    }
+
+    // 이메일이 없는 Visitor 제외 테스트
+    @Test
+    @Order(5)
+    @Transactional
+    void t5_excludeVisitorsWithoutEmail() {
+
+        // given
+        Condition condition = Condition.builder()
+                .projectId(projectId)
+                .eventType(EventType.PAGE_VIEW)
+                .operator("greater_than")
+                .threshold(1)
+                .pageUrl("https://example.com/no-email")
+                .build();
+        conditionRepository.save(condition);
+
+        for (int i = 0; i < 6; i++) {
+            Visitor visitor = Visitor.builder()
+                    .projectId(projectId)
+                    .email(i % 2 == 0 ? "email" + i + "@example.com" : null) // 홀수 인덱스는 이메일 없음
+                    .build();
+            visitorRepository.save(visitor);
+
+            logEventRepository.save(LogEvent.builder()
+                    .projectId(projectId)
+                    .visitorId(visitor.getId())
+                    .eventType(EventType.PAGE_VIEW)
+                    .pageUrl("https://example.com/no-email")
+                    .occurredAt(LocalDateTime.now())
+                    .condition(condition)
+                    .build());
+        }
+
+        // when
+        segmentTriggerJob.run();
+
+        // then
+        List<Segment> segments = segmentRepository.findAll();
+        Segment segment = segments.stream()
+                .filter(s -> s.getConditionId().equals(condition.getId()))
+                .findFirst()
+                .orElse(null);
+
+        assertThat(segment).isNull();
     }
 }
