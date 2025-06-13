@@ -45,7 +45,7 @@ public class SegmentTriggerJob {
 
             log.info("조건 ID : {} -> 유효 visitor 수 : {}, 유니크 이메일 수 : {} ", conditionId, visitorIds.size(), uniqueEmails.size());
 
-            if (uniqueEmails.size() >= 5) {
+            if (uniqueEmails.size() >= 5 && !segmentRepository.existsByConditionIdAndNotDeletedAtIsNull(conditionId)) {
                 Segment segment = new Segment();
                 segment.setProjectId(projectId);
                 segment.setConditionId(conditionId);

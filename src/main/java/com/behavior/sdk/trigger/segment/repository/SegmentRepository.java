@@ -13,4 +13,12 @@ public interface SegmentRepository extends JpaRepository<Segment, UUID> {
 
     @Query("select v.visitorId from SegmentVisitor v where v.segment.id = :segmentId")
     List<UUID> findVisitorIdsBySegmentId(@Param("segmentId") UUID segmentId);
+
+    @Query("""
+            SELECT count(s) > 0
+            FROM Segment s
+            WHERE s.conditionId = :conditionId
+            AND s.deletedAt IS NULL
+            """)
+    boolean existsByConditionIdAndNotDeletedAtIsNull(@Param("conditionId") UUID conditionId);
 }
