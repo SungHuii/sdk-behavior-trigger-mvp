@@ -37,7 +37,7 @@ public class SegmentServiceImpl implements SegmentService{
         Integer threshold = condition.getThreshold();
         String pageUrl = condition.getPageUrl();
 
-        List<UUID> visitorIds = logEventRepository.findVisitorIdsByCondition(condition.getId(), threshold, pageUrl);
+        List<UUID> visitorIds = logEventRepository.findDistinctVisitorIdsByCondition(condition.getId(), pageUrl);
 
         Segment segment = new Segment();
         segment.setProjectId(request.getProjectId());
