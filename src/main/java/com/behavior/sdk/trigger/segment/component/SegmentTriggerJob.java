@@ -57,6 +57,10 @@ public class SegmentTriggerJob {
             }
             log.info("실제 visitorIds: {}", visitorIds);
             log.info("이메일이 있는 visitorIds: {}", uniqueEmails);
+            log.info("실제 비교되는 pageUrl: {}", pageUrl);
+            log.info("조건ID: {}, pageUrl: {}, threshold: {}", conditionId, pageUrl, threshold);
+            log.info("visitorIds 쿼리 결과: {}", visitorIds);
+
             log.info("[SegmentTriggerJob] 세그먼트 자동 생성 스케줄러 실행 완료");
         }
     }
