@@ -14,6 +14,11 @@ public interface VisitorRepository extends JpaRepository<Visitor, UUID> {
 
     boolean existsByIdAndDeletedAtIsNull(UUID id);
 
-    @Query("SELECT DISTINCT v.email FROM Visitor v WHERE v.id IN :visitorIds AND v.email IS NOT NULL")
+    @Query("""
+        SELECT DISTINCT v.email
+        FROM Visitor v
+        WHERE v.id IN :visitorIds
+        AND v.email IS NOT NULL
+    """)
     List<String> findDistinctEmailsByVisitorIds(@Param("visitorIds") List<UUID> visitorIds);
 }
