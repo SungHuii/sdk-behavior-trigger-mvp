@@ -40,7 +40,7 @@ public class SegmentTriggerJob {
             Integer threshold = condition.getThreshold();
             String pageUrl = condition.getPageUrl();
 
-            List<UUID> visitorIds = logEventRepository.findVisitorIdsByCondition(conditionId, threshold, pageUrl);
+            List<UUID> visitorIds = logEventRepository.findDistinctVisitorIdsByCondition(conditionId, pageUrl);
             List<String> uniqueEmails = visitorRepository.findDistinctEmailsByVisitorIds(visitorIds);
 
             log.info("조건 ID : {} -> 유효 visitor 수 : {}, 유니크 이메일 수 : {} ", conditionId, visitorIds.size(), uniqueEmails.size());
