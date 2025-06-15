@@ -1,13 +1,8 @@
 package com.behavior.sdk.trigger.segment.component;
 
-import com.behavior.sdk.trigger.email.service.EmailService;
-import com.behavior.sdk.trigger.email_log.repository.EmailLogRepository;
-import com.behavior.sdk.trigger.email_template.repository.EmailTemplateRepository;
 import com.behavior.sdk.trigger.segment.entity.Segment;
-import com.behavior.sdk.trigger.segment.repository.EmailBatchRepository;
 import com.behavior.sdk.trigger.segment.repository.SegmentRepository;
-import com.behavior.sdk.trigger.segment.repository.SegmentVisitorRepository;
-import com.behavior.sdk.trigger.visitor.repository.VisitorRepository;
+import com.behavior.sdk.trigger.segment.service.SegmentEmailService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -22,19 +17,31 @@ import java.util.List;
 public class SegmentEmailSendJob {
 
     private final SegmentRepository segmentRepository;
-    private final EmailTemplateRepository emailTemplateRepository;
-    private final SegmentVisitorRepository segmentVisitorRepository;
-    private final VisitorRepository visitorRepository;
-    private final EmailLogRepository emailLogRepository;
-    private final EmailBatchRepository emailBatchRepository;
-    private final EmailService emailService;
+    private final SegmentEmailService segmentEmailService;
 
     @Scheduled(fixedRate = 60000) // 1분마다 실행
     @Transactional
     public void run() {
         log.info("[SegmentEmailSendJob] 시작 - 세그먼트 이메일 발송 작업");
 
-        List<Segment> segments = segmentRepository.findAll();
-    }
+        List<Segment> unprocessedSegments = segmentRepository.findAllUnprocessed();
+        log.info("처리할 세그먼트 수: {}", unprocessedSegments.size());
 
+        for (Segment segment : unprocessedSegments) {
+            try {
+                log.info("Segment ID : {} - 이메일 발송 시작", segment.getId());
+
+                segmentEmailService.sendEmailBatch(segment.getId(), segment.getTemplateId());
+
+                segment.markAsProcessed();
+                segmentRepository.save(segment);
+
+                log.info("Segment ID : {} - 이메일 발송 완료", segment.getId());
+            } catch (Exception e) {
+                log.error("Segment ID : {} - 이메일 발송 중 오류 발생: {}", segment.getId(), e.getMessage());
+            }
+        }
+
+        log.info("[SegmentEmailSendJob] 완료 - 세그먼트 이메일 발송 작업");
+    }
 }
