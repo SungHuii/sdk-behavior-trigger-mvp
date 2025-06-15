@@ -12,5 +12,5 @@ public interface EmailLogRepository extends JpaRepository<EmailLog, UUID> {
 
     List<EmailLog> findAllByVisitorIdAndDeletedAtIsNull(UUID visitorId);
 
-    boolean existsByVisitorIdAndTemplateId(UUID visitorId);
+    boolean existsByVisitorId(UUID visitorId);
 }

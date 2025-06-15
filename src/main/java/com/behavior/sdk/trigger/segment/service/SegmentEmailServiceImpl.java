@@ -34,15 +34,16 @@ public class SegmentEmailServiceImpl implements SegmentEmailService{
         List<UUID> visitorIds = segmentVisitorRepository.findVisitorIdsBySegmentId(segmentId);
 
         List<UUID> notSentVisitorIds = visitorIds.stream()
-                .filter(visitorId -> !emailLogRepository.existsByVisitorIdAndTemplateId(visitorId))
+                .filter(visitorId -> !emailLogRepository.existsByVisitorId(visitorId))
                 .toList();
 
-        UUID batchId = UUID.randomUUID();
-        EmailBatch emailBatch = new EmailBatch();
-        emailBatch.setId(batchId);
-        emailBatch.setSegmentId(segmentId);
-        emailBatch.setCreatedAt(LocalDateTime.now());
-        emailBatchRepository.save(emailBatch);
+        EmailBatch emailBatch = EmailBatch.builder()
+                .segmentId(segmentId)
+                .sentCount(0)
+                .failedCount(0)
+                .build();
+        emailBatch = emailBatchRepository.saveAndFlush(emailBatch);  // ID/Version 초기화
+        UUID batchId = emailBatch.getId();
 
 
         for (UUID visitorId : notSentVisitorIds) {

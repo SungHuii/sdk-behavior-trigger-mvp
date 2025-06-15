@@ -32,6 +32,10 @@ public class EmailBatch {
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
 
+    @Version
+    @Column(name = "version")
+    private Long version;
+
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
