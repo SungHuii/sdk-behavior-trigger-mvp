@@ -43,34 +43,6 @@ public class SegmentEmailServiceImpl implements SegmentEmailService{
         long sent = emailLogRepository.countSentBySegment(segmentId);
         long failed = emailLogRepository.countFailedBySegment(segmentId);
 
-/*
-        int sentCount = 0;
-        int failedCount = 0;
-
-        for (UUID visitorId : visitorIds) {
-            try {
-                emailService.sendEmail(
-                        EmailSendRequest.builder()
-                                .visitorId(visitorId)
-                                .templateId(templateId)
-                                .build()
-                );
-                sentCount++;
-            } catch (Exception e) {
-                failedCount++;
-            }
-        }
-*/
-
-/*        EmailBatch emailBatch = EmailBatch.builder()
-                .segmentId(segmentId)
-                .sentCount(sentCount)
-                .failedCount(failedCount)
-                .createdAt(LocalDateTime.now())
-                .build();
-
-        emailBatchRepository.save(emailBatch);*/
-
         return EmailBatchResponse.builder()
                 .batchId(batchId)
                 .sentCount((int) sent)
