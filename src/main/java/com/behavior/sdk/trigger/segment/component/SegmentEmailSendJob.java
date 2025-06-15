@@ -31,7 +31,7 @@ public class SegmentEmailSendJob {
             try {
                 log.info("Segment ID : {} - 이메일 발송 시작", segment.getId());
 
-                segmentEmailService.sendEmailBatch(segment.getId(), segment.getTemplateId());
+                segmentEmailService.sendEmailBatch(segment.getId());
 
                 segment.markAsProcessed();
                 segmentRepository.save(segment);

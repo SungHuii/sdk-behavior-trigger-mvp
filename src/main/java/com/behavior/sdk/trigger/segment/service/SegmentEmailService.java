@@ -5,5 +5,5 @@ import com.behavior.sdk.trigger.segment.dto.EmailBatchResponse;
 import java.util.UUID;
 
 public interface SegmentEmailService {
-    EmailBatchResponse sendEmailBatch(UUID segmentId, UUID templateId);
+    EmailBatchResponse sendEmailBatch(UUID segmentId);
 }

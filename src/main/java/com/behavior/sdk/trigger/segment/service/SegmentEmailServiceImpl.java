@@ -1,8 +1,10 @@
 package com.behavior.sdk.trigger.segment.service;
 
 import com.behavior.sdk.trigger.email.dto.EmailSendRequest;
+import com.behavior.sdk.trigger.email.enums.EmailStatus;
 import com.behavior.sdk.trigger.email.service.EmailService;
 import com.behavior.sdk.trigger.email_log.repository.EmailLogRepository;
+import com.behavior.sdk.trigger.email_log.repository.EmailLogRepositoryImpl;
 import com.behavior.sdk.trigger.segment.dto.EmailBatchResponse;
 import com.behavior.sdk.trigger.segment.entity.EmailBatch;
 import com.behavior.sdk.trigger.segment.repository.EmailBatchRepository;
@@ -24,14 +26,15 @@ public class SegmentEmailServiceImpl implements SegmentEmailService{
     private final EmailService emailService;
     private final EmailBatchRepository emailBatchRepository;
     private final EmailLogRepository emailLogRepository;
+    private final EmailLogRepositoryImpl emailLogRepositoryImpl;
 
     @Override
-    public EmailBatchResponse sendEmailBatch(UUID segmentId, UUID templateId) {
+    public EmailBatchResponse sendEmailBatch(UUID segmentId) {
 
         List<UUID> visitorIds = segmentVisitorRepository.findVisitorIdsBySegmentId(segmentId);
 
         List<UUID> notSentVisitorIds = visitorIds.stream()
-                .filter(visitorId -> !emailLogRepository.existsByVisitorIdAndTemplateId(visitorId, templateId))
+                .filter(visitorId -> !emailLogRepository.existsByVisitorIdAndTemplateId(visitorId))
                 .toList();
 
         UUID batchId = UUID.randomUUID();
@@ -47,17 +50,16 @@ public class SegmentEmailServiceImpl implements SegmentEmailService{
                 emailService.sendEmail(
                         EmailSendRequest.builder()
                                 .visitorId(visitorId)
-                                .templateId(templateId)
                                 .build()
                 );
-                emailLogRepository.saveSentLog(visitorId, templateId, batchId);
+                emailLogRepositoryImpl.saveSentLog(visitorId, batchId);
             } catch (Exception e) {
-                emailLogRepository.saveFailedLog(visitorId, templateId, batchId, e.getMessage());
+                emailLogRepositoryImpl.saveFailedLog(visitorId, batchId, e.getMessage());
             }
         }
 
-        long sent = emailLogRepository.countByBatchIdAndStatus(batchId, "SENT");
-        long failed = emailLogRepository.countByBatchIdAndStatus(batchId, "FAILED");
+        long sent = emailLogRepositoryImpl.countByBatchIdAndStatus(batchId, EmailStatus.SENT);
+        long failed = emailLogRepositoryImpl.countByBatchIdAndStatus(batchId, EmailStatus.FAILED);
 
         return EmailBatchResponse.builder()
                 .batchId(batchId)
