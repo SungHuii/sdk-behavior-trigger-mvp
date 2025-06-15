@@ -35,6 +35,13 @@ public class Segment {
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
 
+    @Column(name = "processed_at")
+    private LocalDateTime processedAt;
+
+    public void markAsProcessed() {
+        this.processedAt = LocalDateTime.now();
+    }
+
     @Builder.Default
     @OneToMany(mappedBy = "segment", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<SegmentVisitor> segmentVisitors = new HashSet<>();

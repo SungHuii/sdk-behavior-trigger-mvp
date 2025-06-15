@@ -30,24 +30,19 @@ public class SegmentEmailServiceImpl implements SegmentEmailService{
 
         List<UUID> visitorIds = segmentVisitorRepository.findVisitorIdsBySegmentId(segmentId);
 
+        List<UUID> notSentVisitorIds = visitorIds.stream()
+                .filter(visitorId -> !emailLogRepository.existsByVisitorIdAndTemplateId(visitorId, templateId))
+                .toList();
+
         UUID batchId = UUID.randomUUID();
-        for (UUID visitorId : visitorIds) {
-            emailService.sendEmail(
-                    EmailSendRequest.builder()
-                            .visitorId(visitorId)
-                            .templateId(templateId)
-                            .build()
-            );
-        }
+        EmailBatch emailBatch = new EmailBatch();
+        emailBatch.setId(batchId);
+        emailBatch.setSegmentId(segmentId);
+        emailBatch.setCreatedAt(LocalDateTime.now());
+        emailBatchRepository.save(emailBatch);
 
-        long sent = emailLogRepository.countSentBySegment(segmentId);
-        long failed = emailLogRepository.countFailedBySegment(segmentId);
 
-/*
-        int sentCount = 0;
-        int failedCount = 0;
-
-        for (UUID visitorId : visitorIds) {
+        for (UUID visitorId : notSentVisitorIds) {
             try {
                 emailService.sendEmail(
                         EmailSendRequest.builder()
@@ -55,21 +50,14 @@ public class SegmentEmailServiceImpl implements SegmentEmailService{
                                 .templateId(templateId)
                                 .build()
                 );
-                sentCount++;
+                emailLogRepository.saveSentLog(visitorId, templateId, batchId);
             } catch (Exception e) {
-                failedCount++;
+                emailLogRepository.saveFailedLog(visitorId, templateId, batchId, e.getMessage());
             }
         }
-*/
 
-/*        EmailBatch emailBatch = EmailBatch.builder()
-                .segmentId(segmentId)
-                .sentCount(sentCount)
-                .failedCount(failedCount)
-                .createdAt(LocalDateTime.now())
-                .build();
-
-        emailBatchRepository.save(emailBatch);*/
+        long sent = emailLogRepository.countByBatchIdAndStatus(batchId, "SENT");
+        long failed = emailLogRepository.countByBatchIdAndStatus(batchId, "FAILED");
 
         return EmailBatchResponse.builder()
                 .batchId(batchId)

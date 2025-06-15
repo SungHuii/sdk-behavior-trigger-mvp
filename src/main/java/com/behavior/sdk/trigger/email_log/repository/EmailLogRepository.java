@@ -37,4 +37,12 @@ public interface EmailLogRepository extends JpaRepository<EmailLog, UUID> {
           )
     """)
     long countFailedBySegment(@Param("segmentId") UUID segmentId);
+
+    boolean existsByVisitorIdAndTemplateId(UUID visitorId, UUID templateId);
+
+    void saveSentLog(UUID visitorId, UUID templateId, UUID batchId);
+
+    void saveFailedLog(UUID visitorId, UUID templateId, UUID batchId, String message);
+
+    long countByBatchIdAndStatus(UUID batchId, String sent);
 }
