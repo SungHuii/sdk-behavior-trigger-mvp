@@ -44,12 +44,12 @@ class SegmentEmailSendJobIntegrationTest {
         visitorRepository.deleteAllInBatch();
         segmentRepository.deleteAllInBatch();
 
-        UUID projectId = UUID.randomUUID();  // ① 매번 새 프로젝트 ID 생성
+        UUID projectId = UUID.randomUUID();
 
         Segment segment = segmentRepository.saveAndFlush(
                 Segment.builder()
                         .conditionId(UUID.randomUUID())
-                        .projectId(projectId)         // ② 세그먼트에 할당
+                        .projectId(projectId)
                         .processedAt(null)
                         .build()
         );
@@ -58,7 +58,7 @@ class SegmentEmailSendJobIntegrationTest {
             Visitor visitor = visitorRepository.saveAndFlush(
                     Visitor.builder()
                             .email("test" + i + "@example.com")
-                            .projectId(projectId)     // ③ Visitor에도 동일 projectId 할당!
+                            .projectId(projectId)
                             .build()
             );
             segmentVisitorRepository.saveAndFlush(new SegmentVisitor(segment, visitor.getId()));
