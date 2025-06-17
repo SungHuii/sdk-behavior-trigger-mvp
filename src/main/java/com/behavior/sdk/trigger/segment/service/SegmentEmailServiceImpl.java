@@ -3,6 +3,7 @@ package com.behavior.sdk.trigger.segment.service;
 import com.behavior.sdk.trigger.email.dto.EmailSendRequest;
 import com.behavior.sdk.trigger.email.enums.EmailStatus;
 import com.behavior.sdk.trigger.email.service.EmailService;
+import com.behavior.sdk.trigger.email_log.entity.EmailLog;
 import com.behavior.sdk.trigger.email_log.repository.EmailLogRepository;
 import com.behavior.sdk.trigger.email_log.repository.EmailLogRepositoryImpl;
 import com.behavior.sdk.trigger.segment.dto.EmailBatchResponse;
@@ -19,7 +20,6 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class SegmentEmailServiceImpl implements SegmentEmailService{
 
     private final SegmentVisitorRepository segmentVisitorRepository;
@@ -53,9 +53,26 @@ public class SegmentEmailServiceImpl implements SegmentEmailService{
                                 .visitorId(visitorId)
                                 .build()
                 );
-                emailLogRepositoryImpl.saveSentLog(visitorId, batchId);
+                EmailLog emailLog = EmailLog.builder()
+                        .id(UUID.randomUUID())
+                        .visitorId(visitorId)
+                        .batchId(batchId)
+                        .status(EmailStatus.SENT)
+                        .createdAt(LocalDateTime.now())
+                        .build();
+
+                emailLogRepository.save(emailLog);
             } catch (Exception e) {
-                emailLogRepositoryImpl.saveFailedLog(visitorId, batchId, e.getMessage());
+                EmailLog emailLog = EmailLog.builder()
+                        .id(UUID.randomUUID())
+                        .visitorId(visitorId)
+                        .batchId(batchId)
+                        .status(EmailStatus.FAILED)
+                        .createdAt(LocalDateTime.now())
+                        .errorMessage(e.getMessage())
+                        .build();
+
+                emailLogRepository.save(emailLog);
             }
         }
 
