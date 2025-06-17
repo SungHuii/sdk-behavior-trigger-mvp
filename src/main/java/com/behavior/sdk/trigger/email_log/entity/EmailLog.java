@@ -17,14 +17,14 @@ import java.util.UUID;
 public class EmailLog {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
+//    @GeneratedValue(strategy = GenerationType.UUID)
     @Column(columnDefinition = "uuid", updatable = false, nullable = false)
     private UUID id;
 
     @Column(name = "visitor_id", columnDefinition = "uuid", nullable = false)
     private UUID visitorId;
 
-    @Column(name = "template_id", columnDefinition = "uuid", nullable = false)
+    @Column(name = "template_id", columnDefinition = "uuid")
     private UUID templateId;
 
     @Column(name = "batch_id", columnDefinition = "uuid")
