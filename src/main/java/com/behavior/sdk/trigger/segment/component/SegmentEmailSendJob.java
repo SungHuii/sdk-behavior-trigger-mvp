@@ -33,7 +33,7 @@ public class SegmentEmailSendJob {
                 segmentEmailService.sendEmailBatch(segment.getId());
 
                 segment.markAsProcessed();
-//                segmentRepository.save(segment);
+                segmentRepository.saveAndFlush(segment);
 
                 log.info("Segment ID : {} - 이메일 발송 완료", segment.getId());
             } catch (Exception e) {
