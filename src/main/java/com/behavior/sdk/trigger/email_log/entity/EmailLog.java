@@ -17,7 +17,7 @@ import java.util.UUID;
 public class EmailLog {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
+//    @GeneratedValue(strategy = GenerationType.UUID)
     @Column(columnDefinition = "uuid", updatable = false, nullable = false)
     private UUID id;
 

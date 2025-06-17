@@ -21,6 +21,7 @@ public class EmailLogServiceImpl implements EmailLogService{
     @Override
     public EmailLog createEmailLog(UUID visitorId, UUID templateId, EmailStatus status) {
         EmailLog emailLog = EmailLog.builder()
+                .id(UUID.randomUUID())
                 .visitorId(visitorId)
                 .templateId(templateId)
                 .status(status)
