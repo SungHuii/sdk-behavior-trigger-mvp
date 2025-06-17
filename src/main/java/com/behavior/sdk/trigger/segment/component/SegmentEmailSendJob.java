@@ -20,7 +20,6 @@ public class SegmentEmailSendJob {
     private final SegmentEmailService segmentEmailService;
 
     @Scheduled(fixedRate = 60000) // 1분마다 실행
-    @Transactional
     public void run() {
         log.info("[SegmentEmailSendJob] 시작 - 세그먼트 이메일 발송 작업");
 
@@ -31,10 +30,10 @@ public class SegmentEmailSendJob {
             try {
                 log.info("Segment ID : {} - 이메일 발송 시작", segment.getId());
 
-                segmentEmailService.sendEmailBatch(segment.getId(), segment.getTemplateId());
+                segmentEmailService.sendEmailBatch(segment.getId());
 
                 segment.markAsProcessed();
-                segmentRepository.save(segment);
+                segmentRepository.saveAndFlush(segment);
 
                 log.info("Segment ID : {} - 이메일 발송 완료", segment.getId());
             } catch (Exception e) {

@@ -1,8 +1,11 @@
 package com.behavior.sdk.trigger.segment.service;
 
 import com.behavior.sdk.trigger.email.dto.EmailSendRequest;
+import com.behavior.sdk.trigger.email.enums.EmailStatus;
 import com.behavior.sdk.trigger.email.service.EmailService;
+import com.behavior.sdk.trigger.email_log.entity.EmailLog;
 import com.behavior.sdk.trigger.email_log.repository.EmailLogRepository;
+import com.behavior.sdk.trigger.email_log.repository.EmailLogRepositoryImpl;
 import com.behavior.sdk.trigger.segment.dto.EmailBatchResponse;
 import com.behavior.sdk.trigger.segment.entity.EmailBatch;
 import com.behavior.sdk.trigger.segment.repository.EmailBatchRepository;
@@ -17,29 +20,30 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class SegmentEmailServiceImpl implements SegmentEmailService{
 
     private final SegmentVisitorRepository segmentVisitorRepository;
     private final EmailService emailService;
     private final EmailBatchRepository emailBatchRepository;
     private final EmailLogRepository emailLogRepository;
+    private final EmailLogRepositoryImpl emailLogRepositoryImpl;
 
     @Override
-    public EmailBatchResponse sendEmailBatch(UUID segmentId, UUID templateId) {
+    public EmailBatchResponse sendEmailBatch(UUID segmentId) {
 
         List<UUID> visitorIds = segmentVisitorRepository.findVisitorIdsBySegmentId(segmentId);
 
         List<UUID> notSentVisitorIds = visitorIds.stream()
-                .filter(visitorId -> !emailLogRepository.existsByVisitorIdAndTemplateId(visitorId, templateId))
+                .filter(visitorId -> !emailLogRepository.existsByVisitorId(visitorId))
                 .toList();
 
-        UUID batchId = UUID.randomUUID();
-        EmailBatch emailBatch = new EmailBatch();
-        emailBatch.setId(batchId);
-        emailBatch.setSegmentId(segmentId);
-        emailBatch.setCreatedAt(LocalDateTime.now());
-        emailBatchRepository.save(emailBatch);
+        EmailBatch emailBatch = EmailBatch.builder()
+                .segmentId(segmentId)
+                .sentCount(0)
+                .failedCount(0)
+                .build();
+        emailBatch = emailBatchRepository.saveAndFlush(emailBatch);  // ID/Version 초기화
+        UUID batchId = emailBatch.getId();
 
 
         for (UUID visitorId : notSentVisitorIds) {
@@ -47,17 +51,33 @@ public class SegmentEmailServiceImpl implements SegmentEmailService{
                 emailService.sendEmail(
                         EmailSendRequest.builder()
                                 .visitorId(visitorId)
-                                .templateId(templateId)
                                 .build()
                 );
-                emailLogRepository.saveSentLog(visitorId, templateId, batchId);
+                EmailLog emailLog = EmailLog.builder()
+                        .id(UUID.randomUUID())
+                        .visitorId(visitorId)
+                        .batchId(batchId)
+                        .status(EmailStatus.SENT)
+                        .createdAt(LocalDateTime.now())
+                        .build();
+
+                emailLogRepository.save(emailLog);
             } catch (Exception e) {
-                emailLogRepository.saveFailedLog(visitorId, templateId, batchId, e.getMessage());
+                EmailLog emailLog = EmailLog.builder()
+                        .id(UUID.randomUUID())
+                        .visitorId(visitorId)
+                        .batchId(batchId)
+                        .status(EmailStatus.FAILED)
+                        .createdAt(LocalDateTime.now())
+                        .errorMessage(e.getMessage())
+                        .build();
+
+                emailLogRepository.save(emailLog);
             }
         }
 
-        long sent = emailLogRepository.countByBatchIdAndStatus(batchId, "SENT");
-        long failed = emailLogRepository.countByBatchIdAndStatus(batchId, "FAILED");
+        long sent = emailLogRepositoryImpl.countByBatchIdAndStatus(batchId, EmailStatus.SENT);
+        long failed = emailLogRepositoryImpl.countByBatchIdAndStatus(batchId, EmailStatus.FAILED);
 
         return EmailBatchResponse.builder()
                 .batchId(batchId)

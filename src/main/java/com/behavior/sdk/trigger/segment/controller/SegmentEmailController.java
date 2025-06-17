@@ -22,7 +22,7 @@ public class SegmentEmailController {
             @PathVariable UUID segmentId,
             @RequestBody @Valid SegmentEmailSendRequest emailSendRequest) {
         EmailBatchResponse emailBatchResponse = segmentEmailService
-                .sendEmailBatch(segmentId, emailSendRequest.getTemplateId());
+                .sendEmailBatch(segmentId);
 
         return ResponseEntity.ok(emailBatchResponse);
     }

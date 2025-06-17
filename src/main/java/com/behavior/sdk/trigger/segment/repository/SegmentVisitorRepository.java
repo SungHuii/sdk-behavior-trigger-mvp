@@ -11,6 +11,9 @@ import java.util.UUID;
 
 public interface SegmentVisitorRepository extends JpaRepository<SegmentVisitor, SegmentVisitorKey> {
 
+    /*static void saveByIds(UUID segmentId, UUID id) {
+    }*/
+
     @Query("""
       select sv.visitorId
         from SegmentVisitor sv
