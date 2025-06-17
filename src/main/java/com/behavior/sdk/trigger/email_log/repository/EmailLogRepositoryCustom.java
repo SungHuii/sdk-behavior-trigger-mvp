@@ -1,14 +1,12 @@
 package com.behavior.sdk.trigger.email_log.repository;
 
 import com.behavior.sdk.trigger.email.enums.EmailStatus;
+import org.springframework.stereotype.Repository;
 
 import java.util.UUID;
 
+@Repository
 public interface EmailLogRepositoryCustom {
-
-    void saveSentLog(UUID visitorId, UUID batchId);
-
-    void saveFailedLog(UUID visitorId, UUID batchId, String message);
 
     long countByBatchIdAndStatus(UUID batchId, EmailStatus status);
 }
