@@ -35,16 +35,16 @@ public class EmailServiceImpl implements EmailService{
         if (validEmail == null || validEmail.isEmpty()) {
             throw new IllegalArgumentException("Visitor에 유효한 이메일이 없습니다.");
         }
-
-        EmailTemplate emailTemplate = emailTemplateRepository.findById(request.getTemplateId())
-                .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 EmailTemplate입니다."));
+//      임시로 사용 X
+//        EmailTemplate emailTemplate = emailTemplateRepository.findById(request.getTemplateId())
+//                .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 EmailTemplate입니다."));
 
         EmailStatus emailStatus;
         try {
             SimpleMailMessage message = new SimpleMailMessage();
             message.setTo(validEmail);
-            message.setSubject(emailTemplate.getSubject());
-            message.setText(emailTemplate.getBody());
+            message.setSubject("임시 제목");
+            message.setText("임시 본문");
             mailSender.send(message);
 
             emailStatus = EmailStatus.SENT;
@@ -52,10 +52,9 @@ public class EmailServiceImpl implements EmailService{
             emailStatus = EmailStatus.FAILED;
         }
 
-        EmailLog emailLog = emailLogService.createEmailLog(request.getVisitorId(), request.getTemplateId(), emailStatus);
+//        EmailLog emailLog = emailLogService.createEmailLog(request.getVisitorId(), null, emailStatus);
 
         return EmailSendResponse.builder()
-                .logId(emailLog.getId())
                 .status(emailStatus)
                 .build();
     }

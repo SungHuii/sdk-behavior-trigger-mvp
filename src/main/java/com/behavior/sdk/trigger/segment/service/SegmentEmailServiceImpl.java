@@ -11,6 +11,7 @@ import com.behavior.sdk.trigger.segment.entity.EmailBatch;
 import com.behavior.sdk.trigger.segment.repository.EmailBatchRepository;
 import com.behavior.sdk.trigger.segment.repository.SegmentVisitorRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,17 +21,18 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
+@Slf4j
 public class SegmentEmailServiceImpl implements SegmentEmailService{
 
     private final SegmentVisitorRepository segmentVisitorRepository;
     private final EmailService emailService;
     private final EmailBatchRepository emailBatchRepository;
     private final EmailLogRepository emailLogRepository;
-    private final EmailLogRepositoryImpl emailLogRepositoryImpl;
 
     @Override
     public EmailBatchResponse sendEmailBatch(UUID segmentId) {
-
+        log.info("=== sendEmailBatch 시작: segmentId={}", segmentId);
         List<UUID> visitorIds = segmentVisitorRepository.findVisitorIdsBySegmentId(segmentId);
 
         List<UUID> notSentVisitorIds = visitorIds.stream()
@@ -43,6 +45,8 @@ public class SegmentEmailServiceImpl implements SegmentEmailService{
                 .failedCount(0)
                 .build();
         emailBatch = emailBatchRepository.saveAndFlush(emailBatch);  // ID/Version 초기화
+        log.info("=== EmailBatch saveAndFlush 성공: batchId={}", emailBatch.getId());
+
         UUID batchId = emailBatch.getId();
 
 
@@ -53,31 +57,30 @@ public class SegmentEmailServiceImpl implements SegmentEmailService{
                                 .visitorId(visitorId)
                                 .build()
                 );
-                EmailLog emailLog = EmailLog.builder()
-                        .id(UUID.randomUUID())
+                log.info("=== emailService.sendEmail 성공: visitorId={}", visitorId);
+
+                emailLogRepository.save(EmailLog.builder()
                         .visitorId(visitorId)
                         .batchId(batchId)
                         .status(EmailStatus.SENT)
-                        .createdAt(LocalDateTime.now())
-                        .build();
+                        .build());
+                log.info("=== EmailLog save 성공: visitorId={}", visitorId);
 
-                emailLogRepository.save(emailLog);
             } catch (Exception e) {
-                EmailLog emailLog = EmailLog.builder()
-                        .id(UUID.randomUUID())
+                log.error("=== EmailLog save 실패 (FAILED 기록): visitorId={}, error={}", visitorId, e.getMessage(), e);
+                emailLogRepository.save(EmailLog.builder()
                         .visitorId(visitorId)
                         .batchId(batchId)
                         .status(EmailStatus.FAILED)
-                        .createdAt(LocalDateTime.now())
                         .errorMessage(e.getMessage())
-                        .build();
-
-                emailLogRepository.save(emailLog);
+                        .build());
             }
-        }
 
-        long sent = emailLogRepositoryImpl.countByBatchIdAndStatus(batchId, EmailStatus.SENT);
-        long failed = emailLogRepositoryImpl.countByBatchIdAndStatus(batchId, EmailStatus.FAILED);
+        }
+        log.info("=== sendEmailBatch 끝: batchId={}", emailBatch.getId());
+
+        long sent = emailLogRepository.countByBatchIdAndStatus(batchId, EmailStatus.SENT);
+        long failed = emailLogRepository.countByBatchIdAndStatus(batchId, EmailStatus.FAILED);
 
         return EmailBatchResponse.builder()
                 .batchId(batchId)

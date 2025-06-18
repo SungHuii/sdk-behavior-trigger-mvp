@@ -32,12 +32,13 @@ public class SegmentEmailSendJob {
 
                 segmentEmailService.sendEmailBatch(segment.getId());
 
+
                 segment.markAsProcessed();
-                segmentRepository.saveAndFlush(segment);
+                segmentRepository.save(segment);
 
                 log.info("Segment ID : {} - 이메일 발송 완료", segment.getId());
             } catch (Exception e) {
-                log.error("Segment ID : {} - 이메일 발송 중 오류 발생: {}", segment.getId(), e.getMessage());
+                log.error("Segment ID : {} - 이메일 발송 중 오류 발생: {}", segment.getId(), e);
             }
         }
 

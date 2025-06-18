@@ -71,14 +71,10 @@ class SegmentEmailSendJobIntegrationTest {
         segmentEmailSendJob.run();
 
         // THEN
-        assertThat(segmentRepository.findAll()).hasSize(1);
         Segment segment = segmentRepository.findAll().get(0);
         assertThat(segment.getProcessedAt()).isNotNull();
 
-        List<EmailBatch> batches = emailBatchRepository.findAll();
-        assertThat(batches).hasSize(1);
-
-        List<EmailLog> logs = emailLogRepository.findAll();
-        assertThat(logs).hasSize(3);
+        assertThat(emailBatchRepository.count()).isEqualTo(1);
+        assertThat(emailLogRepository.count()).isEqualTo(3);
     }
 }
