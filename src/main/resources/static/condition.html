@@ -1,0 +1,85 @@
+<!-- src/main/resources/static/condition.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Condition 생성</title>
+
+  <!-- SDK 스크립트 포함: projectId 추출용 -->
+  <script src="https://behavior-tracking-sdk.vercel.app/sdk.js"
+          data-key-prod="478a7347-9049-441e-9aff-bb0a3c01c882"
+          data-key-dev="c7fbd9f0-38a9-4802-8859-c669bd5ca7d6">
+  </script>
+</head>
+<body>
+<h1>조건 생성</h1>
+
+<label>EventType:
+  <select id="eventType">
+    <option value="PAGE_VIEW">PAGE_VIEW</option>
+    <option value="CLICK">CLICK</option>
+    <option value="STAY_TIME">STAY_TIME</option>
+    <option value="SCROLL_DEPTH">SCROLL_DEPTH</option>
+  </select>
+</label><br>
+
+<label>Operator:
+  <select id="operator">
+    <option value="GREATER_THAN">GREATER_THAN</option>
+    <option value="EQUAL">EQUAL</option>
+    <option value="LESS_THAN">LESS_THAN</option>
+  </select>
+</label><br>
+
+<label>Threshold:
+  <input type="number" id="threshold" value="5" />
+</label><br>
+
+<label>Page URL:
+  <input type="text" id="pageUrl" value="https://sdk-behavior-trigger-mvp-dev.onrender.com/test.html" />
+</label><br><br>
+
+<button id="btnCreate">생성</button>
+
+<script>
+  document.getElementById('btnCreate').addEventListener('click', async () => {
+    const host = window.location.hostname;
+    const apiUrl = host.includes('-dev.')
+      ? 'https://sdk-behavior-trigger-mvp-dev.onrender.com'
+      : 'https://sdk-behavior-trigger-mvp.onrender.com';
+
+    const sdkScript = document.querySelector('script[src*="sdk.js"]');
+    const projectId = host.includes('-dev.')
+      ? sdkScript.dataset.keyDev
+      : sdkScript.dataset.keyProd;
+
+    const payload = {
+      projectId,
+      eventType: document.getElementById('eventType').value,
+      operator: document.getElementById('operator').value,
+      threshold: parseInt(document.getElementById('threshold').value, 10),
+      pageUrl: document.getElementById('pageUrl').value
+    };
+
+    try {
+      const res = await fetch(`${apiUrl}/api/conditions`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (res.ok) {
+        alert('조건이 성공적으로 생성되었습니다!');
+        window.location.href = '/test.html';
+      } else {
+        const text = await res.text();
+        alert(`조건 생성 실패: ${res.status}\n${text}`);
+      }
+    } catch (err) {
+      console.error(err);
+      alert('조건 생성 중 오류 발생');
+    }
+  });
+</script>
+</body>
+</html>

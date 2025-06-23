@@ -24,14 +24,20 @@ public class EmailLog {
     @Column(name = "visitor_id", columnDefinition = "uuid", nullable = false)
     private UUID visitorId;
 
-    @Column(name = "template_id", columnDefinition = "uuid", nullable = false)
+    @Column(name = "template_id", columnDefinition = "uuid")
     private UUID templateId;
+
+    @Column(name = "batch_id", columnDefinition = "uuid")
+    private UUID batchId;
+
+    @Column(name = "error_message", length = 1000)
+    private String errorMessage;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
     private EmailStatus status;
 
-    @Column(name = "created_at", nullable = false)
+    @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
     @Column(name = "deleted_at")

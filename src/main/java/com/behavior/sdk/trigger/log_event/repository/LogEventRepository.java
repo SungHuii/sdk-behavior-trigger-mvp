@@ -27,15 +27,12 @@ public interface LogEventRepository extends JpaRepository<LogEvent, UUID> {
 
    @Query(
          """
-               select le.visitorId
-               from LogEvent le
-               where le.condition.id = :conditionId
-               and le.pageUrl = :pageUrl
-               group by le.visitorId
-               having count(le) >= :threshold
+               SELECT DISTINCT le.visitorId
+               FROM LogEvent le
+               WHERE le.condition.id = :conditionId
+               AND le.pageUrl = :pageUrl
                """
    )
-   List<UUID> findVisitorIdsByCondition(@Param("conditionId") UUID conditionId,
-                                        @Param("threshold") Integer threshold,
+   List<UUID> findDistinctVisitorIdsByCondition(@Param("conditionId") UUID conditionId,
                                         @Param("pageUrl") String pageUrl);
 }
