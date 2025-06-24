@@ -39,6 +39,8 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-mail'
 	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
 	implementation 'com.sendgrid:sendgrid-java:4.10.1' // SendGrid 이메일 전송 라이브러리
+	implementation 'org.springframework.boot:spring-boot-starter-validation' // 유효성 검사 지원
+	implementation 'org.springframework.boot:spring-boot-starter-security' // Spring Security 지원
 }
 
 tasks.named('test') {
