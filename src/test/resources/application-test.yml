@@ -25,3 +25,7 @@ sendgrid:
   api-key: dummy
 
 scheduling.enabled: false
+
+# JWT
+jwt:
+  secret: thisIsMySuperSecretKeyThatIsAtLeast32CharsLong!
