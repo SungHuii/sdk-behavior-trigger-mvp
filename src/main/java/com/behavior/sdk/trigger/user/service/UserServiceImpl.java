@@ -1,5 +1,6 @@
 package com.behavior.sdk.trigger.user.service;
 
+import com.behavior.sdk.trigger.common.security.JwtUtils;
 import com.behavior.sdk.trigger.user.dto.LoginRequest;
 import com.behavior.sdk.trigger.user.dto.LoginResponse;
 import com.behavior.sdk.trigger.user.dto.SignupRequest;
