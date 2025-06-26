@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -33,9 +34,7 @@ public class UserController {
 
     // 현재 사용자 정보 조회
     @GetMapping("/users/me")
-    public ResponseEntity<UserInfoResponse> getMyInfo(@RequestHeader("Authorization") String token) {
-        String jwt = token.replace("Bearer ", "");
-        User user = userService.getCurrentUser(jwt);
+    public ResponseEntity<UserInfoResponse> getMyInfo(@AuthenticationPrincipal User user) {
 
         UserInfoResponse response = UserInfoResponse.builder()
                 .userid(user.getId())
