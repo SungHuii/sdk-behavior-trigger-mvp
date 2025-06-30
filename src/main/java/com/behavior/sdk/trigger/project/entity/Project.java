@@ -22,6 +22,9 @@ public class Project {
    @Column(nullable = false)
    private String name;
 
+   @Column(name = "domain", nullable = false)
+   private String domain;
+
    @Column(name = "created_at", nullable = false)
    private LocalDateTime createdAt;
 
