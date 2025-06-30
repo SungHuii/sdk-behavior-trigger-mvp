@@ -52,6 +52,7 @@ class ProjectControllerTest {
       var dto = ProjectResponse.builder()
               .id(UUID.randomUUID())
               .name("테스트 프로젝트")
+              .domain("https://example.com")
               .createdAt(LocalDateTime.now())
               .build();
 
@@ -60,11 +61,12 @@ class ProjectControllerTest {
       mockMvc.perform(post("/api/projects")
                   .contentType(MediaType.APPLICATION_JSON)
                   .accept(MediaType.APPLICATION_JSON)
-                  .content(om.writeValueAsString(new ProjectCreateRequest("테스트 프로젝트"))))
+                  .content(om.writeValueAsString(new ProjectCreateRequest("테스트 프로젝트", "https://example.com"))))
             .andExpect(status().isCreated())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
             .andExpect(jsonPath("$.id").value(dto.getId().toString()))
             .andExpect(jsonPath("$.name").value("테스트 프로젝트"))
+            .andExpect(jsonPath("$.domain").value("https://example.com"))
             .andExpect(jsonPath("$.createdAt").exists());
 
    }

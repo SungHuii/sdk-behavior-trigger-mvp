@@ -16,5 +16,9 @@ public class ProjectCreateRequest {
     @Schema(description = "프로젝트 이름", example = "My Project")
     private String name;
 
+    @NotBlank(message = "프로젝트 도메인 입력")
+    @Schema(description = "프로젝트 도메인", example = "https://example.com")
+    private String domain;
+
 
 }

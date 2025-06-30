@@ -51,6 +51,7 @@ public class AutoCreateSegmentIIntegrationTests {
         // project 생성
         Project project = Project.builder()
                 .name("테스트 프로젝트")
+                .domain("https://example.com")
                 .build();
         projectRepository.save(project);
         projectId = project.getId();

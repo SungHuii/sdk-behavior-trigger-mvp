@@ -43,7 +43,7 @@ public class UserStory1to5IntegrationTests {
     void setup() throws Exception {
         String projectJson = mockMvc.perform(post("/api/projects")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"name\": \"유저스토리 1-5 통합 테스트 프로젝트\"}"))
+                .content("{\"name\": \"유저스토리 1-5 통합 테스트 프로젝트\", \"domain\": \"https://example.com\"}"))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").exists())
                 .andReturn()
