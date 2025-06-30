@@ -42,7 +42,7 @@ public class UserStory1to3IntegrationTests {
    @Order(1)
    @DisplayName("1. 프로젝트 생성 및 projectId 발급")
    void t1_createProject() throws Exception {
-      var request = new ProjectCreateRequest("통합 테스트 프로젝트");
+      var request = new ProjectCreateRequest("통합 테스트 프로젝트", "https://example.com");
       String body = om.writeValueAsString(request);
 
       String json = mockMvc.perform(post("/api/projects")

@@ -60,7 +60,7 @@ public class SendEmailAndLogEmailIntegrationTests {
 
         String project = mockMvc.perform(post("/api/projects")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"name\": \"Email Test Project\"}"))
+                .content("{\"name\": \"Email Test Project\", \"domain\": \"https://example.com\"}"))
                 .andExpect(status().isCreated())
                 .andReturn().getResponse().getContentAsString();
         projectId = UUID.fromString(om.readTree(project).get("id").asText());

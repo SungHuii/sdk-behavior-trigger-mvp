@@ -37,7 +37,7 @@ public class VisitorEmailIntegrationTests {
         // Create Project
         String projectJson = mockMvc.perform(post("/api/projects")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"name\": \"Test Project\"}"))
+                        .content("{\"name\": \"Test Project\", \"domain\": \"https://example.com\"}"))
                 .andExpect(status().isCreated())
                 .andReturn().getResponse().getContentAsString();
         UUID projectId = UUID.fromString(om.readTree(projectJson).get("id").asText());

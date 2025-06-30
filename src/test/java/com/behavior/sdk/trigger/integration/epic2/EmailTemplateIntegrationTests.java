@@ -43,7 +43,7 @@ public class EmailTemplateIntegrationTests {
         // Project 생성
         String projectJson = mockMvc.perform(post("/api/projects")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"name\": \"EmailTemplate 테스트용 프로젝트\"}"))
+                        .content("{\"name\": \"EmailTemplate 테스트용 프로젝트\", \"domain\": \"https://example.com\"}"))
                 .andExpect(status().isCreated())
                 .andReturn().getResponse().getContentAsString();
         projectId = UUID.fromString(om.readTree(projectJson).get("id").asText());
