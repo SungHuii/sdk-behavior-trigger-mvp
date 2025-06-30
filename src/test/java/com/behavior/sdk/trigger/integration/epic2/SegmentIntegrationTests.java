@@ -1,5 +1,6 @@
 package com.behavior.sdk.trigger.integration.epic2;
 
+import com.behavior.sdk.trigger.config.TestSecurityConfig;
 import com.behavior.sdk.trigger.email_template.entity.EmailTemplate;
 import com.behavior.sdk.trigger.email_template.repository.EmailTemplateRepository;
 import com.behavior.sdk.trigger.segment.dto.SegmentCreateRequest;
@@ -12,6 +13,7 @@ import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -36,6 +38,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+@Import(TestSecurityConfig.class)
 public class SegmentIntegrationTests {
 
     @Autowired
@@ -65,7 +68,7 @@ public class SegmentIntegrationTests {
 
         String projectJson = mockMvc.perform(post("/api/projects")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"name\": \"Segment Test Project\"}"))
+                .content("{\"name\": \"Segment Test Project\", \"domain\": \"https://example.com\"}"))
                 .andExpect(status().isCreated())
                 .andReturn().getResponse().getContentAsString();
         projectId = UUID.fromString(om.readTree(projectJson).get("id").asText());

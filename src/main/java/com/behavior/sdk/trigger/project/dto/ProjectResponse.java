@@ -18,6 +18,8 @@ public class ProjectResponse {
     private UUID id;
     @Schema(description = "프로젝트 이름", example = "My Project")
     private String name;
+    @Schema(description = "프로젝트 도메인", example = "https://example.com")
+    private String domain;
     @Schema(description = "프로젝트 생성일", example = "2025-04-24T12:00:00")
     private LocalDateTime createdAt;
     @Schema(description = "프로젝트 삭제일", example = "2025-04-24T12:00:00")

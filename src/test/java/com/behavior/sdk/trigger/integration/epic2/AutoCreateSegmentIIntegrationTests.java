@@ -2,6 +2,7 @@ package com.behavior.sdk.trigger.integration.epic2;
 
 import com.behavior.sdk.trigger.condition.entity.Condition;
 import com.behavior.sdk.trigger.condition.repository.ConditionRepository;
+import com.behavior.sdk.trigger.config.TestSecurityConfig;
 import com.behavior.sdk.trigger.log_event.entity.LogEvent;
 import com.behavior.sdk.trigger.log_event.enums.EventType;
 import com.behavior.sdk.trigger.log_event.repository.LogEventRepository;
@@ -16,6 +17,7 @@ import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,6 +32,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+@Import(TestSecurityConfig.class)
 public class AutoCreateSegmentIIntegrationTests {
 
     @Autowired private ProjectRepository projectRepository;
@@ -48,6 +51,7 @@ public class AutoCreateSegmentIIntegrationTests {
         // project 생성
         Project project = Project.builder()
                 .name("테스트 프로젝트")
+                .domain("https://example.com")
                 .build();
         projectRepository.save(project);
         projectId = project.getId();

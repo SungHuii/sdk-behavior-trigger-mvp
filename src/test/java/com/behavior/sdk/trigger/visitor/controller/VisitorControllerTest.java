@@ -1,11 +1,13 @@
 package com.behavior.sdk.trigger.visitor.controller;
 
+import com.behavior.sdk.trigger.config.TestSecurityConfig;
 import com.behavior.sdk.trigger.visitor.service.VisitorService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -17,9 +19,10 @@ import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(VisitorController.class)
-@AutoConfigureMockMvc
+@SpringBootTest
 @ActiveProfiles("test")
+@AutoConfigureMockMvc
+@Import(TestSecurityConfig.class)
 class VisitorControllerTest {
 
     @Autowired

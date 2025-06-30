@@ -1,5 +1,6 @@
 package com.behavior.sdk.trigger.integration.epic2;
 
+import com.behavior.sdk.trigger.config.TestSecurityConfig;
 import com.behavior.sdk.trigger.email.dto.EmailSendResponse;
 import com.behavior.sdk.trigger.email.enums.EmailStatus;
 import com.behavior.sdk.trigger.email.service.EmailServiceImpl;
@@ -20,6 +21,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 
@@ -33,6 +35,7 @@ import static org.mockito.Mockito.doReturn;
 @SpringBootTest
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@Import(TestSecurityConfig.class)
 class SegmentEmailSendJobIntegrationTest {
 
     @Autowired SegmentRepository segmentRepository;

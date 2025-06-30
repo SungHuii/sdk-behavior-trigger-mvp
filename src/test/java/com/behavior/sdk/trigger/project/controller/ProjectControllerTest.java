@@ -1,5 +1,6 @@
 package com.behavior.sdk.trigger.project.controller;
 
+import com.behavior.sdk.trigger.config.TestSecurityConfig;
 import com.behavior.sdk.trigger.project.dto.ProjectCreateRequest;
 import com.behavior.sdk.trigger.project.dto.ProjectResponse;
 import com.behavior.sdk.trigger.project.service.ProjectService;
@@ -8,8 +9,12 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.BDDMockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -25,7 +30,10 @@ import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(ProjectController.class)
+@SpringBootTest
+@ActiveProfiles("test")
+@AutoConfigureMockMvc
+@Import(TestSecurityConfig.class)
 class ProjectControllerTest {
 
    @Autowired
@@ -44,6 +52,7 @@ class ProjectControllerTest {
       var dto = ProjectResponse.builder()
               .id(UUID.randomUUID())
               .name("테스트 프로젝트")
+              .domain("https://example.com")
               .createdAt(LocalDateTime.now())
               .build();
 
@@ -52,11 +61,12 @@ class ProjectControllerTest {
       mockMvc.perform(post("/api/projects")
                   .contentType(MediaType.APPLICATION_JSON)
                   .accept(MediaType.APPLICATION_JSON)
-                  .content(om.writeValueAsString(new ProjectCreateRequest("테스트 프로젝트"))))
+                  .content(om.writeValueAsString(new ProjectCreateRequest("테스트 프로젝트", "https://example.com"))))
             .andExpect(status().isCreated())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
             .andExpect(jsonPath("$.id").value(dto.getId().toString()))
             .andExpect(jsonPath("$.name").value("테스트 프로젝트"))
+            .andExpect(jsonPath("$.domain").value("https://example.com"))
             .andExpect(jsonPath("$.createdAt").exists());
 
    }

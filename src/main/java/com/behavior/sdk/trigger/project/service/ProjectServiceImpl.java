@@ -23,6 +23,7 @@ public class ProjectServiceImpl implements ProjectService {
         return ProjectResponse.builder()
                 .id(p.getId())
                 .name(p.getName())
+                .domain(p.getDomain())
                 .createdAt(p.getCreatedAt())
                 .deletedAt(p.getDeletedAt())
                 .build();
@@ -33,6 +34,7 @@ public class ProjectServiceImpl implements ProjectService {
     public ProjectResponse createProject(ProjectCreateRequest request) {
         Project project = Project.builder()
                 .name(request.getName())
+                .domain(request.getDomain())
                 .build();
 
         Project savedProject = projectRepository.save(project);

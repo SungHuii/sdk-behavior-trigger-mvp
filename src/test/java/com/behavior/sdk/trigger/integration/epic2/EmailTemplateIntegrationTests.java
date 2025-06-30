@@ -1,11 +1,13 @@
 package com.behavior.sdk.trigger.integration.epic2;
 
+import com.behavior.sdk.trigger.config.TestSecurityConfig;
 import com.behavior.sdk.trigger.email_template.dto.EmailTemplateCreateRequest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
@@ -24,6 +26,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+@Import(TestSecurityConfig.class)
 public class EmailTemplateIntegrationTests {
 
     @Autowired
@@ -40,7 +43,7 @@ public class EmailTemplateIntegrationTests {
         // Project 생성
         String projectJson = mockMvc.perform(post("/api/projects")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"name\": \"EmailTemplate 테스트용 프로젝트\"}"))
+                        .content("{\"name\": \"EmailTemplate 테스트용 프로젝트\", \"domain\": \"https://example.com\"}"))
                 .andExpect(status().isCreated())
                 .andReturn().getResponse().getContentAsString();
         projectId = UUID.fromString(om.readTree(projectJson).get("id").asText());

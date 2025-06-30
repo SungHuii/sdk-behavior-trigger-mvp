@@ -1,5 +1,6 @@
 package com.behavior.sdk.trigger.integration.epic1;
 
+import com.behavior.sdk.trigger.config.TestSecurityConfig;
 import com.behavior.sdk.trigger.log_event.dto.LogEventCreateRequest;
 import com.behavior.sdk.trigger.log_event.enums.EventType;
 import com.behavior.sdk.trigger.project.dto.ProjectCreateRequest;
@@ -8,6 +9,7 @@ import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
@@ -24,6 +26,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+@Import(TestSecurityConfig.class)
 public class UserStory1to3IntegrationTests {
 
    @Autowired
@@ -39,7 +42,7 @@ public class UserStory1to3IntegrationTests {
    @Order(1)
    @DisplayName("1. 프로젝트 생성 및 projectId 발급")
    void t1_createProject() throws Exception {
-      var request = new ProjectCreateRequest("통합 테스트 프로젝트");
+      var request = new ProjectCreateRequest("통합 테스트 프로젝트", "https://example.com");
       String body = om.writeValueAsString(request);
 
       String json = mockMvc.perform(post("/api/projects")
