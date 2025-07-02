@@ -90,5 +90,5 @@ public class ProjectController {
       ProjectResponse updatedProject = projectService.updateProject(projectId, request);
       return ResponseEntity.ok(updatedProject);
    }
-   
+
 }
