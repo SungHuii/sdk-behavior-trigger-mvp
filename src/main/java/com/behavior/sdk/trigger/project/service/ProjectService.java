@@ -2,6 +2,7 @@ package com.behavior.sdk.trigger.project.service;
 
 import com.behavior.sdk.trigger.project.dto.ProjectCreateRequest;
 import com.behavior.sdk.trigger.project.dto.ProjectResponse;
+import com.behavior.sdk.trigger.project.dto.ProjectUpdateRequest;
 
 import java.util.List;
 import java.util.UUID;
@@ -13,6 +14,8 @@ public interface ProjectService {
     ProjectResponse getProject(UUID projectId);
 
     List<ProjectResponse> getAllProjects();
+
+    ProjectResponse updateProject(UUID projectId, ProjectUpdateRequest request);
 
     void deleteProject(UUID projectId);
 }

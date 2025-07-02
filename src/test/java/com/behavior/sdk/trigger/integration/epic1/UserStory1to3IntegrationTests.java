@@ -1,11 +1,15 @@
 package com.behavior.sdk.trigger.integration.epic1;
 
+import com.behavior.sdk.trigger.TriggerApplication;
 import com.behavior.sdk.trigger.config.TestSecurityConfig;
+import com.behavior.sdk.trigger.config.WebConfig;
 import com.behavior.sdk.trigger.log_event.dto.LogEventCreateRequest;
 import com.behavior.sdk.trigger.log_event.enums.EventType;
 import com.behavior.sdk.trigger.project.dto.ProjectCreateRequest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -21,14 +25,15 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest
+@SpringBootTest(classes = TriggerApplication.class)
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-@Import(TestSecurityConfig.class)
+@Import({TestSecurityConfig.class, WebConfig.class})
 public class UserStory1to3IntegrationTests {
 
+   private static final Logger log = LoggerFactory.getLogger(UserStory1to3IntegrationTests.class);
    @Autowired
    private MockMvc mockMvc;
 
@@ -55,7 +60,7 @@ public class UserStory1to3IntegrationTests {
             .getContentAsString();
 
       projectId = UUID.fromString(om.readTree(json).get("id").asText());
-
+      log.info("생성된 projectId: {}", projectId);
    }
 
    @Test
@@ -83,16 +88,22 @@ public class UserStory1to3IntegrationTests {
       logEventRequest.setOccurredAt(LocalDateTime.now());
       logEventRequest.setPageUrl("https://example.com");
 
+      log.info("전송할 projectId: {}", projectId);
+        log.info("전송할 visitorId: {}", visitorId);
+        log.info("전송할 pageUrl: {}", logEventRequest.getPageUrl());
+
       mockMvc.perform(post("/api/logs")
                   .param("projectId", projectId.toString())
                   .param("visitorId", visitorId.toString())
                   .contentType(MediaType.APPLICATION_JSON)
-                  .content(om.writeValueAsString(logEventRequest)))
+                  .content(om.writeValueAsString(logEventRequest))
+                      .header("Origin", "https://example.com"))
             .andExpect(status().isCreated())
             .andExpect(jsonPath("$.id").exists())
             .andExpect(jsonPath("$.projectId").value(projectId.toString()))
             .andExpect(jsonPath("$.visitorId").value(visitorId.toString()))
             .andExpect(jsonPath("$.pageUrl").value("https://example.com"));
+
    }
 
 }

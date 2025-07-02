@@ -17,6 +17,11 @@ spring:
   logging:
     level:
       org.hibernate: DEBUG
+      org.springframework.web.servlet.DispatcherServlet: DEBUG # DispatcherServlet 디버그 로그 활성화
+      org.springframework.web.filter.OncePerRequestFilter: DEBUG # 모든 Spring 필터 디버그 로그 활성화
+      org.springframework.web.cors: DEBUG # CORS 관련 디버그 로그 활성화
+      com.behavior.sdk.trigger: DEBUG # 여러분의 애플리케이션 패키지 전체 디버그 로그 활성화
+      # 변경된 부분 끝
 
 app:
   sdk:

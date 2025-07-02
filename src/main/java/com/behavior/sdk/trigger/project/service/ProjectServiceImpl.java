@@ -2,6 +2,7 @@ package com.behavior.sdk.trigger.project.service;
 
 import com.behavior.sdk.trigger.project.dto.ProjectCreateRequest;
 import com.behavior.sdk.trigger.project.dto.ProjectResponse;
+import com.behavior.sdk.trigger.project.dto.ProjectUpdateRequest;
 import com.behavior.sdk.trigger.project.entity.Project;
 import com.behavior.sdk.trigger.project.repository.ProjectRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -55,6 +56,16 @@ public class ProjectServiceImpl implements ProjectService {
                 .stream()
                 .map(this::toDto)
                 .toList();
+    }
+
+    @Override
+    @Transactional
+    public ProjectResponse updateProject(UUID projectId, ProjectUpdateRequest request) {
+        Project project = projectRepository.findByIdAndDeletedAtIsNull(projectId)
+                .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 프로젝트입니다."));
+
+        Project updatedProject = projectRepository.save(project);
+        return toDto(updatedProject);
     }
 
     @Override
