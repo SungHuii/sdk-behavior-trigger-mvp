@@ -81,6 +81,7 @@ public class UserStory1to5IntegrationTests {
             mockMvc.perform(post("/api/logs")
                     .param("projectId", projectId.toString())
                     .param("visitorId", visitorA.toString())
+                    .header("Origin", "https://example.com")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(om.writeValueAsString(requestA)))
                     .andExpect(status().isCreated());
@@ -94,6 +95,7 @@ public class UserStory1to5IntegrationTests {
         mockMvc.perform(post("/api/logs")
                 .param("projectId", projectId.toString())
                 .param("visitorId", visitorB.toString())
+                .header("Origin", "https://example.com")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(om.writeValueAsString(requestB)))
                 .andExpect(status().isCreated());
@@ -103,7 +105,8 @@ public class UserStory1to5IntegrationTests {
     @DisplayName("5. 프로젝트별 로그 조회")
     void t5_listByProject() throws Exception {
         mockMvc.perform(get("/api/logs")
-                .param("projectId", projectId.toString()))
+                .param("projectId", projectId.toString())
+                        .header("Origin", "https://example.com"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(3)));
     }
@@ -113,7 +116,8 @@ public class UserStory1to5IntegrationTests {
     void t6_listByVisitor() throws Exception {
         mockMvc.perform(get("/api/logs")
                 .param("projectId", projectId.toString())
-                .param("visitorId", visitorA.toString()))
+                .param("visitorId", visitorA.toString())
+                        .header("Origin", "https://example.com"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(2)));
 

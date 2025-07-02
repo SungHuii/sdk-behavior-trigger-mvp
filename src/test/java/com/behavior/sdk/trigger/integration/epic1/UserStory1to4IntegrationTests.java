@@ -69,17 +69,18 @@ public class UserStory1to4IntegrationTests {
         LogEventCreateRequest request = new LogEventCreateRequest();
         request.setEventType(EventType.PAGE_VIEW);
         request.setOccurredAt(LocalDateTime.now());
-        request.setPageUrl("https://example.com/test");
+        request.setPageUrl("https://example.com");
 
         mockMvc.perform(post("/api/logs")
                 .param("projectId", projectId.toString())
                 .param("visitorId", visitorId.toString())
                 .contentType(MediaType.APPLICATION_JSON)
+                .header("Origin", "https://example.com")
                 .content(om.writeValueAsString(request)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.projectId").value(projectId.toString()))
                 .andExpect(jsonPath("$.visitorId").value(visitorId.toString()))
-                .andExpect(jsonPath("$.pageUrl").value("https://example.com/test"))
+                .andExpect(jsonPath("$.pageUrl").value("https://example.com"))
                 .andExpect(jsonPath("$.eventType").value("page_view"));
     }
 }

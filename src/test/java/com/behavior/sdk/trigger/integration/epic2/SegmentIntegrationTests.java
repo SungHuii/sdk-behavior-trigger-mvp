@@ -97,6 +97,7 @@ public class SegmentIntegrationTests {
         mockMvc.perform(post("/api/logs")
                 .param("projectId", projectId.toString())
                 .param("visitorId", visitorId.toString())
+                        .header("Origin", "https://example.com")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""
             {
