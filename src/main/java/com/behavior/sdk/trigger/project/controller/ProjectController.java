@@ -2,6 +2,7 @@ package com.behavior.sdk.trigger.project.controller;
 
 import com.behavior.sdk.trigger.project.dto.ProjectCreateRequest;
 import com.behavior.sdk.trigger.project.dto.ProjectResponse;
+import com.behavior.sdk.trigger.project.dto.ProjectUpdateRequest;
 import com.behavior.sdk.trigger.project.entity.Project;
 import com.behavior.sdk.trigger.project.service.ProjectService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -76,6 +77,18 @@ public class ProjectController {
       return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
    }
 
-
-
+   @Operation(summary = "프로젝트 수정", description = "프로젝트 ID로 특정 프로젝트 정보를 수정합니다.")
+    @ApiResponses({
+              @ApiResponse(responseCode = "200", description = "프로젝트 수정 성공",
+                     content = @Content(schema = @Schema(implementation = ProjectResponse.class))),
+              @ApiResponse(responseCode = "404", description = "프로젝트를 찾을 수 없음")
+    })
+    @PutMapping("/{projectId}")
+   public ResponseEntity<ProjectResponse> updateProject(
+           @PathVariable UUID projectId,
+           @RequestBody @Valid ProjectUpdateRequest request) {
+      ProjectResponse updatedProject = projectService.updateProject(projectId, request);
+      return ResponseEntity.ok(updatedProject);
+   }
+   
 }

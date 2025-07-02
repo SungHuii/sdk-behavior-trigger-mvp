@@ -62,10 +62,17 @@ public class ProjectServiceImpl implements ProjectService {
     @Transactional
     public ProjectResponse updateProject(UUID projectId, ProjectUpdateRequest request) {
         Project project = projectRepository.findByIdAndDeletedAtIsNull(projectId)
-                .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 프로젝트입니다."));
+                .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 프로젝트 입니다."));
 
-        Project updatedProject = projectRepository.save(project);
-        return toDto(updatedProject);
+        if (request.getName() != null && !request.getName().isBlank()) {
+            project.setName(request.getName());
+        }
+
+        if (request.getDomain() != null && !request.getDomain().isBlank()) {
+            project.setDomain(request.getDomain());
+        }
+
+        return toDto(project);
     }
 
     @Override
