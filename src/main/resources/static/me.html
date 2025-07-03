@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>내 정보 / SDK 삽입 안내</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 2rem;
+      background: #fff;
+    }
+    h1, h2 {
+      color: #333;
+    }
+    #info {
+      background: #f9f9f9;
+      padding: 1rem;
+      border-radius: 5px;
+      margin-top: 1rem;
+    }
+    .label {
+      font-weight: bold;
+      margin-top: 0.75rem;
+    }
+    pre {
+      background: #eee;
+      padding: 0.5rem;
+      overflow-x: auto;
+      white-space: pre-wrap;
+    }
+    button.copy-btn {
+      margin-top: 0.5rem;
+      padding: 5px 10px;
+      font-size: 0.9rem;
+      cursor: pointer;
+    }
+    .note {
+      margin-top: 1rem;
+      font-size: 0.9rem;
+      color: #666;
+      background: #f0f0f0;
+      padding: 0.5rem;
+      border-left: 4px solid #999;
+    }
+  </style>
+</head>
+<body>
+
+<h1>내 프로젝트 정보</h1>
+<div id="info">불러오는 중...</div>
+
+<script>
+  const token = localStorage.getItem('token');
+  const infoDiv = document.getElementById('info');
+
+  if (!token) {
+    alert('로그인이 필요합니다.');
+    location.href = '/login.html';
+  } else {
+    fetch('/api/users/me', {
+      headers: {
+        'Authorization': 'Bearer ' + token
+      }
+    })
+    .then(async res => {
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`오류 ${res.status}: ${text}`);
+      }
+      return res.json();
+    })
+    .then(data => {
+      const key = data.project_key || '(없음)';
+      const scriptSnippet = `
+<script src="https://behavior-tracking-sdk.vercel.app/sdk.js"
+      data-key="${key}">
+</script>`.trim();
+
+infoDiv.innerHTML = `
+<div class="label">📧 이메일:</div>
+<div>${data.email || '(없음)'}</div>
+
+<div class="label">🧾 프로젝트명:</div>
+<div>${data.project_name || '(없음)'}</div>
+
+<div class="label">🌐 도메인:</div>
+<div>${data.domain || '(없음)'}</div>
+
+<div class="label">🔑 SDK 스니펫:</div>
+<pre id="snippet">${scriptSnippet}</pre>
+<button class="copy-btn" onclick="copySnippet()">스니펫 복사하기</button>
+
+<div class="note">
+  위 코드를 본인의 웹사이트 HTML의 &lt;head&gt; 또는 &lt;body&gt; 태그 하단에 삽입하세요.<br>
+  이 SDK는 방문자의 로그를 자동으로 수집하고, 조건에 따라 이메일 발송 등 트리거를 실행합니다.
+</div>
+`;
+})
+.catch(err => {
+console.error(err);
+infoDiv.textContent = '정보 불러오기 실패: ' + err.message;
+});
+}
+
+function copySnippet() {
+const text = document.getElementById('snippet')?.innerText;
+if (!text || text.includes('(없음)')) return alert('스니펫이 비어있습니다.');
+
+navigator.clipboard.writeText(text)
+.then(() => alert('스니펫이 복사되었습니다!'))
+.catch(() => alert('복사에 실패했습니다.'));
+}
+</script>
+
+</body>
+</html>

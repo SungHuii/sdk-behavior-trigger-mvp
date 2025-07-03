@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>회원가입</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 2rem;
+      background-color: #f9f9f9;
+    }
+    h1 {
+      color: #333;
+    }
+    form {
+      display: flex;
+      flex-direction: column;
+      max-width: 300px;
+      gap: 0.75rem;
+    }
+    input, button {
+      padding: 0.5rem;
+      font-size: 1rem;
+    }
+    button {
+      cursor: pointer;
+      background: #007bff;
+      color: white;
+      border: none;
+    }
+    #result {
+      margin-top: 1rem;
+      color: green;
+    }
+  </style>
+</head>
+<body>
+
+<h1>회원가입</h1>
+<form id="signupForm">
+  <input type="email" id="email" placeholder="이메일" required />
+  <input type="password" id="password" placeholder="비밀번호" required />
+  <button type="submit">회원가입</button>
+</form>
+
+<p id="result"></p>
+
+<script>
+  document.getElementById('signupForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value.trim();
+
+    try {
+      const res = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+
+      const resultElem = document.getElementById('result');
+      if (res.ok) {
+        resultElem.textContent = '회원가입 성공! 로그인 페이지로 이동합니다.';
+        resultElem.style.color = 'green';
+        setTimeout(() => location.href = '/login.html', 2000);
+      } else {
+        const text = await res.text();
+        resultElem.textContent = `회원가입 실패: ${res.status} - ${text}`;
+        resultElem.style.color = 'red';
+      }
+    } catch (err) {
+      console.error(err);
+      const resultElem = document.getElementById('result');
+      resultElem.textContent = '요청 중 오류가 발생했습니다.';
+      resultElem.style.color = 'red';
+    }
+  });
+</script>
+
+</body>
+</html>
