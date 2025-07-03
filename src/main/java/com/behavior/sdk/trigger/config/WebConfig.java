@@ -40,7 +40,7 @@ public class WebConfig implements WebMvcConfigurer {
                     .allowCredentials(true);
         } else {
             registry.addMapping("/api/**")
-                    .allowedOrigins("http://localhost:3000", "file://")
+                    .allowedOrigins("http://localhost:8080", "file://")
                     .allowedMethods("GET", "POST", "DELETE", "OPTIONS")
                     .allowCredentials(true);
         }
