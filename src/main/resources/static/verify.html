@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>로그 트리거 테스트 페이지</title>
+
+  <!-- [1] SDK 스니펫 삽입 -->
+  <!-- data-key는 등록된 프로젝트의 projectKey로 교체 -->
+  <script src="https://behavior-tracking-sdk.vercel.app/sdk.js"
+          data-key="64954604-e950-4788-bce8-a70491406083"></script>
+
+  <!-- [2] SDK 초기화 (개발용 환경 가정) -->
+  <script>
+    window.addEventListener('DOMContentLoaded', function () {
+      const sdkScript = document.querySelector('script[src*="sdk.js"]');
+      const projectKey = sdkScript.dataset.key;
+
+      window.BehaviorSDK.init({
+        apiUrl: 'http://localhost:8080', // 로컬 서버 주소
+        projectKey,
+        scrollThreshold: 0.3 // 30% 이상 스크롤 시 전송
+      });
+    });
+  </script>
+
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 2rem;
+    }
+
+    #scrollTarget {
+      margin-top: 1500px;
+      padding: 2rem;
+      background: #f0f0f0;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+<h1>✅ SDK 조건 트리거 테스트</h1>
+
+<p>이 페이지는 다음 조건을 트리거합니다:</p>
+<ul>
+  <li>📄 page_view 전송</li>
+  <li>🕒 일정 시간 체류 (예: 5초 이상 → stay_time)</li>
+  <li>🖱 버튼 클릭 (click)</li>
+  <li>⬇ 30% 이상 스크롤 (scroll_depth)</li>
+</ul>
+
+<hr>
+
+<!-- 클릭 테스트 버튼 -->
+<button onclick="alert('클릭 이벤트 발생!')">버튼 클릭 테스트</button>
+
+<!-- 스크롤 테스트용 영역 -->
+<div id="scrollTarget">
+  ⬇ 여기까지 스크롤하면 scroll_depth 조건이 발동됩니다
+</div>
+
+</body>
+</html>
