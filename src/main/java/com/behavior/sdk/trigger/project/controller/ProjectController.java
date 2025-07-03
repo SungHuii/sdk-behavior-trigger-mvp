@@ -100,7 +100,7 @@ public class ProjectController {
                      content = @Content(schema = @Schema(implementation = ProjectResponse.class))),
               @ApiResponse(responseCode = "404", description = "사용자를 찾을 수 없음")
     })
-    @GetMapping("/user/{userId}")
+    @GetMapping()
     public ResponseEntity<List<ProjectResponse>> getProjectsByUserId(
             @AuthenticationPrincipal User user) {
         List<ProjectResponse> projects = projectService.getProjectsByUserId(user.getId());
