@@ -94,4 +94,17 @@ public class ProjectController {
       return ResponseEntity.ok(updatedProject);
    }
 
+    @Operation(summary = "사용자별 프로젝트 조회", description = "특정 사용자의 모든 프로젝트를 조회합니다.")
+    @ApiResponses({
+              @ApiResponse(responseCode = "200", description = "사용자 프로젝트 조회 성공",
+                     content = @Content(schema = @Schema(implementation = ProjectResponse.class))),
+              @ApiResponse(responseCode = "404", description = "사용자를 찾을 수 없음")
+    })
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<ProjectResponse>> getProjectsByUserId(
+            @AuthenticationPrincipal User user) {
+        List<ProjectResponse> projects = projectService.getProjectsByUserId(user.getId());
+        return ResponseEntity.ok(projects);
+    }
+
 }

@@ -86,4 +86,13 @@ public class ProjectServiceImpl implements ProjectService {
         project.softDelete();
         projectRepository.save(project);
     }
+
+    @Override
+    @Transactional
+    public List<ProjectResponse> getProjectsByUserId(UUID userId) {
+        return projectRepository.findAllByUserIdAndDeletedAtIsNull(userId)
+                .stream()
+                .map(this::toDto)
+                .toList();
+    }
 }
