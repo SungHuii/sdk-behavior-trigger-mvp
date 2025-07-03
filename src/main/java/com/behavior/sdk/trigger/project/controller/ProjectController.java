@@ -5,6 +5,7 @@ import com.behavior.sdk.trigger.project.dto.ProjectResponse;
 import com.behavior.sdk.trigger.project.dto.ProjectUpdateRequest;
 import com.behavior.sdk.trigger.project.entity.Project;
 import com.behavior.sdk.trigger.project.service.ProjectService;
+import com.behavior.sdk.trigger.user.entity.User;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -16,6 +17,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -37,8 +39,9 @@ public class ProjectController {
    @PostMapping
    @Operation(summary = "프로젝트 생성", description = "새로운 프로젝트를 생성하고 SDK 키를 발급합니다.")
    public ResponseEntity<ProjectResponse> createProject (
-           @RequestBody @Valid ProjectCreateRequest request) {
-      ProjectResponse createdProject = projectService.createProject(request);
+           @RequestBody @Valid ProjectCreateRequest request,
+           @AuthenticationPrincipal User user) {
+      ProjectResponse createdProject = projectService.createProject(request, user);
       return ResponseEntity.status(HttpStatus.CREATED).body(createdProject);
    }
 

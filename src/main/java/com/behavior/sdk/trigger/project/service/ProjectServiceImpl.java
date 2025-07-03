@@ -5,6 +5,7 @@ import com.behavior.sdk.trigger.project.dto.ProjectResponse;
 import com.behavior.sdk.trigger.project.dto.ProjectUpdateRequest;
 import com.behavior.sdk.trigger.project.entity.Project;
 import com.behavior.sdk.trigger.project.repository.ProjectRepository;
+import com.behavior.sdk.trigger.user.entity.User;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -32,10 +33,11 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     @Transactional
-    public ProjectResponse createProject(ProjectCreateRequest request) {
+    public ProjectResponse createProject(ProjectCreateRequest request, User user) {
         Project project = Project.builder()
                 .name(request.getName())
                 .domain(request.getDomain())
+                .user(user)
                 .build();
 
         Project savedProject = projectRepository.save(project);

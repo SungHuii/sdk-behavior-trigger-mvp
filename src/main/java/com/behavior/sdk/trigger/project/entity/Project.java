@@ -1,5 +1,6 @@
 package com.behavior.sdk.trigger.project.entity;
 
+import com.behavior.sdk.trigger.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
@@ -24,6 +25,10 @@ public class Project {
 
    @Column(name = "domain", nullable = false)
    private String domain;
+
+   @ManyToOne(fetch = FetchType.LAZY)
+   @JoinColumn(name = "user_id", nullable = false)
+   private User user;
 
    @Column(name = "created_at", nullable = false)
    private LocalDateTime createdAt;
