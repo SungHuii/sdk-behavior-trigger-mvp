@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8" />
-  <title>내 정보 / SDK 삽입 안내</title>
+  <meta charset="UTF-8">
+  <title>내 정보 / 내 프로젝트</title>
   <style>
     body {
       font-family: sans-serif;
@@ -12,104 +12,142 @@
     h1, h2 {
       color: #333;
     }
-    #info {
+    .top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .info-box {
+      margin-bottom: 1.5rem;
       background: #f9f9f9;
       padding: 1rem;
-      border-radius: 5px;
-      margin-top: 1rem;
+      border-radius: 6px;
     }
     .label {
       font-weight: bold;
       margin-top: 0.75rem;
     }
+    #projects {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    .project-card {
+      border: 1px solid #ccc;
+      padding: 1rem;
+      border-radius: 6px;
+      width: 100%;
+      max-width: 420px;
+      background: #f9f9f9;
+    }
     pre {
       background: #eee;
       padding: 0.5rem;
-      overflow-x: auto;
       white-space: pre-wrap;
+      overflow-x: auto;
     }
-    button.copy-btn {
-      margin-top: 0.5rem;
-      padding: 5px 10px;
+    button {
+      padding: 6px 10px;
       font-size: 0.9rem;
       cursor: pointer;
     }
-    .note {
-      margin-top: 1rem;
-      font-size: 0.9rem;
-      color: #666;
-      background: #f0f0f0;
-      padding: 0.5rem;
-      border-left: 4px solid #999;
+    .copy-btn {
+      margin-top: 0.5rem;
     }
   </style>
 </head>
 <body>
 
-<h1>내 프로젝트 정보</h1>
-<div id="info">불러오는 중...</div>
+<div class="top">
+  <h1>내 정보</h1>
+  <button onclick="location.href='/project-create.html'">프로젝트 등록</button>
+</div>
+
+<div id="userInfo" class="info-box">불러오는 중...</div>
+
+<h2>내 프로젝트</h2>
+<div id="projects">불러오는 중...</div>
 
 <script>
   const token = localStorage.getItem('token');
-  const infoDiv = document.getElementById('info');
+  const userDiv = document.getElementById('userInfo');
+  const projectDiv = document.getElementById('projects');
 
   if (!token) {
     alert('로그인이 필요합니다.');
     location.href = '/login.html';
-  } else {
-    fetch('/api/users/me', {
-      headers: {
-        'Authorization': 'Bearer ' + token
-      }
-    })
-    .then(async res => {
-      if (!res.ok) {
-        const text = await res.text();
-        throw new Error(`오류 ${res.status}: ${text}`);
-      }
-      return res.json();
-    })
-    .then(data => {
-      const key = data.project_key || '(없음)';
-      const scriptSnippet = `
-<script src="https://behavior-tracking-sdk.vercel.app/sdk.js"
-      data-key="${key}">
-</script>`.trim();
+  }
 
-infoDiv.innerHTML = `
-<div class="label">📧 이메일:</div>
-<div>${data.email || '(없음)'}</div>
+  // 사용자 정보 조회
+  fetch('/api/users/me', {
+    headers: { 'Authorization': 'Bearer ' + token }
+  })
+  .then(async res => {
+    if (!res.ok) throw new Error(await res.text());
+    return res.json();
+  })
+  .then(user => {
+    userDiv.innerHTML = `
+      <div class="label">📧 이메일:</div>
+      <div>${user.email}</div>
+    `;
+  })
+  .catch(err => {
+    console.error(err);
+    userDiv.innerHTML = '사용자 정보를 불러오지 못했습니다.';
+  });
 
-<div class="label">🧾 프로젝트명:</div>
-<div>${data.project_name || '(없음)'}</div>
+  // 프로젝트 목록 조회
+  fetch('/api/projects', {
+    headers: { 'Authorization': 'Bearer ' + token }
+  })
+  .then(async res => {
+    if (!res.ok) throw new Error(await res.text());
+    return res.json();
+  })
+  .then(projects => {
+    if (projects.length === 0) {
+      projectDiv.textContent = '등록된 프로젝트가 없습니다.';
+      return;
+    }
 
-<div class="label">🌐 도메인:</div>
-<div>${data.domain || '(없음)'}</div>
+    projectDiv.innerHTML = '';
+    projects.forEach(p => {
+      // 스크립트 깨짐 방지를 위해 <script> → <scr + ipt>
+      const snippet = `<scr` + `ipt src="https://behavior-tracking-sdk.vercel.app/sdk.js" data-key="${p.id}"></scr` + `ipt>`;
+      const snippetId = `snippet-${p.id}`;
 
-<div class="label">🔑 SDK 스니펫:</div>
-<pre id="snippet">${scriptSnippet}</pre>
-<button class="copy-btn" onclick="copySnippet()">스니펫 복사하기</button>
+      const card = document.createElement('div');
+      card.className = 'project-card';
 
-<div class="note">
-  위 코드를 본인의 웹사이트 HTML의 &lt;head&gt; 또는 &lt;body&gt; 태그 하단에 삽입하세요.<br>
-  이 SDK는 방문자의 로그를 자동으로 수집하고, 조건에 따라 이메일 발송 등 트리거를 실행합니다.
-</div>
-`;
-})
-.catch(err => {
-console.error(err);
-infoDiv.textContent = '정보 불러오기 실패: ' + err.message;
-});
-}
+      card.innerHTML = `
+        <div class="label">📛 프로젝트명:</div>
+        <div>${p.name}</div>
 
-function copySnippet() {
-const text = document.getElementById('snippet')?.innerText;
-if (!text || text.includes('(없음)')) return alert('스니펫이 비어있습니다.');
+        <div class="label">🌐 도메인:</div>
+        <div>${p.domain}</div>
 
-navigator.clipboard.writeText(text)
-.then(() => alert('스니펫이 복사되었습니다!'))
-.catch(() => alert('복사에 실패했습니다.'));
-}
+        <div class="label">🔑 SDK 스니펫:</div>
+        <pre id="${snippetId}"></pre>
+        <button class="copy-btn">스니펫 복사</button>
+      `;
+
+      card.querySelector(`#${snippetId}`).textContent = snippet;
+
+      // 복사 이벤트 연결
+      card.querySelector('.copy-btn').addEventListener('click', () => {
+        navigator.clipboard.writeText(snippet)
+          .then(() => alert('스니펫이 복사되었습니다!'))
+          .catch(() => alert('복사 실패'));
+      });
+
+      projectDiv.appendChild(card);
+    });
+  })
+  .catch(err => {
+    console.error(err);
+    projectDiv.textContent = '프로젝트 정보를 불러오지 못했습니다: ' + err.message;
+  });
 </script>
 
 </body>
