@@ -21,6 +21,12 @@ public class InterceptorConfig implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(interceptor)
-                .addPathPatterns("/api/logs/**"); // 로그 관련 API에만 적용
+                .addPathPatterns("/api/logs/**")  // ✅ 로그만 검증
+                .excludePathPatterns(
+                        "/api/conditions",
+                        "/api/conditions/**",
+                        "/api/projects",               // ✅ 여기에 추가
+                        "/api/projects/**"             // ✅ 여기에 추가
+                );
     }
 }
