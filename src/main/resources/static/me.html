@@ -4,56 +4,16 @@
   <meta charset="UTF-8">
   <title>내 정보 / 내 프로젝트</title>
   <style>
-    body {
-      font-family: sans-serif;
-      padding: 2rem;
-      background: #fff;
-    }
-    h1, h2 {
-      color: #333;
-    }
-    .top {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .info-box {
-      margin-bottom: 1.5rem;
-      background: #f9f9f9;
-      padding: 1rem;
-      border-radius: 6px;
-    }
-    .label {
-      font-weight: bold;
-      margin-top: 0.75rem;
-    }
-    #projects {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 1rem;
-    }
-    .project-card {
-      border: 1px solid #ccc;
-      padding: 1rem;
-      border-radius: 6px;
-      width: 100%;
-      max-width: 420px;
-      background: #f9f9f9;
-    }
-    pre {
-      background: #eee;
-      padding: 0.5rem;
-      white-space: pre-wrap;
-      overflow-x: auto;
-    }
-    button {
-      padding: 6px 10px;
-      font-size: 0.9rem;
-      cursor: pointer;
-    }
-    .copy-btn {
-      margin-top: 0.5rem;
-    }
+    body { font-family: sans-serif; padding: 2rem; background: #fff; }
+    h1, h2 { color: #333; }
+    .top { display: flex; justify-content: space-between; align-items: center; }
+    .info-box { margin-bottom: 1.5rem; background: #f9f9f9; padding: 1rem; border-radius: 6px; }
+    .label { font-weight: bold; margin-top: 0.75rem; }
+    #projects { display: flex; flex-wrap: wrap; gap: 1rem; }
+    .project-card { border: 1px solid #ccc; padding: 1rem; border-radius: 6px; width: 100%; max-width: 440px; background: #f9f9f9; }
+    pre { background: #eee; padding: 0.5rem; white-space: pre-wrap; overflow-x: auto; }
+    button { padding: 6px 10px; font-size: 0.9rem; cursor: pointer; }
+    .copy-btn { margin-top: 0.5rem; }
   </style>
 </head>
 <body>
@@ -78,33 +38,21 @@
     location.href = '/login.html';
   }
 
-  // 사용자 정보 조회
   fetch('/api/users/me', {
     headers: { 'Authorization': 'Bearer ' + token }
   })
-  .then(async res => {
-    if (!res.ok) throw new Error(await res.text());
-    return res.json();
-  })
+  .then(res => res.json())
   .then(user => {
     userDiv.innerHTML = `
       <div class="label">📧 이메일:</div>
       <div>${user.email}</div>
     `;
-  })
-  .catch(err => {
-    console.error(err);
-    userDiv.innerHTML = '사용자 정보를 불러오지 못했습니다.';
   });
 
-  // 프로젝트 목록 조회
   fetch('/api/projects', {
     headers: { 'Authorization': 'Bearer ' + token }
   })
-  .then(async res => {
-    if (!res.ok) throw new Error(await res.text());
-    return res.json();
-  })
+  .then(res => res.json())
   .then(projects => {
     if (projects.length === 0) {
       projectDiv.textContent = '등록된 프로젝트가 없습니다.';
@@ -113,41 +61,40 @@
 
     projectDiv.innerHTML = '';
     projects.forEach(p => {
-      // 스크립트 깨짐 방지를 위해 <script> → <scr + ipt>
-      const snippet = `<scr` + `ipt src="https://behavior-tracking-sdk.vercel.app/sdk.js" data-key="${p.id}"></scr` + `ipt>`;
+      const open = '<' + 'script';
+      const close = '</' + 'script>';
+      const snippet = `${open} src="https://behavior-tracking-sdk.vercel.app/sdk.js" data-key="${p.id}"${close}>`;
       const snippetId = `snippet-${p.id}`;
-
       const card = document.createElement('div');
       card.className = 'project-card';
 
       card.innerHTML = `
         <div class="label">📛 프로젝트명:</div>
         <div>${p.name}</div>
-
         <div class="label">🌐 도메인:</div>
-        <div>${p.domain}</div>
-
+        <div>${(p.allowedDomains || []).join(', ')}</div>
         <div class="label">🔑 SDK 스니펫:</div>
         <pre id="${snippetId}"></pre>
-        <button class="copy-btn">스니펫 복사</button>
-      `;
+        <button class="copy-btn" onclick="copySnippet('${snippetId}')">스니펫 복사</button>
+        <button class="copy-btn" onclick="goToCondition('${p.id}')">조건 등록</button>
+`;
 
       card.querySelector(`#${snippetId}`).textContent = snippet;
-
-      // 복사 이벤트 연결
-      card.querySelector('.copy-btn').addEventListener('click', () => {
-        navigator.clipboard.writeText(snippet)
-          .then(() => alert('스니펫이 복사되었습니다!'))
-          .catch(() => alert('복사 실패'));
-      });
-
       projectDiv.appendChild(card);
     });
-  })
-  .catch(err => {
-    console.error(err);
-    projectDiv.textContent = '프로젝트 정보를 불러오지 못했습니다: ' + err.message;
   });
+
+  function copySnippet(id) {
+    const text = document.getElementById(id)?.innerText;
+    if (!text) return alert('복사할 스니펫이 없습니다.');
+    navigator.clipboard.writeText(text)
+      .then(() => alert('스니펫이 복사되었습니다!'))
+      .catch(() => alert('복사 실패'));
+  }
+
+  function goToCondition(projectKey) {
+    location.href = `/condition.html?projectKey=${projectKey}`;
+  }
 </script>
 
 </body>

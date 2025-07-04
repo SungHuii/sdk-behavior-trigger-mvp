@@ -60,6 +60,12 @@
     const name = document.getElementById('name').value.trim();
     const domain = document.getElementById('domain').value.trim();
 
+    // ✅ 도메인을 배열로 포장해서 전송
+    const payload = {
+      name,
+      allowedDomains: [domain]
+    };
+
     try {
       const res = await fetch('/api/projects', {
         method: 'POST',
@@ -67,7 +73,7 @@
           'Authorization': 'Bearer ' + token,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ name, domain })
+        body: JSON.stringify(payload)
       });
 
       if (res.ok) {

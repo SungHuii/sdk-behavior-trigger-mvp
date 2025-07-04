@@ -1,14 +1,27 @@
-<!-- src/main/resources/static/condition.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <title>Condition 생성</title>
 
-  <!-- SDK 스크립트 포함: projectId 추출용 -->
-  <script src="https://behavior-tracking-sdk.vercel.app/sdk.js"
-          data-key-prod="478a7347-9049-441e-9aff-bb0a3c01c882"
-          data-key-dev="c7fbd9f0-38a9-4802-8859-c669bd5ca7d6">
+  <!-- SDK 동적 삽입 -->
+  <script>
+    const queryParams = new URLSearchParams(location.search);
+    const projectKey = queryParams.get('projectKey');
+
+    if (!projectKey) {
+      alert("projectKey가 전달되지 않았습니다.");
+    }
+
+    const sdk = document.createElement('script');
+    sdk.src = "https://behavior-tracking-sdk.vercel.app/sdk.js";
+    sdk.dataset.key = projectKey;
+
+    if (location.hostname.includes('localhost')) {
+      sdk.dataset.api = 'http://localhost:8080';
+    }
+
+    document.head.appendChild(sdk);
   </script>
 </head>
 <body>
@@ -36,41 +49,53 @@
 </label><br>
 
 <label>Page URL:
-  <input type="text" id="pageUrl" value="https://sdk-behavior-trigger-mvp-dev.onrender.com/test.html" />
+  <input type="text" id="pageUrl" value="" />
 </label><br><br>
 
 <button id="btnCreate">생성</button>
 
 <script>
-  document.getElementById('btnCreate').addEventListener('click', async () => {
-    const host = window.location.hostname;
-    const apiUrl = host.includes('-dev.')
-      ? 'https://sdk-behavior-trigger-mvp-dev.onrender.com'
-      : 'https://sdk-behavior-trigger-mvp.onrender.com';
+  // 현재 페이지 URL에서 쿼리스트링 제거한 기본값 설정
+  document.getElementById('pageUrl').value =
+    location.origin + location.pathname.replace('condition.html', 'verify.html');
 
+  document.getElementById('btnCreate').addEventListener('click', async () => {
     const sdkScript = document.querySelector('script[src*="sdk.js"]');
-    const projectId = host.includes('-dev.')
-      ? sdkScript.dataset.keyDev
-      : sdkScript.dataset.keyProd;
+    const projectId = sdkScript?.dataset.key;
+    const apiUrl = sdkScript?.dataset.api || (
+      location.hostname.includes('localhost')
+        ? 'http://localhost:8080'
+        : 'https://sdk-behavior-trigger-mvp.onrender.com'
+    );
+
+    const pageUrlValue = document.getElementById('pageUrl').value;
 
     const payload = {
       projectId,
       eventType: document.getElementById('eventType').value,
       operator: document.getElementById('operator').value,
       threshold: parseInt(document.getElementById('threshold').value, 10),
-      pageUrl: document.getElementById('pageUrl').value
+      pageUrl: pageUrlValue
     };
 
     try {
       const res = await fetch(`${apiUrl}/api/conditions`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + localStorage.getItem('token')
+        },
         body: JSON.stringify(payload)
       });
 
       if (res.ok) {
         alert('조건이 성공적으로 생성되었습니다!');
-        window.location.href = '/test.html';
+
+        // ✅ 사용자가 작성한 pageUrl에 projectKey 추가 후 이동
+        const redirectUrl = new URL(pageUrlValue);
+        redirectUrl.searchParams.set('projectKey', projectId);
+        window.location.href = redirectUrl.toString();
+
       } else {
         const text = await res.text();
         alert(`조건 생성 실패: ${res.status}\n${text}`);

@@ -4,37 +4,40 @@
   <meta charset="UTF-8">
   <title>로그 트리거 테스트 페이지</title>
 
-  <!-- [1] SDK 스니펫 삽입 -->
-  <!-- data-key는 등록된 프로젝트의 projectKey로 교체 -->
-  <script src="https://behavior-tracking-sdk.vercel.app/sdk.js"
-          data-key="64954604-e950-4788-bce8-a70491406083"></script>
-
-  <!-- [2] SDK 초기화 (개발용 환경 가정) -->
   <script>
-    window.addEventListener('DOMContentLoaded', function () {
-      const sdkScript = document.querySelector('script[src*="sdk.js"]');
-      const projectKey = sdkScript.dataset.key;
+    const queryParams = new URLSearchParams(location.search);
+    const projectKey = queryParams.get('projectKey');
+    if (!projectKey) alert('projectKey가 전달되지 않았습니다.');
+
+    const sdk = document.createElement('script');
+    sdk.src = "https://behavior-tracking-sdk.vercel.app/sdk.js";
+    sdk.dataset.key = projectKey;
+
+    // 개발용 API 서버 분기
+    if (location.hostname.includes('localhost')) {
+      sdk.dataset.api = 'http://localhost:8080';
+    }
+
+    // ✅ 핵심 포인트: SDK 로드 완료 후 BehaviorSDK.init() 호출
+    sdk.onload = () => {
+      console.log('[SDK INIT] 호출됨:', {
+        key: sdk.dataset.key,
+        api: sdk.dataset.api
+      });
 
       window.BehaviorSDK.init({
-        apiUrl: 'http://localhost:8080', // 로컬 서버 주소
-        projectKey,
-        scrollThreshold: 0.3 // 30% 이상 스크롤 시 전송
+        projectKey: sdk.dataset.key,
+        apiUrl: sdk.dataset.api,
+        scrollThreshold: 0.3
       });
-    });
+    };
+
+    document.head.appendChild(sdk);
   </script>
 
   <style>
-    body {
-      font-family: sans-serif;
-      padding: 2rem;
-    }
-
-    #scrollTarget {
-      margin-top: 1500px;
-      padding: 2rem;
-      background: #f0f0f0;
-      text-align: center;
-    }
+    body { font-family: sans-serif; padding: 2rem; }
+    #scrollTarget { margin-top: 1500px; padding: 2rem; background: #f0f0f0; text-align: center; }
   </style>
 </head>
 <body>
@@ -51,13 +54,8 @@
 
 <hr>
 
-<!-- 클릭 테스트 버튼 -->
 <button onclick="alert('클릭 이벤트 발생!')">버튼 클릭 테스트</button>
-
-<!-- 스크롤 테스트용 영역 -->
-<div id="scrollTarget">
-  ⬇ 여기까지 스크롤하면 scroll_depth 조건이 발동됩니다
-</div>
+<div id="scrollTarget">⬇ 여기까지 스크롤하면 scroll_depth 조건이 발동됩니다</div>
 
 </body>
 </html>
