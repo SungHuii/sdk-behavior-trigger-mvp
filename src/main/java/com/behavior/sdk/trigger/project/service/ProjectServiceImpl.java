@@ -25,7 +25,7 @@ public class ProjectServiceImpl implements ProjectService {
         return ProjectResponse.builder()
                 .id(p.getId())
                 .name(p.getName())
-                .domain(p.getDomain())
+                .allowedDomains(p.getAllowedDomains())
                 .createdAt(p.getCreatedAt())
                 .deletedAt(p.getDeletedAt())
                 .build();
@@ -36,7 +36,7 @@ public class ProjectServiceImpl implements ProjectService {
     public ProjectResponse createProject(ProjectCreateRequest request, User user) {
         Project project = Project.builder()
                 .name(request.getName())
-                .domain(request.getDomain())
+                .allowedDomains(request.getAllowedDomains())
                 .user(user)
                 .build();
 
@@ -70,8 +70,8 @@ public class ProjectServiceImpl implements ProjectService {
             project.setName(request.getName());
         }
 
-        if (request.getDomain() != null && !request.getDomain().isBlank()) {
-            project.setDomain(request.getDomain());
+        if (request.getAllowedDomains() != null && !request.getAllowedDomains().isEmpty()) {
+            project.setAllowedDomains(request.getAllowedDomains());
         }
 
         return toDto(project);

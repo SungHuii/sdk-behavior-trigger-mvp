@@ -4,6 +4,7 @@ import com.behavior.sdk.trigger.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -23,8 +24,13 @@ public class Project {
    @Column(nullable = false)
    private String name;
 
-   @Column(name = "domain", nullable = false)
-   private String domain;
+   @ElementCollection(fetch = FetchType.EAGER)
+   @CollectionTable(
+           name = "project_allowed_domains",
+           joinColumns = @JoinColumn(name = "project_id")
+   )
+   @Column(name = "domain")
+   private List<String> allowedDomains; // 여러 도메인 허용 가능
 
    @ManyToOne(fetch = FetchType.LAZY)
    @JoinColumn(name = "user_id", nullable = false)

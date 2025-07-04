@@ -3,6 +3,8 @@ package com.behavior.sdk.trigger.project.dto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
+import java.util.List;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -13,6 +15,6 @@ public class ProjectUpdateRequest {
 
     @Schema(description = "프로젝트 이름", example = "Updated Project Name")
     private String name;
-    @Schema(description = "프로젝트 도메인", example = "https://updated-example.com")
-    private String domain;
+    @Schema(description = "허용된 프로젝트 도메인 목록", example = "https://updated-example.com")
+    private List<String> allowedDomains;
 }
