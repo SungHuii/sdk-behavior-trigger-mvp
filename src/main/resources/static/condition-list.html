@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>조건 목록</title>
+  <style>
+    body { font-family: sans-serif; padding: 2rem; }
+    .top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+    .condition-card { border: 1px solid #ccc; padding: 1rem; margin-bottom: 1rem; border-radius: 6px; }
+    button { margin-top: 0.5rem; }
+  </style>
+</head>
+<body>
+<div class="top">
+  <h1>📋 등록된 조건 목록</h1>
+  <button onclick="location.href='/me.html'">목록으로 돌아가기</button>
+</div>
+
+
+
+<div id="conditions">불러오는 중...</div>
+
+<script>
+  const params = new URLSearchParams(location.search);
+  const projectKey = params.get('projectKey');
+  const container = document.getElementById('conditions');
+
+  if (!projectKey) {
+    alert('projectKey가 없습니다.');
+    location.href = '/me.html';
+  }
+
+  fetch(`/api/conditions/${projectKey}`)
+    .then(res => res.json())
+    .then(conditions => {
+      container.innerHTML = '';
+      if (conditions.length === 0) {
+        container.textContent = '조건이 없습니다.';
+        return;
+      }
+
+      conditions.forEach(c => {
+        const div = document.createElement('div');
+        div.className = 'condition-card';
+        div.innerHTML = `
+          <div><strong>이벤트:</strong> ${c.eventType}</div>
+          <div><strong>페이지 URL:</strong> ${c.pageUrl}</div>
+          <div><strong>연산자:</strong> ${c.operator}</div>
+          <div><strong>임계값:</strong> ${c.threshold}</div>
+          <button onclick="deleteCondition('${c.id}')">🗑 삭제</button>
+        `;
+        container.appendChild(div);
+      });
+    });
+
+  function deleteCondition(id) {
+    if (!confirm('정말 삭제하시겠습니까?')) return;
+    fetch(`/api/conditions/${id}`, { method: 'DELETE' })
+      .then(res => {
+        if (res.ok) {
+          alert('삭제되었습니다.');
+          location.reload();
+        } else {
+          alert('삭제 실패');
+        }
+      });
+  }
+</script>
+
+</body>
+</html>

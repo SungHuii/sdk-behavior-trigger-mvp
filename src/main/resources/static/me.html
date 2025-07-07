@@ -20,7 +20,10 @@
 
 <div class="top">
   <h1>내 정보</h1>
-  <button onclick="location.href='/project-create.html'">프로젝트 등록</button>
+  <div>
+    <button onclick="location.href='/project-create.html'">프로젝트 등록</button>
+    <button onclick="logout()">로그아웃</button>
+  </div>
 </div>
 
 <div id="userInfo" class="info-box">불러오는 중...</div>
@@ -77,6 +80,8 @@
         <pre id="${snippetId}"></pre>
         <button class="copy-btn" onclick="copySnippet('${snippetId}')">스니펫 복사</button>
         <button class="copy-btn" onclick="goToCondition('${p.id}')">조건 등록</button>
+        <button class="copy-btn" onclick="goToConditionList('${p.id}')">조건 목록</button>
+        <button class="copy-btn" onclick="deleteProject('${p.id}')">프로젝트 삭제</button>
 `;
 
       card.querySelector(`#${snippetId}`).textContent = snippet;
@@ -95,6 +100,31 @@
   function goToCondition(projectKey) {
     location.href = `/condition.html?projectKey=${projectKey}`;
   }
+  function goToConditionList(projectKey) {
+    location.href = `/condition-list.html?projectKey=${projectKey}`;
+  }
+  function logout() {
+    localStorage.removeItem('token');
+    location.href = '/login.html';
+  }
+  function deleteProject(projectId) {
+  if (!confirm('정말 이 프로젝트를 삭제하시겠습니까?')) return;
+
+  fetch(`/api/projects/${projectId}`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': 'Bearer ' + token
+    }
+  })
+    .then(res => {
+      if (res.ok) {
+        alert('프로젝트가 삭제되었습니다.');
+        location.reload();
+      } else {
+        alert('삭제 실패');
+      }
+    });
+}
 </script>
 
 </body>
