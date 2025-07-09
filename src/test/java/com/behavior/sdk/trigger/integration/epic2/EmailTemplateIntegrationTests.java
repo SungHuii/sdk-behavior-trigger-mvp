@@ -47,7 +47,7 @@ public class EmailTemplateIntegrationTests {
 
     @BeforeAll
     void setUpCondition() throws Exception {
-        User testUser = userRepository.save(User.builder()
+        User testUser = userRepository.saveAndFlush(User.builder()
                 .email("segment-test@example.com")
                 .password("encoded-password")
                 .build());

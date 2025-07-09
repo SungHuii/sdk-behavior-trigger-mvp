@@ -40,7 +40,7 @@ public class VisitorEmailIntegrationTests {
 
     @BeforeAll
     void setup() {
-        User testUser = userRepository.save(User.builder()
+        User testUser = userRepository.saveAndFlush(User.builder()
                 .email("segment-test@example.com")
                 .password("encoded-password")
                 .build());
