@@ -86,7 +86,7 @@ public class SegmentIntegrationTests {
 
         String projectJson = mockMvc.perform(post("/api/projects")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"name\": \"Segment Test Project\", \"domain\": \"https://example.com\"}"))
+                .content("{\"name\":\"조건 테스트용 프로젝트\", \"allowedDomains\":[\"https://example.com\"]}"))
                 .andExpect(status().isCreated())
                 .andReturn().getResponse().getContentAsString();
         projectId = UUID.fromString(om.readTree(projectJson).get("id").asText());

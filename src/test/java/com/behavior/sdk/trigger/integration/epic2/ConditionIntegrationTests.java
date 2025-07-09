@@ -63,7 +63,7 @@ public class ConditionIntegrationTests {
 
       String projectJson = mockMvc.perform(post("/api/projects")
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{\"name\":\"조건 테스트용 프로젝트\", \"domain\":\"https://example.com\"}"))
+            .content("{\"name\":\"조건 테스트용 프로젝트\", \"allowedDomains\":[\"https://example.com\"]}"))
             .andExpect(jsonPath("$.id").exists())
             .andReturn().getResponse().getContentAsString();
 
