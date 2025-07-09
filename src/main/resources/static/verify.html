@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>로그 트리거 + 이메일 수집 테스트</title>
+
+  <!-- ✅ 사용자 이메일 설정 -->
+  <script>
+    // 로그인된 사용자의 이메일을 가정한 예시
+    window.__USER_EMAIL__ = 'tester@example.com';
+  </script>
+
+  <!-- ✅ SDK 스니펫 삽입 -->
+  <script src="https://behavior-tracking-sdk.vercel.app/sdk.js"></script>
+
+  <!-- ✅ SDK 초기화 -->
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      const projectKey = '75421459-3f88-436a-a0bb-3d06934b0864'; // ← 테스트할 프로젝트 키
+      const apiUrl = 'http://localhost:8080'; // ← 로컬 환경에서 테스트 시
+
+      if (!projectKey) {
+        alert('projectKey가 없습니다.');
+        return;
+      }
+
+      if (window.BehaviorSDK && window.BehaviorSDK.init) {
+        window.BehaviorSDK.init({
+          projectKey,
+          apiUrl,
+          scrollThreshold: 0.3,
+          collectEmail: true,              // ✅ 이메일 수집 활성화
+          emailKey: '__USER_EMAIL__'       // ✅ 글로벌 변수명 지정
+        });
+        console.log('[SDK] init 실행됨');
+      } else {
+        console.warn('[SDK] BehaviorSDK가 로드되지 않았습니다.');
+      }
+    });
+  </script>
+
+  <style>
+    body { font-family: sans-serif; padding: 2rem; }
+    #scrollTarget {
+      margin-top: 1500px;
+      padding: 2rem;
+      background: #f0f0f0;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+<h1>✅ SDK 조건 트리거 + 이메일 수집 테스트</h1>
+
+<ul>
+  <li>📄 page_view 이벤트 발생</li>
+  <li>🕒 stay_time (예: 5초 이상)</li>
+  <li>🖱 클릭 이벤트</li>
+  <li>⬇ scroll_depth (30% 이상)</li>
+  <li>📧 이메일 자동 수집 (console 및 서버에서 확인 가능)</li>
+</ul>
+
+<hr>
+
+<button onclick="alert('클릭 이벤트 발생!')">🖱 클릭 테스트</button>
+<div id="scrollTarget">⬇ 여기까지 스크롤하면 scroll_depth 조건이 발동됩니다</div>
+
+</body>
+</html>

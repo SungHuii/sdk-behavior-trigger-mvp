@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>도메인 관리</title>
+  <style>
+    body { font-family: sans-serif; padding: 2rem; }
+    h1 { color: #333; }
+    input, button { padding: 0.5rem; margin-bottom: 0.5rem; }
+    ul { list-style: none; padding: 0; }
+    li { margin-bottom: 0.5rem; }
+  </style>
+</head>
+<body>
+
+<h1>도메인 관리</h1>
+<div><strong>프로젝트명:</strong> <span id="projectName">불러오는 중...</span></div>
+
+<h2>도메인 목록</h2>
+<ul id="domainList"></ul>
+
+<input type="text" id="newDomain" placeholder="새 도메인 입력" />
+<button onclick="addDomain()">➕ 추가</button>
+<br><br>
+<button onclick="saveChanges()">💾 저장</button>
+<button onclick="goBack()">🔙 뒤로가기</button>
+
+<script>
+  const projectId = new URLSearchParams(location.search).get('projectId');
+  const token = localStorage.getItem('token');
+  let domains = [];
+
+  if (!token || !projectId) {
+    alert("잘못된 접근입니다.");
+    location.href = '/me.html';
+  }
+
+  // 프로젝트 정보 불러오기
+  fetch(`/api/projects/${projectId}`, {
+    headers: { 'Authorization': 'Bearer ' + token }
+  })
+    .then(res => res.json())
+    .then(project => {
+      document.getElementById('projectName').textContent = project.name;
+      domains = project.allowedDomains || [];
+      renderDomains();
+    });
+
+  function renderDomains() {
+    const list = document.getElementById('domainList');
+    list.innerHTML = '';
+    domains.forEach((d, i) => {
+      const li = document.createElement('li');
+      li.innerHTML = `
+        <input type="text" value="${d}" onchange="updateDomain(${i}, this.value)" />
+        <button onclick="removeDomain(${i})">❌ 삭제</button>
+      `;
+      list.appendChild(li);
+    });
+  }
+
+  function updateDomain(index, value) {
+    domains[index] = value;
+  }
+
+  function removeDomain(index) {
+    domains.splice(index, 1);
+    renderDomains();
+  }
+
+  function addDomain() {
+    const input = document.getElementById('newDomain');
+    const val = input.value.trim();
+    if (!val) return;
+    domains.push(val);
+    input.value = '';
+    renderDomains();
+  }
+
+  function saveChanges() {
+    fetch(`/api/projects/${projectId}`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': 'Bearer ' + token,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ allowedDomains: domains })
+    })
+      .then(res => {
+        if (res.ok) {
+          alert("도메인이 저장되었습니다.");
+          location.href = '/me.html';
+        } else {
+          alert("저장 실패");
+        }
+      });
+  }
+
+  function goBack() {
+    location.href = '/me.html';
+  }
+</script>
+
+</body>
+</html>

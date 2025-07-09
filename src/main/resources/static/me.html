@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>내 정보 / 내 프로젝트</title>
+  <style>
+    body { font-family: sans-serif; padding: 2rem; background: #fff; }
+    h1, h2 { color: #333; }
+    .top { display: flex; justify-content: space-between; align-items: center; }
+    .info-box { margin-bottom: 1.5rem; background: #f9f9f9; padding: 1rem; border-radius: 6px; }
+    .label { font-weight: bold; margin-top: 0.75rem; }
+    #projects { display: flex; flex-wrap: wrap; gap: 1rem; }
+    .project-card { border: 1px solid #ccc; padding: 1rem; border-radius: 6px; width: 100%; max-width: 440px; background: #f9f9f9; }
+    pre { background: #eee; padding: 0.5rem; white-space: pre-wrap; overflow-x: auto; }
+    button { padding: 6px 10px; font-size: 0.9rem; cursor: pointer; }
+    .copy-btn { margin-top: 0.5rem; }
+    details { margin-top: 0.5rem; }
+  </style>
+</head>
+<body>
+
+<div class="top">
+  <h1>내 정보</h1>
+  <div>
+    <button onclick="location.href='/project-create.html'">프로젝트 등록</button>
+    <button onclick="logout()">로그아웃</button>
+  </div>
+</div>
+
+<div id="userInfo" class="info-box">불러오는 중...</div>
+
+<h2>내 프로젝트</h2>
+<div id="projects">불러오는 중...</div>
+
+<script>
+  const token = localStorage.getItem('token');
+  if (!token) {
+    alert('로그인이 필요합니다.');
+    location.href = '/login.html';
+  }
+  const userDiv = document.getElementById('userInfo');
+  const projectDiv = document.getElementById('projects');
+
+  fetch('/api/users/me', {
+    headers: { 'Authorization': 'Bearer ' + token }
+  })
+  .then(res => res.json())
+  .then(user => {
+    userDiv.innerHTML = `
+      <div class="label">📧 이메일:</div>
+      <div>${user.email}</div>
+    `;
+  })
+  .catch(() => {
+    alert('인증 정보가 유효하지 않습니다. 다시 로그인해주세요.');
+    localStorage.removeItem('token');
+    location.href = '/login.html';
+  });
+
+  fetch('/api/projects', {
+    headers: { 'Authorization': 'Bearer ' + token }
+  })
+  .then(res => res.json())
+  .then(projects => {
+    if (projects.length === 0) {
+      projectDiv.textContent = '등록된 프로젝트가 없습니다.';
+      return;
+    }
+
+    projectDiv.innerHTML = '';
+    projects.forEach(p => {
+      const card = document.createElement('div');
+      card.className = 'project-card';
+
+      card.innerHTML = `
+        <div class="label">📛 프로젝트명:</div>
+        <div>${p.name}</div>
+        <div class="label">🌐 도메인:</div>
+        <div>${(p.allowedDomains || []).join(', ')}</div>
+
+        <div class="label">🔑 SDK 스니펫:</div>
+        <details>
+          <summary><strong>간단 삽입용 (정적)</strong></summary>
+          <pre id="snippet-static-${p.id}">&lt;script src=\"https://behavior-tracking-sdk.vercel.app/sdk.js\" data-key=\"${p.id}\"&gt;&lt;/script&gt;</pre>
+          <button class="copy-btn" onclick="copySnippet('snippet-static-${p.id}')">복사</button>
+        </details>
+
+        <details>
+          <summary><strong>초기화 방식 (init)</strong></summary>
+          <pre id="snippet-init-${p.id}">&lt;script&gt;
+  window.__USER_EMAIL__ = 'user@example.com'; // 로그인된 사용자 이메일
+  window.addEventListener('DOMContentLoaded', () =&gt; {
+    const script = document.createElement('script');
+    script.src = 'https://behavior-tracking-sdk.vercel.app/sdk.js';
+    script.onload = () =&gt; {
+      BehaviorSDK.init({
+        projectKey: '${p.id}',
+        apiUrl: 'https://sdk-behavior-trigger-mvp.onrender.com',
+        scrollThreshold: 0.3
+      });
+    };
+    document.head.appendChild(script);
+  });
+&lt;/script&gt;
+          </pre>
+          <button class="copy-btn" onclick="copySnippet('snippet-init-${p.id}')">복사</button>
+        </details>
+
+        <button class="copy-btn" onclick="editDomains('${p.id}')">도메인 관리</button>
+        <button class="copy-btn" onclick="goToCondition('${p.id}')">조건 등록</button>
+        <button class="copy-btn" onclick="goToConditionList('${p.id}')">조건 목록</button>
+        <button class="copy-btn" onclick="viewLogs('${p.id}')">로그 보기</button>
+        <button class="copy-btn" onclick="deleteProject('${p.id}')">프로젝트 삭제</button>
+      `;
+
+      projectDiv.appendChild(card);
+    });
+  });
+
+  function viewLogs(projectId) {
+    location.href = `/logs.html?projectKey=${projectId}`;
+  }
+
+  function copySnippet(id) {
+    const text = document.getElementById(id)?.innerText;
+    if (!text) return alert('복사할 스니펫이 없습니다.');
+    navigator.clipboard.writeText(text)
+      .then(() => alert('스니펫이 복사되었습니다!'))
+      .catch(() => alert('복사 실패'));
+  }
+
+  function goToCondition(projectKey) {
+    location.href = `/condition.html?projectKey=${projectKey}`;
+  }
+  function goToConditionList(projectKey) {
+    location.href = `/condition-list.html?projectKey=${projectKey}`;
+  }
+  function logout() {
+    localStorage.removeItem('token');
+    location.href = '/login.html';
+  }
+  function editDomains(projectId) {
+    location.href = `/project-domain-edit.html?projectId=${projectId}`;
+  }
+  function deleteProject(projectId) {
+    if (!confirm('정말 이 프로젝트를 삭제하시겠습니까?')) return;
+
+    fetch(`/api/projects/${projectId}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': 'Bearer ' + token
+      }
+    })
+      .then(res => {
+        if (res.ok) {
+          alert('프로젝트가 삭제되었습니다.');
+          location.reload();
+        } else {
+          alert('삭제 실패');
+        }
+      });
+  }
+</script>
+
+</body>
+</html>

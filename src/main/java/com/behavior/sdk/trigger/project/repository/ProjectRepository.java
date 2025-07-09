@@ -12,5 +12,7 @@ public interface ProjectRepository extends JpaRepository<Project, UUID> {
    List<Project> findAllByDeletedAtIsNull();
 
    Optional<Project> findByIdAndDeletedAtIsNull(UUID id);
+
+   List<Project> findAllByUserIdAndDeletedAtIsNull(UUID userId);
 }
 

@@ -27,6 +27,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.mock;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -95,5 +96,34 @@ class ProjectControllerTest {
         mockMvc.perform(delete("/api/projects/{projectId}", projectId))
                 .andExpect(status().isNoContent());
       BDDMockito.then(service).should().deleteProject(projectId);
+   }
+
+   @Test
+   @DisplayName("PUT /api/projects/{projectId} - 프로젝트 수정")
+   void updateProject() throws Exception {
+      UUID projectId = UUID.randomUUID();
+
+      var updatedResponse = ProjectResponse.builder()
+              .id(projectId)
+              .name("수정된 프로젝트 명")
+              .domain("https://updated-example.com")
+              .createdAt(LocalDateTime.now())
+              .build();
+
+      given(service.updateProject(eq(projectId), any())).willReturn(updatedResponse);
+
+      mockMvc.perform(put("/api/projects/{projectId}", projectId)
+              .contentType(MediaType.APPLICATION_JSON)
+              .accept(MediaType.APPLICATION_JSON)
+              .content("""
+                      {
+                        "name": "수정된 프로젝트 명",
+                        "domain": "https://updated-example.com"
+                      }
+                      """))
+              .andExpect(status().isOk())
+              .andExpect(jsonPath("$.id").value(projectId.toString()))
+              .andExpect(jsonPath("$.name").value("수정된 프로젝트 명"))
+              .andExpect(jsonPath("$.domain").value("https://updated-example.com"));
    }
 }
