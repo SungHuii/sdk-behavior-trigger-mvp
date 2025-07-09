@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -61,7 +62,7 @@ public class ConditionIntegrationTests {
       );
       SecurityContextHolder.getContext().setAuthentication(auth);
 
-      String projectJson = mockMvc.perform(post("/api/projects")
+      String projectJson = mockMvc.perform(post("/api/projects").with(authentication(auth))
             .contentType(MediaType.APPLICATION_JSON)
             .content("{\"name\":\"조건 테스트용 프로젝트\", \"allowedDomains\":[\"https://example.com\"]}"))
             .andExpect(jsonPath("$.id").exists())
