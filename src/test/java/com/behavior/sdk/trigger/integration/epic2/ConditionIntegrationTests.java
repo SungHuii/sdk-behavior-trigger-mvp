@@ -4,6 +4,8 @@ import com.behavior.sdk.trigger.condition.dto.ConditionCreateRequest;
 import com.behavior.sdk.trigger.condition.dto.ConditionResponse;
 import com.behavior.sdk.trigger.config.TestSecurityConfig;
 import com.behavior.sdk.trigger.log_event.enums.EventType;
+import com.behavior.sdk.trigger.user.entity.User;
+import com.behavior.sdk.trigger.user.repository.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.*;
@@ -12,6 +14,9 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -35,12 +40,26 @@ public class ConditionIntegrationTests {
    private MockMvc mockMvc;
    @Autowired
    private ObjectMapper om;
+   @Autowired
+   private UserRepository userRepository;
 
    private UUID projectId;
    private UUID conditionId;
 
    @BeforeAll
    void setUpProject() throws Exception {
+
+      User testUser = userRepository.save(User.builder()
+              .email("segment-test@example.com")
+              .password("encoded-password")
+              .build());
+
+      var auth = new UsernamePasswordAuthenticationToken(
+              testUser, // Principal
+              null,
+              List.of(new SimpleGrantedAuthority("ROLE_USER"))
+      );
+      SecurityContextHolder.getContext().setAuthentication(auth);
 
       String projectJson = mockMvc.perform(post("/api/projects")
             .contentType(MediaType.APPLICATION_JSON)

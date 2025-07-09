@@ -11,6 +11,8 @@ import com.behavior.sdk.trigger.project.repository.ProjectRepository;
 import com.behavior.sdk.trigger.segment.component.SegmentTriggerJob;
 import com.behavior.sdk.trigger.segment.entity.Segment;
 import com.behavior.sdk.trigger.segment.repository.SegmentRepository;
+import com.behavior.sdk.trigger.user.entity.User;
+import com.behavior.sdk.trigger.user.repository.UserRepository;
 import com.behavior.sdk.trigger.visitor.entity.Visitor;
 import com.behavior.sdk.trigger.visitor.repository.VisitorRepository;
 import org.junit.jupiter.api.*;
@@ -41,17 +43,24 @@ public class AutoCreateSegmentIIntegrationTests {
     @Autowired private LogEventRepository logEventRepository;
     @Autowired private SegmentRepository segmentRepository;
     @Autowired private SegmentTriggerJob segmentTriggerJob;
-
+    @Autowired private UserRepository userRepository;
     private UUID projectId;
     private UUID conditionId;
 
     @BeforeAll
     void setup() {
 
+        // 1. User 생성
+        User testUser = userRepository.save(User.builder()
+                .email("segment-test@example.com")
+                .password("encoded-password")
+                .build());
+
         // project 생성
         Project project = Project.builder()
                 .name("테스트 프로젝트")
                 .allowedDomains(List.of("https://example.com"))
+                .user(testUser)
                 .build();
         projectRepository.save(project);
         projectId = project.getId();

@@ -6,6 +6,7 @@ import com.behavior.sdk.trigger.project.dto.ProjectResponse;
 import com.behavior.sdk.trigger.project.service.ProjectService;
 import com.behavior.sdk.trigger.user.entity.User;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.BDDMockito;
@@ -15,6 +16,9 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -47,10 +51,20 @@ class ProjectControllerTest {
    @Autowired
    private ObjectMapper om;
 
+   @BeforeEach
+   void setupSecurityContext() {
+      User mockUser = new User();
+      mockUser.setId(UUID.randomUUID());
+      mockUser.setEmail("test@example.com");
+      mockUser.setPassword("encoded");
+
+      var auth = new UsernamePasswordAuthenticationToken(mockUser, null, List.of(new SimpleGrantedAuthority("ROLE_USER")));
+      SecurityContextHolder.getContext().setAuthentication(auth);
+   }
+
    @Test
    @DisplayName("POST /api/projects - 프로젝트 생성")
    void createProject() throws Exception {
-
       var dto = ProjectResponse.builder()
               .id(UUID.randomUUID())
               .name("테스트 프로젝트")
@@ -68,7 +82,7 @@ class ProjectControllerTest {
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
             .andExpect(jsonPath("$.id").value(dto.getId().toString()))
             .andExpect(jsonPath("$.name").value("테스트 프로젝트"))
-            .andExpect(jsonPath("$.domain").value("https://example.com"))
+            .andExpect(jsonPath("$.allowedDomains").value("https://example.com"))
             .andExpect(jsonPath("$.createdAt").exists());
 
    }
@@ -125,6 +139,6 @@ class ProjectControllerTest {
               .andExpect(status().isOk())
               .andExpect(jsonPath("$.id").value(projectId.toString()))
               .andExpect(jsonPath("$.name").value("수정된 프로젝트 명"))
-              .andExpect(jsonPath("$.domain").value("https://updated-example.com"));
+              .andExpect(jsonPath("$.allowedDomains").value("https://updated-example.com"));
    }
 }

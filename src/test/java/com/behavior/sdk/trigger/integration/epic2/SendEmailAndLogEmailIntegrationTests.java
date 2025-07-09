@@ -6,6 +6,8 @@ import com.behavior.sdk.trigger.email.enums.EmailStatus;
 import com.behavior.sdk.trigger.email.service.EmailServiceImpl;
 import com.behavior.sdk.trigger.email_log.entity.EmailLog;
 import com.behavior.sdk.trigger.email_log.repository.EmailLogRepository;
+import com.behavior.sdk.trigger.user.entity.User;
+import com.behavior.sdk.trigger.user.repository.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sendgrid.SendGrid;
 import org.junit.jupiter.api.*;
@@ -16,11 +18,15 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -46,6 +52,8 @@ public class SendEmailAndLogEmailIntegrationTests {
     private ObjectMapper om;
     @Autowired
     private EmailLogRepository emailLogRepository;
+    @Autowired
+    private UserRepository userRepository;
 
     private UUID projectId;
     private UUID visitorId;
@@ -55,6 +63,18 @@ public class SendEmailAndLogEmailIntegrationTests {
 
     @BeforeAll
     void setup() throws Exception {
+        User testUser = userRepository.save(User.builder()
+                .email("segment-test@example.com")
+                .password("encoded-password")
+                .build());
+
+        var auth = new UsernamePasswordAuthenticationToken(
+                testUser, // Principal
+                null,
+                List.of(new SimpleGrantedAuthority("ROLE_USER"))
+        );
+        SecurityContextHolder.getContext().setAuthentication(auth);
+
         doNothing().when(emailServiceImpl).sendWithSendGrid(any(), any(), any());
         emailLogRepository.deleteAll();
 

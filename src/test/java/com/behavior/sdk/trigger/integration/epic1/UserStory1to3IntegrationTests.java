@@ -6,6 +6,7 @@ import com.behavior.sdk.trigger.config.WebConfig;
 import com.behavior.sdk.trigger.log_event.dto.LogEventCreateRequest;
 import com.behavior.sdk.trigger.log_event.enums.EventType;
 import com.behavior.sdk.trigger.project.dto.ProjectCreateRequest;
+import com.behavior.sdk.trigger.project.repository.ProjectRepository;
 import com.behavior.sdk.trigger.user.entity.User;
 import com.behavior.sdk.trigger.user.repository.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -17,6 +18,10 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
@@ -48,17 +53,39 @@ public class UserStory1to3IntegrationTests {
    @Autowired
    private UserRepository userRepository;
 
+   @Autowired
+   private ProjectRepository projectRepository;
+
    private UUID projectId;
    private UUID visitorId;
    private User testUser;
 
    @BeforeAll
    void setup() {
+      projectRepository.deleteAll();
+      userRepository.deleteAll();
+
+      UUID userId = UUID.randomUUID();
       testUser = userRepository.save(User.builder()
-              .email("test@example.com")
-              .password("encoded-password") // 인코딩된 비밀번호여야 하지만 테스트이므로 무관
+              .email("test+" + userId + "@example.com")
+              .password("encoded-password")
               .build());
+
+      // SecurityContext에 수동으로 인증 객체 주입
+      var auth = new UsernamePasswordAuthenticationToken(
+              testUser,
+              null,
+              List.of(new SimpleGrantedAuthority("ROLE_USER")) // 권한이 있다면 명시
+      );
+      SecurityContextHolder.getContext().setAuthentication(auth);
    }
+
+   @AfterEach
+   void tearDown() {
+      // SecurityContext 초기화
+      SecurityContextHolder.clearContext();
+   }
+
 
    @Test
    @Order(1)
@@ -68,7 +95,6 @@ public class UserStory1to3IntegrationTests {
       String body = om.writeValueAsString(request);
 
       String json = mockMvc.perform(post("/api/projects")
-                      .with(SecurityMockMvcRequestPostProcessors.user(testUser)) // ✅ 인증 유저 주입
                       .contentType(MediaType.APPLICATION_JSON)
                       .content(body))
               .andExpect(status().isCreated())

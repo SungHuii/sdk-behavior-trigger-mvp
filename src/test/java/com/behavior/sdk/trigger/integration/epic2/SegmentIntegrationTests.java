@@ -6,6 +6,8 @@ import com.behavior.sdk.trigger.email_template.repository.EmailTemplateRepositor
 import com.behavior.sdk.trigger.segment.dto.SegmentCreateRequest;
 import com.behavior.sdk.trigger.segment.entity.Segment;
 import com.behavior.sdk.trigger.segment.repository.SegmentRepository;
+import com.behavior.sdk.trigger.user.entity.User;
+import com.behavior.sdk.trigger.user.repository.UserRepository;
 import com.behavior.sdk.trigger.visitor.entity.Visitor;
 import com.behavior.sdk.trigger.visitor.repository.VisitorRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -17,10 +19,14 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
@@ -52,12 +58,12 @@ public class SegmentIntegrationTests {
     private VisitorRepository visitorRepository;
     @Autowired
     private EmailTemplateRepository emailTemplateRepository;
+    @Autowired
+    private UserRepository userRepository;
 
     private UUID projectId;
     private UUID conditionId;
     private UUID segmentId;
-
-    private UUID visitorId;
     private UUID templateId;
 
     @MockitoBean
@@ -65,6 +71,18 @@ public class SegmentIntegrationTests {
 
     @BeforeAll
     void setup() throws Exception {
+
+        User testUser = userRepository.save(User.builder()
+                .email("segment-test@example.com")
+                .password("encoded-password")
+                .build());
+
+        var auth = new UsernamePasswordAuthenticationToken(
+                testUser, // Principal
+                null,
+                List.of(new SimpleGrantedAuthority("ROLE_USER"))
+        );
+        SecurityContextHolder.getContext().setAuthentication(auth);
 
         String projectJson = mockMvc.perform(post("/api/projects")
                 .contentType(MediaType.APPLICATION_JSON)

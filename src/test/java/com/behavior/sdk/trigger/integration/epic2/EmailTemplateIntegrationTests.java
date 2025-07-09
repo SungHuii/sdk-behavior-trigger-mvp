@@ -2,6 +2,8 @@ package com.behavior.sdk.trigger.integration.epic2;
 
 import com.behavior.sdk.trigger.config.TestSecurityConfig;
 import com.behavior.sdk.trigger.email_template.dto.EmailTemplateCreateRequest;
+import com.behavior.sdk.trigger.user.entity.User;
+import com.behavior.sdk.trigger.user.repository.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,9 +11,13 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -33,6 +39,8 @@ public class EmailTemplateIntegrationTests {
     MockMvc mockMvc;
     @Autowired
     ObjectMapper om;
+    @Autowired
+    UserRepository userRepository;
 
     private UUID projectId;
     private UUID conditionId;
@@ -40,6 +48,19 @@ public class EmailTemplateIntegrationTests {
 
     @BeforeAll
     void setUpCondition() throws Exception {
+
+        User testUser = userRepository.save(User.builder()
+                .email("segment-test@example.com")
+                .password("encoded-password")
+                .build());
+
+        var auth = new UsernamePasswordAuthenticationToken(
+                testUser, // Principal
+                null,
+                List.of(new SimpleGrantedAuthority("ROLE_USER"))
+        );
+        SecurityContextHolder.getContext().setAuthentication(auth);
+
         // Project 생성
         String projectJson = mockMvc.perform(post("/api/projects")
                         .contentType(MediaType.APPLICATION_JSON)
