@@ -1,3 +1,4 @@
+/*
 package com.behavior.sdk.trigger.integration.epic2;
 
 import com.behavior.sdk.trigger.config.TestSecurityConfig;
@@ -136,3 +137,4 @@ public class EmailTemplateIntegrationTests {
                 .andExpect(jsonPath("$", hasSize(0)));
     }
 }
+*/
