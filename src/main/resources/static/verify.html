@@ -2,59 +2,68 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <title>로그 트리거 테스트 페이지</title>
+  <title>로그 트리거 + 이메일 수집 테스트</title>
 
+  <!-- ✅ 사용자 이메일 설정 -->
   <script>
-    const queryParams = new URLSearchParams(location.search);
-    const projectKey = queryParams.get('projectKey');
-    if (!projectKey) alert('projectKey가 전달되지 않았습니다.');
+    // 로그인된 사용자의 이메일을 가정한 예시
+    window.__USER_EMAIL__ = 'tester@example.com';
+  </script>
 
-    const sdk = document.createElement('script');
-    sdk.src = "https://behavior-tracking-sdk.vercel.app/sdk.js";
-    sdk.dataset.key = projectKey;
+  <!-- ✅ SDK 스니펫 삽입 -->
+  <script src="https://behavior-tracking-sdk.vercel.app/sdk.js"></script>
 
-    // 개발용 API 서버 분기
-    if (location.hostname.includes('localhost')) {
-      sdk.dataset.api = 'http://localhost:8080';
-    }
+  <!-- ✅ SDK 초기화 -->
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      const projectKey = '75421459-3f88-436a-a0bb-3d06934b0864'; // ← 테스트할 프로젝트 키
+      const apiUrl = 'http://localhost:8080'; // ← 로컬 환경에서 테스트 시
 
-    // ✅ 핵심 포인트: SDK 로드 완료 후 BehaviorSDK.init() 호출
-    sdk.onload = () => {
-      console.log('[SDK INIT] 호출됨:', {
-        key: sdk.dataset.key,
-        api: sdk.dataset.api
-      });
+      if (!projectKey) {
+        alert('projectKey가 없습니다.');
+        return;
+      }
 
-      window.BehaviorSDK.init({
-        projectKey: sdk.dataset.key,
-        apiUrl: sdk.dataset.api,
-        scrollThreshold: 0.3
-      });
-    };
-
-    document.head.appendChild(sdk);
+      if (window.BehaviorSDK && window.BehaviorSDK.init) {
+        window.BehaviorSDK.init({
+          projectKey,
+          apiUrl,
+          scrollThreshold: 0.3,
+          collectEmail: true,              // ✅ 이메일 수집 활성화
+          emailKey: '__USER_EMAIL__'       // ✅ 글로벌 변수명 지정
+        });
+        console.log('[SDK] init 실행됨');
+      } else {
+        console.warn('[SDK] BehaviorSDK가 로드되지 않았습니다.');
+      }
+    });
   </script>
 
   <style>
     body { font-family: sans-serif; padding: 2rem; }
-    #scrollTarget { margin-top: 1500px; padding: 2rem; background: #f0f0f0; text-align: center; }
+    #scrollTarget {
+      margin-top: 1500px;
+      padding: 2rem;
+      background: #f0f0f0;
+      text-align: center;
+    }
   </style>
 </head>
 <body>
 
-<h1>✅ SDK 조건 트리거 테스트</h1>
+<h1>✅ SDK 조건 트리거 + 이메일 수집 테스트</h1>
 
-<p>이 페이지는 다음 조건을 트리거합니다:</p>
 <ul>
-  <li>📄 page_view 전송</li>
-  <li>🕒 일정 시간 체류 (예: 5초 이상 → stay_time)</li>
-  <li>🖱 버튼 클릭 (click)</li>
-  <li>⬇ 30% 이상 스크롤 (scroll_depth)</li>
+  <li>📄 page_view 이벤트 발생</li>
+  <li>🕒 stay_time (예: 5초 이상)</li>
+  <li>🖱 클릭 이벤트</li>
+  <li>⬇ scroll_depth (30% 이상)</li>
+  <li>📧 이메일 자동 수집 (console 및 서버에서 확인 가능)</li>
 </ul>
 
 <hr>
 
-<button onclick="alert('클릭 이벤트 발생!')">버튼 클릭 테스트</button>
+<button onclick="alert('클릭 이벤트 발생!')">🖱 클릭 테스트</button>
 <div id="scrollTarget">⬇ 여기까지 스크롤하면 scroll_depth 조건이 발동됩니다</div>
 
 </body>

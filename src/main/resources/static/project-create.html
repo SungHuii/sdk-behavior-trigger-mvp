@@ -11,6 +11,9 @@
     }
     h1 {
       color: #333;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
     form {
       display: flex;
@@ -28,6 +31,12 @@
       border: none;
       cursor: pointer;
     }
+    #btnBack {
+      background: #6c757d;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+    }
     #result {
       margin-top: 1rem;
       color: red;
@@ -36,7 +45,11 @@
 </head>
 <body>
 
-<h1>새 프로젝트 등록</h1>
+<h1>
+  새 프로젝트 등록
+  <button id="btnBack">← 뒤로가기</button>
+</h1>
+
 <form id="createForm">
   <input type="text" id="name" placeholder="프로젝트 이름" required />
   <input type="text" id="domain" placeholder="예: https://example.com" required />
@@ -60,7 +73,6 @@
     const name = document.getElementById('name').value.trim();
     const domain = document.getElementById('domain').value.trim();
 
-    // ✅ 도메인을 배열로 포장해서 전송
     const payload = {
       name,
       allowedDomains: [domain]
@@ -87,6 +99,11 @@
       console.error(err);
       result.textContent = '요청 중 오류가 발생했습니다.';
     }
+  });
+
+  // 뒤로가기 버튼
+  document.getElementById('btnBack').addEventListener('click', () => {
+    location.href = '/me.html';
   });
 </script>
 

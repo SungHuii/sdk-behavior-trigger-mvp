@@ -32,6 +32,14 @@
       margin-top: 1rem;
       color: red;
     }
+    .link-btn {
+      margin-top: 1rem;
+      background: transparent;
+      color: #007bff;
+      border: none;
+      cursor: pointer;
+      text-decoration: underline;
+    }
   </style>
 </head>
 <body>
@@ -42,7 +50,7 @@
   <input type="password" id="password" placeholder="비밀번호" required />
   <button type="submit">로그인</button>
 </form>
-
+<button class="link-btn" onclick="location.href='/signup.html'">계정이 없으신가요? 회원가입</button>
 <p id="result"></p>
 
 <script>

@@ -27,6 +27,12 @@ public class ProjectDomainValidationInterceptor implements HandlerInterceptor {
 
         log.info("[Interceptor] 요청 URI: {}", request.getRequestURI());
 
+        String uri = request.getRequestURI();
+        if (uri.contains("/logs") || uri.contains("/logs.html")) {
+            log.info("[Interceptor] log 페이지 접근 허용 (도메인 검증 생략");
+            return true;
+        }
+
         // projectId 검증
         String projectIdStr = request.getParameter("projectId");
         if (projectIdStr == null) {

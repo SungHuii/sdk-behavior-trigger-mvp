@@ -1,17 +1,45 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Condition 생성</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 2rem;
+      background: #f9f9f9;
+    }
+    h1 {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: #333;
+    }
+    label {
+      display: block;
+      margin-bottom: 1rem;
+    }
+    input, select, button {
+      padding: 0.5rem;
+      font-size: 1rem;
+    }
+    button {
+      cursor: pointer;
+      background: #007bff;
+      color: white;
+      border: none;
+    }
+    #btnBack {
+      background: #6c757d;
+      margin-left: 1rem;
+    }
+  </style>
 
-  <!-- SDK 동적 삽입 -->
   <script>
     const queryParams = new URLSearchParams(location.search);
     const projectKey = queryParams.get('projectKey');
 
-    if (!projectKey) {
-      alert("projectKey가 전달되지 않았습니다.");
-    }
+    if (!projectKey) alert("projectKey가 전달되지 않았습니다.");
 
     const sdk = document.createElement('script');
     sdk.src = "https://behavior-tracking-sdk.vercel.app/sdk.js";
@@ -25,7 +53,11 @@
   </script>
 </head>
 <body>
-<h1>조건 생성</h1>
+
+<h1>
+  조건 생성
+  <button id="btnBack">← 뒤로가기</button>
+</h1>
 
 <label>EventType:
   <select id="eventType">
@@ -34,7 +66,7 @@
     <option value="STAY_TIME">STAY_TIME</option>
     <option value="SCROLL_DEPTH">SCROLL_DEPTH</option>
   </select>
-</label><br>
+</label>
 
 <label>Operator:
   <select id="operator">
@@ -42,40 +74,62 @@
     <option value="EQUAL">EQUAL</option>
     <option value="LESS_THAN">LESS_THAN</option>
   </select>
-</label><br>
+</label>
 
 <label>Threshold:
   <input type="number" id="threshold" value="5" />
-</label><br>
+</label>
 
 <label>Page URL:
-  <input type="text" id="pageUrl" value="" />
-</label><br><br>
+  <select id="pageUrl">
+    <option disabled selected>도메인을 불러오는 중...</option>
+  </select>
+</label>
 
 <button id="btnCreate">생성</button>
 
 <script>
-  // 현재 페이지 URL에서 쿼리스트링 제거한 기본값 설정
-  document.getElementById('pageUrl').value =
-    location.origin + location.pathname.replace('condition.html', 'verify.html');
+  const token = localStorage.getItem('token');
+  const projectId = new URLSearchParams(location.search).get('projectKey');
+  const pageUrlSelect = document.getElementById('pageUrl');
 
+  const apiUrl = location.hostname.includes('localhost')
+    ? 'http://localhost:8080'
+    : 'https://sdk-behavior-trigger-mvp.onrender.com';
+
+  // 도메인 목록 불러오기
+  fetch(`${apiUrl}/api/projects/${projectId}`, {
+    headers: { 'Authorization': 'Bearer ' + token }
+  })
+    .then(res => res.json())
+    .then(project => {
+      const domains = project.allowedDomains || [];
+      pageUrlSelect.innerHTML = '';
+
+      if (domains.length === 0) {
+        pageUrlSelect.innerHTML = '<option disabled>등록된 도메인이 없습니다.</option>';
+        return;
+      }
+
+      domains.forEach(domain => {
+        const option = document.createElement('option');
+        option.value = domain;
+        option.textContent = domain;
+        pageUrlSelect.appendChild(option);
+      });
+    });
+
+  // 조건 생성
   document.getElementById('btnCreate').addEventListener('click', async () => {
-    const sdkScript = document.querySelector('script[src*="sdk.js"]');
-    const projectId = sdkScript?.dataset.key;
-    const apiUrl = sdkScript?.dataset.api || (
-      location.hostname.includes('localhost')
-        ? 'http://localhost:8080'
-        : 'https://sdk-behavior-trigger-mvp.onrender.com'
-    );
-
-    const pageUrlValue = document.getElementById('pageUrl').value;
+    const selectedPageUrl = pageUrlSelect.value;
+    if (!selectedPageUrl) return alert("Page URL을 선택해주세요.");
 
     const payload = {
       projectId,
       eventType: document.getElementById('eventType').value,
       operator: document.getElementById('operator').value,
       threshold: parseInt(document.getElementById('threshold').value, 10),
-      pageUrl: pageUrlValue
+      pageUrl: selectedPageUrl
     };
 
     try {
@@ -83,19 +137,14 @@
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + localStorage.getItem('token')
+          'Authorization': 'Bearer ' + token
         },
         body: JSON.stringify(payload)
       });
 
       if (res.ok) {
         alert('조건이 성공적으로 생성되었습니다!');
-
-        // ✅ 사용자가 작성한 pageUrl에 projectKey 추가 후 이동
-        const redirectUrl = new URL(pageUrlValue);
-        redirectUrl.searchParams.set('projectKey', projectId);
-        window.location.href = redirectUrl.toString();
-
+        location.href = `/condition-list.html?projectKey=${projectId}`;
       } else {
         const text = await res.text();
         alert(`조건 생성 실패: ${res.status}\n${text}`);
@@ -105,6 +154,12 @@
       alert('조건 생성 중 오류 발생');
     }
   });
+
+  // 뒤로가기
+  document.getElementById('btnBack').addEventListener('click', () => {
+    location.href = '/me.html';
+  });
 </script>
+
 </body>
 </html>

@@ -1,5 +1,7 @@
 package com.behavior.sdk.trigger.project.service;
 
+import com.behavior.sdk.trigger.condition.entity.Condition;
+import com.behavior.sdk.trigger.condition.repository.ConditionRepository;
 import com.behavior.sdk.trigger.project.dto.ProjectCreateRequest;
 import com.behavior.sdk.trigger.project.dto.ProjectResponse;
 import com.behavior.sdk.trigger.project.dto.ProjectUpdateRequest;
@@ -20,6 +22,7 @@ import java.util.UUID;
 public class ProjectServiceImpl implements ProjectService {
 
     private final ProjectRepository projectRepository;
+    private final ConditionRepository conditionRepository;
 
     private ProjectResponse toDto(Project p) {
         return ProjectResponse.builder()
@@ -85,6 +88,17 @@ public class ProjectServiceImpl implements ProjectService {
 
         project.softDelete();
         projectRepository.save(project);
+
+        /*
+         * 프로젝트 삭제 시 해당 프로젝트에 속한 모든 조건을 soft-delete 처리.
+         * 추 후, Project, Condition 엔티티에 CascadeType 설정을 통해
+         * 조건 삭제를 자동으로 처리할 수 있도록 처리 예정.
+         * */
+        List<Condition> conditions = conditionRepository.findByProjectId(projectId);
+        for (Condition c : conditions) {
+            c.softDelete();
+            conditionRepository.save(c);
+        }
     }
 
     @Override

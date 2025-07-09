@@ -81,16 +81,6 @@ public class ProjectController {
    public ResponseEntity<Void> deleteProject(@PathVariable UUID projectId) {
       projectService.deleteProject(projectId);
 
-      /*
-      * 프로젝트 삭제 시 해당 프로젝트에 속한 모든 조건을 soft-delete 처리.
-      * 추 후, Project, Condition 엔티티에 CascadeType 설정을 통해
-      * 조건 삭제를 자동으로 처리할 수 있도록 처리 예정.
-      * */
-      List<Condition> conditions = conditionRepository.findByProjectId(projectId);
-      for (Condition c : conditions) {
-          c.softDelete();
-      }
-
       return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
    }
 
