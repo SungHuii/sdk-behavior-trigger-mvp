@@ -13,7 +13,6 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -22,14 +21,13 @@ import java.util.UUID;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @Import(TestSecurityConfig.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class VisitorEmailIntegrationTests {
 
     @Autowired MockMvc mockMvc;
@@ -41,23 +39,22 @@ public class VisitorEmailIntegrationTests {
     @BeforeAll
     void setup() {
         User testUser = userRepository.saveAndFlush(User.builder()
-                .email("segment-test@example.com")
-                .password("encoded-password")
+                .email("test@example.com")
+                .password("pw")
                 .build());
 
         auth = new UsernamePasswordAuthenticationToken(
-                testUser, null, List.of(new SimpleGrantedAuthority("ROLE_USER"))
-        );
+                testUser, null, List.of(new SimpleGrantedAuthority("ROLE_USER")));
     }
 
     @Test
-    @DisplayName("방문자가 구독 폼에 이메일 입력 후, 이메일 업데이트 API 호출, 저장")
+    @DisplayName("방문자 이메일 등록 API")
     void t_updateEmail() throws Exception {
 
         String projectJson = mockMvc.perform(post("/api/projects")
                         .with(authentication(auth))
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"name\":\"테스트용 프로젝트\", \"allowedDomains\":[\"https://example.com\"]}"))
+                        .content("{\"name\":\"테스트 프로젝트\", \"allowedDomains\":[\"https://example.com\"]}"))
                 .andExpect(status().isCreated())
                 .andReturn().getResponse().getContentAsString();
         UUID projectId = UUID.fromString(om.readTree(projectJson).get("id").asText());
@@ -68,13 +65,12 @@ public class VisitorEmailIntegrationTests {
                 .andReturn().getResponse().getContentAsString();
         UUID visitorId = UUID.fromString(om.readTree(visitorJson).get("id").asText());
 
-        VisitorEmailRequest request = new VisitorEmailRequest();
-        request.setEmail("test@example.com");
+        VisitorEmailRequest req = new VisitorEmailRequest();
+        req.setEmail("tester@example.com");
 
         mockMvc.perform(post("/api/visitors/{visitorId}/email", visitorId)
-                        .with(authentication(auth))
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(om.writeValueAsString(request)))
+                        .content(om.writeValueAsString(req)))
                 .andExpect(status().isOk());
     }
 }
