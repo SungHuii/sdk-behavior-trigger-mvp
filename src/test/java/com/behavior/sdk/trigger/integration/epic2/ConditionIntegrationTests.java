@@ -54,7 +54,7 @@ public class ConditionIntegrationTests {
    @BeforeAll
    void setUpProject() throws Exception {
 
-      User testUser = userRepository.save(User.builder()
+      User testUser = userRepository.saveAndFlush(User.builder()
               .email("segment-test@example.com")
               .password("encoded-password")
               .build());
@@ -72,7 +72,7 @@ public class ConditionIntegrationTests {
               .allowedDomains(List.of("https://example.com"))
               .build();
 
-      projectId = projectRepository.save(project).getId();
+      projectId = projectRepository.saveAndFlush(project).getId();
    }
 
    @Test
