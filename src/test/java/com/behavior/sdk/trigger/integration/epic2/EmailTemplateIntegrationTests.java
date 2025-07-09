@@ -13,6 +13,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -22,9 +23,9 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.hasSize;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -38,10 +39,10 @@ public class EmailTemplateIntegrationTests {
     @Autowired ObjectMapper om;
     @Autowired UserRepository userRepository;
 
-    private UsernamePasswordAuthenticationToken auth;
     private UUID projectId;
     private UUID conditionId;
     private UUID templateId;
+    private UsernamePasswordAuthenticationToken auth;
 
     @BeforeAll
     void setUp() throws Exception {
@@ -55,7 +56,7 @@ public class EmailTemplateIntegrationTests {
 
         // Create Project
         String projectJson = mockMvc.perform(post("/api/projects")
-                        .with(authentication(auth))
+                        .with(SecurityMockMvcRequestPostProcessors.authentication(auth))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"name\":\"조건 테스트용 프로젝트\", \"allowedDomains\":[\"https://example.com\"]}"))
                 .andExpect(status().isCreated())
@@ -71,7 +72,7 @@ public class EmailTemplateIntegrationTests {
                 "pageUrl", "https://example.com/event"
         );
         String conditionJson = mockMvc.perform(post("/api/conditions")
-                        .with(authentication(auth))
+                        .with(SecurityMockMvcRequestPostProcessors.authentication(auth))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(om.writeValueAsString(req)))
                 .andExpect(status().isCreated())
@@ -81,42 +82,56 @@ public class EmailTemplateIntegrationTests {
 
     @Test
     @Order(1)
-    void t1_create() throws Exception {
+    @DisplayName("1. 이메일 템플릿 생성")
+    void t1_createEmailTemplate() throws Exception {
         EmailTemplateCreateRequest request = EmailTemplateCreateRequest.builder()
                 .conditionId(conditionId)
-                .subject("테스트 제목")
-                .body("안녕하세요 {{visitorName}}님")
+                .subject("테스트 이벤트 제목")
+                .body("안녕하세요, {{visitorName}}님! 테스트 이벤트에 초대합니다.")
                 .build();
 
+        String body = om.writeValueAsString(request);
+
         String json = mockMvc.perform(post("/api/email-templates")
-                        .with(authentication(auth))
+                        .with(SecurityMockMvcRequestPostProcessors.authentication(auth))
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(om.writeValueAsString(request)))
+                        .content(body))
                 .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.id").exists())
                 .andExpect(jsonPath("$.conditionId").value(conditionId.toString()))
-                .andReturn().getResponse().getContentAsString();
+                .andExpect(jsonPath("$.subject").value("테스트 이벤트 제목"))
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
         templateId = UUID.fromString(om.readTree(json).get("id").asText());
         assertThat(templateId).isNotNull();
     }
 
     @Test
     @Order(2)
-    void t2_list() throws Exception {
+    @DisplayName("2. 이메일 템플릿 목록 조회")
+    void t2_listEmailTemplates() throws Exception {
         mockMvc.perform(get("/api/email-templates/{conditionId}", conditionId)
-                        .with(authentication(auth)))
+                        .with(SecurityMockMvcRequestPostProcessors.authentication(auth)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(1)));
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].id").value(templateId.toString()))
+                .andExpect(jsonPath("$[0].conditionId").value(conditionId.toString()))
+                .andExpect(jsonPath("$[0].subject").value("테스트 이벤트 제목"))
+                .andExpect(jsonPath("$[0].body").value("안녕하세요, {{visitorName}}님! 테스트 이벤트에 초대합니다."));
     }
 
     @Test
     @Order(3)
-    void t3_delete() throws Exception {
+    @DisplayName("3. 이메일 템플릿 삭제(soft delete)")
+    void t3_softDeleteEmailTemplate() throws Exception {
         mockMvc.perform(delete("/api/email-templates/{templateId}", templateId)
-                        .with(authentication(auth)))
+                        .with(SecurityMockMvcRequestPostProcessors.authentication(auth)))
                 .andExpect(status().isNoContent());
 
         mockMvc.perform(get("/api/email-templates/{conditionId}", conditionId)
-                        .with(authentication(auth)))
+                        .with(SecurityMockMvcRequestPostProcessors.authentication(auth)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(0)));
     }
