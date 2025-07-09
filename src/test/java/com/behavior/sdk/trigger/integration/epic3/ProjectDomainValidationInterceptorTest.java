@@ -12,6 +12,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.List;
 import java.util.UUID;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -35,7 +36,7 @@ public class ProjectDomainValidationInterceptorTest {
 
         Project project = Project.builder()
                 .name("Test Project")
-                .domain("https://valid-domain.com")
+                .allowedDomains(List.of("https://valid-domain.com"))
                 .build();
         projectRepository.deleteAll();
         validProjectId = projectRepository.save(project).getId();

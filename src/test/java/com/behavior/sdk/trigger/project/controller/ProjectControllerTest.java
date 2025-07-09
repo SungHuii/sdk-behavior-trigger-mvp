@@ -4,6 +4,7 @@ import com.behavior.sdk.trigger.config.TestSecurityConfig;
 import com.behavior.sdk.trigger.project.dto.ProjectCreateRequest;
 import com.behavior.sdk.trigger.project.dto.ProjectResponse;
 import com.behavior.sdk.trigger.project.service.ProjectService;
+import com.behavior.sdk.trigger.user.entity.User;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -53,16 +54,16 @@ class ProjectControllerTest {
       var dto = ProjectResponse.builder()
               .id(UUID.randomUUID())
               .name("테스트 프로젝트")
-              .domain("https://example.com")
+              .allowedDomains(List.of("https://example.com"))
               .createdAt(LocalDateTime.now())
               .build();
 
-      given(service.createProject(any(ProjectCreateRequest.class))).willReturn(dto);
+      given(service.createProject(any(ProjectCreateRequest.class), any(User.class))).willReturn(dto);
 
       mockMvc.perform(post("/api/projects")
                   .contentType(MediaType.APPLICATION_JSON)
                   .accept(MediaType.APPLICATION_JSON)
-                  .content(om.writeValueAsString(new ProjectCreateRequest("테스트 프로젝트", "https://example.com"))))
+                  .content(om.writeValueAsString(new ProjectCreateRequest("테스트 프로젝트", List.of("https://example.com")))))
             .andExpect(status().isCreated())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
             .andExpect(jsonPath("$.id").value(dto.getId().toString()))
@@ -106,7 +107,7 @@ class ProjectControllerTest {
       var updatedResponse = ProjectResponse.builder()
               .id(projectId)
               .name("수정된 프로젝트 명")
-              .domain("https://updated-example.com")
+              .allowedDomains(List.of("https://updated-example.com"))
               .createdAt(LocalDateTime.now())
               .build();
 
