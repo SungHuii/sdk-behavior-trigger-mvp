@@ -51,7 +51,7 @@ public class ConditionIntegrationTests {
    private UUID projectId;
    private UUID conditionId;
 
-   @BeforeAll
+   @BeforeEach
    void setUpProject() throws Exception {
 
       User testUser = userRepository.saveAndFlush(User.builder()
