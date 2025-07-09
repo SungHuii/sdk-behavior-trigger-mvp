@@ -4,6 +4,8 @@ import com.behavior.sdk.trigger.condition.dto.ConditionCreateRequest;
 import com.behavior.sdk.trigger.condition.dto.ConditionResponse;
 import com.behavior.sdk.trigger.config.TestSecurityConfig;
 import com.behavior.sdk.trigger.log_event.enums.EventType;
+import com.behavior.sdk.trigger.project.entity.Project;
+import com.behavior.sdk.trigger.project.repository.ProjectRepository;
 import com.behavior.sdk.trigger.user.entity.User;
 import com.behavior.sdk.trigger.user.repository.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -43,6 +45,8 @@ public class ConditionIntegrationTests {
    private ObjectMapper om;
    @Autowired
    private UserRepository userRepository;
+   @Autowired
+   private ProjectRepository projectRepository;
 
    private UUID projectId;
    private UUID conditionId;
@@ -62,13 +66,13 @@ public class ConditionIntegrationTests {
       );
       SecurityContextHolder.getContext().setAuthentication(auth);
 
-      String projectJson = mockMvc.perform(post("/api/projects").with(authentication(auth))
-            .contentType(MediaType.APPLICATION_JSON)
-            .content("{\"name\":\"조건 테스트용 프로젝트\", \"allowedDomains\":[\"https://example.com\"]}"))
-            .andExpect(jsonPath("$.id").exists())
-            .andReturn().getResponse().getContentAsString();
+      Project project = Project.builder()
+              .name("조건 테스트용 프로젝트")
+              .user(testUser)
+              .allowedDomains(List.of("https://example.com"))
+              .build();
 
-      projectId = UUID.fromString(om.readTree(projectJson).get("id").asText());
+      projectId = projectRepository.save(project).getId();
    }
 
    @Test
