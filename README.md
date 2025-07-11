@@ -37,11 +37,12 @@
 ## 🌐 배포 및 접근
 
 - **SDK 배포 URL (Vercel)**:  
-  👉 [https://behavior-tracking-sdk.vercel.app/sdk.js](https://behavior-tracking-sdk.vercel.app/sdk.js)
+  👉 [SDK 배포 링크](https://behavior-tracking-sdk.vercel.app/sdk.js)
+  👉 [SDK GitHub] (https://github.com/SungHuii/behavior-tracking-sdk)
 
 
 - **Swagger API 문서**:  
-  👉 `https://sdk-behavior-trigger-mvp.onrender.com/swagger-ui/index.html`
+  👉 [Swagger 문서](https://sdk-behavior-trigger-mvp.onrender.com/swagger-ui/index.html)
 
 ---
 
