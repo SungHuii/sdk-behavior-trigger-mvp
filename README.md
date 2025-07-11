@@ -43,9 +43,6 @@
 - **Swagger API 문서**:  
   👉 `https://sdk-behavior-trigger-mvp.onrender.com/swagger-ui/index.html`
 
-- **(선택) Admin 페이지 or Postman 컬렉션**:  
-  👉 `링크 or 캡처`
-
 ---
 
 ## 🗂️ 프로젝트 구조
@@ -93,7 +90,7 @@ src
 
 > 최신 ERD 기반 설계, SaaS 구조 확장 고려됨
 
-[✔ ERD 보기](https://dbdiagram.io/d/your-schema-link)
+[✔ ERD 보기](https://dbdiagram.io/d/sdk-behavior-trigger-mvp-67fb965b4f7afba184664689)
 
 - 총 12개 테이블(users, projects, visitors, logs, conditions, segments, email_template, email_batch, email_log 등)
 - trigger 기반 설계 구조
@@ -102,11 +99,56 @@ src
 
 ## 🔄 개발 프로세스
 
-- 유저 스토리 기반 개발 (에픽/기능 단위로 관리)
-- 기능별 브랜치 전략: `feat/* → dev → main`
-- CI: GitHub Actions (테스트 자동화)
+**VisiLog 프로젝트는 유저 스토리 기반의 기능 단위 개발 방식**으로 진행되었습니다.  
+기획 → 설계 → 구현 → 테스트까지의 전체 흐름을 단계적으로 관리했습니다.
+
+### 📌 개발 단계
+
+1. **에픽 정의**
+    - 주요 기능 영역을 에픽 단위로 나눔 (예: 방문자 추적, 조건 설정, 이메일 발송 등)
+
+2. **유저 스토리 도출**
+    - 각 에픽을 사용자의 입장에서 유저 스토리로 세분화
+    - 예: "방문자로서 내가 사이트를 방문하면 행동 로그가 수집된다"
+
+3. **유저 시나리오 작성**
+    - 시나리오 기반 흐름 설계 (조건 만족 → 세그먼트 생성 → 이메일 발송 등)
+
+4. **ERD 설계**
+    - 유저 시나리오에 필요한 데이터 구조 설계
+    - dbdiagram.io를 활용한 테이블 정의 및 관계 매핑
+
+5. **시퀀스 다이어그램 설계**
+    - 유저 액션에 따른 백엔드 흐름을 시각화
+    - mermaid.js 기반으로 API 흐름 설계
+
+6. **API 명세 작성**
+    - Swagger 기반 REST API 문서화
+    - 요청/응답 스펙, 상태 코드, 예외 케이스 정의
+
+7. **기능 구현**
+   - 실제 구현은 다음과 같은 순서로 진행:
+    1) **Entity**: 먼저 도메인 모델 정의 및 관계 설정
+    2) **Repository**: 엔티티 기반 CRUD 인터페이스 구성
+    3) **DTO**: 요청/응답 데이터를 분리하여 정의
+    4) **Service**: 핵심 비즈니스 로직 구현
+    5) **Controller**: REST API 엔드포인트 구성 및 매핑
+    - 계층적 구조를 기반으로 각 단계를 테스트하며 개발 진행
+
+8. **통합 테스트 및 CI 구성**
+    - Spring MockMvc를 활용한 통합 테스트
+    - GitHub Actions로 자동 테스트 및 빌드 파이프라인 구성
 
 ---
+
+### 🔀 Git 전략
+
+- **기능별 브랜치**: `feat/*`
+- **통합 브랜치**: `dev`
+- **배포용 메인 브랜치**: `main`
+- PR 머지 전 테스트 → `dev` 통합 → `main` 릴리즈 방식 유지
+
+
 
 ## 🧪 테스트 전략
 
