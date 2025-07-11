@@ -3,6 +3,8 @@ package com.behavior.sdk.trigger.integration.epic1;
 import com.behavior.sdk.trigger.config.TestSecurityConfig;
 import com.behavior.sdk.trigger.log_event.dto.LogEventCreateRequest;
 import com.behavior.sdk.trigger.log_event.enums.EventType;
+import com.behavior.sdk.trigger.user.entity.User;
+import com.behavior.sdk.trigger.user.repository.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,10 +12,14 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 import static org.hamcrest.Matchers.hasSize;
@@ -39,8 +45,26 @@ public class UserStory1to5IntegrationTests {
     private UUID visitorB;
     LocalDateTime now = LocalDateTime.now();
 
+    private User testUser;
+
+    @Autowired
+    private UserRepository userRepository;
     @BeforeAll
     void setup() throws Exception {
+
+        UUID userId = UUID.randomUUID();
+        testUser = userRepository.save(User.builder()
+                .email("test+" + userId + "@example.com")
+                .password("encoded-password")
+                .build());
+
+        var auth = new UsernamePasswordAuthenticationToken(
+                testUser,
+                null,
+                List.of(new SimpleGrantedAuthority("ROLE_USER"))
+        );
+        SecurityContextHolder.getContext().setAuthentication(auth);
+
         String projectJson = mockMvc.perform(post("/api/projects")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"name\": \"유저스토리 1-5 통합 테스트 프로젝트\", \"domain\": \"https://example.com\"}"))
@@ -81,6 +105,7 @@ public class UserStory1to5IntegrationTests {
             mockMvc.perform(post("/api/logs")
                     .param("projectId", projectId.toString())
                     .param("visitorId", visitorA.toString())
+                    .header("Origin", "https://example.com")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(om.writeValueAsString(requestA)))
                     .andExpect(status().isCreated());
@@ -94,6 +119,7 @@ public class UserStory1to5IntegrationTests {
         mockMvc.perform(post("/api/logs")
                 .param("projectId", projectId.toString())
                 .param("visitorId", visitorB.toString())
+                .header("Origin", "https://example.com")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(om.writeValueAsString(requestB)))
                 .andExpect(status().isCreated());
@@ -103,7 +129,8 @@ public class UserStory1to5IntegrationTests {
     @DisplayName("5. 프로젝트별 로그 조회")
     void t5_listByProject() throws Exception {
         mockMvc.perform(get("/api/logs")
-                .param("projectId", projectId.toString()))
+                .param("projectId", projectId.toString())
+                        .header("Origin", "https://example.com"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(3)));
     }
@@ -113,7 +140,8 @@ public class UserStory1to5IntegrationTests {
     void t6_listByVisitor() throws Exception {
         mockMvc.perform(get("/api/logs")
                 .param("projectId", projectId.toString())
-                .param("visitorId", visitorA.toString()))
+                .param("visitorId", visitorA.toString())
+                        .header("Origin", "https://example.com"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(2)));
 

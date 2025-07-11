@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>로그 확인</title>
+  <style>
+    body { font-family: sans-serif; padding: 2rem; }
+    select, button { padding: 0.5rem; font-size: 1rem; margin-right: 1rem; }
+    .log-entry { border: 1px solid #ccc; padding: 1rem; margin-bottom: 1rem; border-radius: 6px; }
+  </style>
+</head>
+<body>
+
+<h1>📜 로그 목록</h1>
+
+<div>
+  <label>도메인:
+    <select id="domainSelect">
+      <option value="">-- 선택 --</option>
+    </select>
+  </label>
+
+  <label>조건:
+    <select id="conditionSelect">
+      <option value="">-- 선택 --</option>
+    </select>
+  </label>
+
+  <button id="filterBtn">필터 적용</button>
+  <button id="resetBtn">전체 로그 보기</button>
+  <button onclick="location.href='/me.html'">← 뒤로가기</button>
+</div>
+
+<hr>
+
+<div id="logList">불러오는 중...</div>
+
+<script>
+  const params = new URLSearchParams(location.search);
+  const projectKey = params.get('projectKey');
+  const domainSelect = document.getElementById('domainSelect');
+  const conditionSelect = document.getElementById('conditionSelect');
+  const logList = document.getElementById('logList');
+  const token = localStorage.getItem('token');
+
+  if (!projectKey) {
+    alert('projectKey가 없습니다.');
+    location.href = '/me.html';
+  }
+
+  let conditions = [];
+  let logs = [];
+
+  async function loadData() {
+    const headers = {
+      'Authorization': 'Bearer ' + token,
+      'X-Domain': location.origin + location.pathname
+    };
+
+    // 프로젝트 정보 가져오기
+    const projRes = await fetch(`/api/projects/${projectKey}`, { headers });
+    const project = await projRes.json();
+    project.allowedDomains.forEach(domain => {
+      const opt = document.createElement('option');
+      opt.value = domain;
+      opt.textContent = domain;
+      domainSelect.appendChild(opt);
+    });
+
+    // 조건 목록 가져오기
+    const condRes = await fetch(`/api/conditions/${projectKey}`, { headers });
+    conditions = await condRes.json();
+    conditions.forEach(cond => {
+      const opt = document.createElement('option');
+      opt.value = cond.id;
+      opt.textContent = `[${cond.eventType}] ${cond.pageUrl}`;
+      conditionSelect.appendChild(opt);
+    });
+
+    // ✅ 로그 목록 가져오기 (헤더에 X-Domain 포함)
+    const logRes = await fetch(`/api/logs?projectId=${projectKey}`, { headers });
+    logs = await logRes.json();
+    renderLogs();
+  }
+
+  function renderLogs() {
+    const selectedDomain = domainSelect.value;
+    const selectedCondition = conditionSelect.value;
+
+    const filtered = logs.filter(log => {
+      const matchDomain = selectedDomain ? log.pageUrl.includes(selectedDomain) : true;
+      const matchCond = selectedCondition ? log.conditionId === selectedCondition : true;
+      return matchDomain && matchCond;
+    });
+
+    if (filtered.length === 0) {
+      logList.innerHTML = '<p>해당 조건에 맞는 로그가 없습니다.</p>';
+      return;
+    }
+
+    logList.innerHTML = '';
+    filtered.forEach(log => {
+      const div = document.createElement('div');
+      div.className = 'log-entry';
+      div.innerHTML = `
+        <div><strong>이벤트:</strong> ${log.eventType}</div>
+        <div><strong>발생 시각:</strong> ${log.occurredAt}</div>
+        <div><strong>페이지 URL:</strong> ${log.pageUrl}</div>
+        <div><strong>방문자 ID:</strong> ${log.visitorId}</div>
+        <div><strong>조건 ID:</strong> ${log.conditionId || '(없음)'}</div>
+        <button onclick="deleteLog('${log.id}')">🗑 삭제</button>
+      `;
+      logList.appendChild(div);
+    });
+  }
+
+  async function deleteLog(logId) {
+    const headers = {
+      'Authorization': 'Bearer ' + token,
+      'X-Domain': location.origin + location.pathname
+    };
+
+    if (!confirm('정말 삭제하시겠습니까?')) return;
+    const res = await fetch(`/api/logs/${logId}`, {
+      method: 'DELETE',
+      headers
+    });
+    if (res.ok) {
+      alert('삭제되었습니다.');
+      logs = logs.filter(l => l.id !== logId);
+      renderLogs();
+    } else {
+      alert('삭제 실패');
+    }
+  }
+
+  document.getElementById('filterBtn').addEventListener('click', renderLogs);
+
+  loadData();
+
+  // 전체 로그 다시 불러오기
+document.getElementById('resetBtn').addEventListener('click', async () => {
+  const res = await fetch(`/api/logs?projectId=${projectKey}`, {
+    headers: { 'Authorization': 'Bearer ' + token }
+  });
+  logs = await res.json();
+  domainSelect.value = '';
+  conditionSelect.value = '';
+  renderLogs();
+});
+
+</script>
+</body>
+</html>

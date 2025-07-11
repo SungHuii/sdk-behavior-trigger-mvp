@@ -41,6 +41,7 @@ dependencies {
 	implementation 'com.sendgrid:sendgrid-java:4.10.1' // SendGrid 이메일 전송 라이브러리
 	implementation 'org.springframework.boot:spring-boot-starter-validation' // 유효성 검사 지원
 	implementation 'org.springframework.boot:spring-boot-starter-security' // Spring Security 지원
+	testImplementation 'org.springframework.security:spring-security-test' // Spring Security 테스트 지원
 
 	// JWT 관련 라이브러리
 	implementation 'io.jsonwebtoken:jjwt-api:0.11.5'

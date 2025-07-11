@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>로그인</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 2rem;
+      background-color: #f4f4f4;
+    }
+    h1 {
+      color: #333;
+    }
+    form {
+      display: flex;
+      flex-direction: column;
+      max-width: 300px;
+      gap: 0.75rem;
+    }
+    input, button {
+      padding: 0.5rem;
+      font-size: 1rem;
+    }
+    button {
+      background-color: #28a745;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    #result {
+      margin-top: 1rem;
+      color: red;
+    }
+    .link-btn {
+      margin-top: 1rem;
+      background: transparent;
+      color: #007bff;
+      border: none;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+
+<h1>로그인</h1>
+<form id="loginForm">
+  <input type="email" id="email" placeholder="이메일" required />
+  <input type="password" id="password" placeholder="비밀번호" required />
+  <button type="submit">로그인</button>
+</form>
+<button class="link-btn" onclick="location.href='/signup.html'">계정이 없으신가요? 회원가입</button>
+<p id="result"></p>
+
+<script>
+  document.getElementById('loginForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value.trim();
+
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+
+      const resultElem = document.getElementById('result');
+      if (res.ok) {
+        const data = await res.json();
+        localStorage.setItem('token', data.token);
+        resultElem.style.color = 'green';
+        resultElem.textContent = '로그인 성공! 메인 페이지로 이동합니다.';
+        setTimeout(() => location.href = '/me.html', 1000);
+      } else {
+        const text = await res.text();
+        resultElem.textContent = `로그인 실패: ${res.status} - ${text}`;
+      }
+    } catch (err) {
+      console.error(err);
+      document.getElementById('result').textContent = '요청 중 오류 발생';
+    }
+  });
+</script>
+
+</body>
+</html>

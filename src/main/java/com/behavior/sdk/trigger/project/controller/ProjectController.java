@@ -1,9 +1,13 @@
 package com.behavior.sdk.trigger.project.controller;
 
+import com.behavior.sdk.trigger.condition.entity.Condition;
+import com.behavior.sdk.trigger.condition.repository.ConditionRepository;
 import com.behavior.sdk.trigger.project.dto.ProjectCreateRequest;
 import com.behavior.sdk.trigger.project.dto.ProjectResponse;
+import com.behavior.sdk.trigger.project.dto.ProjectUpdateRequest;
 import com.behavior.sdk.trigger.project.entity.Project;
 import com.behavior.sdk.trigger.project.service.ProjectService;
+import com.behavior.sdk.trigger.user.entity.User;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -15,6 +19,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -27,6 +32,7 @@ import java.util.UUID;
 public class ProjectController {
 
    private final ProjectService projectService;
+   private final ConditionRepository conditionRepository;
 
    @ApiResponses({
            @ApiResponse(responseCode = "201", description = "프로젝트 생성 성공",
@@ -36,8 +42,9 @@ public class ProjectController {
    @PostMapping
    @Operation(summary = "프로젝트 생성", description = "새로운 프로젝트를 생성하고 SDK 키를 발급합니다.")
    public ResponseEntity<ProjectResponse> createProject (
-           @RequestBody @Valid ProjectCreateRequest request) {
-      ProjectResponse createdProject = projectService.createProject(request);
+           @RequestBody @Valid ProjectCreateRequest request,
+           @AuthenticationPrincipal User user) {
+      ProjectResponse createdProject = projectService.createProject(request, user);
       return ResponseEntity.status(HttpStatus.CREATED).body(createdProject);
    }
 
@@ -73,9 +80,35 @@ public class ProjectController {
    @DeleteMapping("/{projectId}")
    public ResponseEntity<Void> deleteProject(@PathVariable UUID projectId) {
       projectService.deleteProject(projectId);
+
       return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
    }
 
+   @Operation(summary = "프로젝트 수정", description = "프로젝트 ID로 특정 프로젝트 정보를 수정합니다.")
+    @ApiResponses({
+              @ApiResponse(responseCode = "200", description = "프로젝트 수정 성공",
+                     content = @Content(schema = @Schema(implementation = ProjectResponse.class))),
+              @ApiResponse(responseCode = "404", description = "프로젝트를 찾을 수 없음")
+    })
+    @PutMapping("/{projectId}")
+   public ResponseEntity<ProjectResponse> updateProject(
+           @PathVariable UUID projectId,
+           @RequestBody @Valid ProjectUpdateRequest request) {
+      ProjectResponse updatedProject = projectService.updateProject(projectId, request);
+      return ResponseEntity.ok(updatedProject);
+   }
 
+    @Operation(summary = "사용자별 프로젝트 조회", description = "특정 사용자의 모든 프로젝트를 조회합니다.")
+    @ApiResponses({
+              @ApiResponse(responseCode = "200", description = "사용자 프로젝트 조회 성공",
+                     content = @Content(schema = @Schema(implementation = ProjectResponse.class))),
+              @ApiResponse(responseCode = "404", description = "사용자를 찾을 수 없음")
+    })
+    @GetMapping()
+    public ResponseEntity<List<ProjectResponse>> getProjectsByUserId(
+            @AuthenticationPrincipal User user) {
+        List<ProjectResponse> projects = projectService.getProjectsByUserId(user.getId());
+        return ResponseEntity.ok(projects);
+    }
 
 }
