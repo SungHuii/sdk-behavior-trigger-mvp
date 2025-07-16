@@ -158,6 +158,8 @@ VisiLog는 사용자 이탈 시점에 자동 대응할 수 있도록, 웹사이�
 ---
 
 ## 배포 및 접근
+- **Server 배포 URL (Render)**:
+  - [Server 배포 링크](https://sdk-behavior-trigger-mvp.onrender.com)
 
 - **SDK 배포 URL (Vercel)**:  
   - [SDK 배포 링크](https://behavior-tracking-sdk.vercel.app/sdk.js)
