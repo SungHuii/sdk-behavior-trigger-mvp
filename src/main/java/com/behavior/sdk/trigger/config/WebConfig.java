@@ -29,20 +29,4 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addInterceptor(interceptor)
                 .addPathPatterns("/api/logs"); // 로그 관련 API에만 적용
     }
-
-    @Override
-    public void addCorsMappings(CorsRegistry registry) {
-        if (Arrays.asList(env.getActiveProfiles()).contains("test")) {
-            registry.addMapping("/**")
-                    .allowedOrigins("https://example.com")
-                    .allowedMethods("*")
-                    .allowedHeaders("*")
-                    .allowCredentials(true);
-        } else {
-            registry.addMapping("/api/**")
-                    .allowedOrigins("http://localhost:8080", "file://")
-                    .allowedMethods("GET", "POST", "DELETE", "OPTIONS")
-                    .allowCredentials(true);
-        }
-    }
 }
