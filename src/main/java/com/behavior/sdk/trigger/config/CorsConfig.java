@@ -10,6 +10,8 @@ import org.springframework.web.cors.CorsConfigurationSource;
 
 import java.util.Optional;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Configuration
 @Profile("!test")
@@ -28,6 +30,19 @@ public class CorsConfig {
 
             String origin = request.getHeader("Origin");
             String projectId = request.getParameter("projectId");
+
+            // projectId가 null인 경우, 요청 URI에서 UUID 형식의 projectId 추출
+            if (projectId == null) {
+                String uri = request.getRequestURI();
+                // UUID 정규식으로 projectId 추출
+                Pattern uuidPattern = Pattern.compile(
+                        "[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"
+                );
+                Matcher matcher = uuidPattern.matcher(uri);
+                if (matcher.find()) {
+                    projectId = matcher.group();
+                }
+            }
 
             if (origin != null && projectId != null) {
                 try {
