@@ -4,20 +4,20 @@
   <meta charset="UTF-8">
   <title>로그 트리거 + 이메일 수집 테스트</title>
 
-  <!-- ✅ 사용자 이메일 설정 -->
+  <!-- 사용자 이메일 설정 -->
   <script>
     // 로그인된 사용자의 이메일을 가정한 예시
     window.__USER_EMAIL__ = 'tester@example.com';
   </script>
 
-  <!-- ✅ SDK 스니펫 삽입 -->
-  <script src="https://behavior-tracking-sdk.vercel.app/sdk.js"></script>
+  <!-- SDK 스니펫 삽입 -->
+  <script src="https://behavior-tracking-sdk.vercel.app/sdk.js" data-key="076e0de2-56a1-429d-937a-e769112b885b"></script>
 
-  <!-- ✅ SDK 초기화 -->
+  <!-- SDK 초기화 -->
   <script>
     window.addEventListener('DOMContentLoaded', () => {
-      const projectKey = '75421459-3f88-436a-a0bb-3d06934b0864'; // ← 테스트할 프로젝트 키
-      const apiUrl = 'http://localhost:8080'; // ← 로컬 환경에서 테스트 시
+      const projectKey = '076e0de2-56a1-429d-937a-e769112b885b'; // ← 프로젝트 키
+      const apiUrl = window.location.origin; // 환경에 따라 자동 결정
 
       if (!projectKey) {
         alert('projectKey가 없습니다.');
@@ -29,10 +29,10 @@
           projectKey,
           apiUrl,
           scrollThreshold: 0.3,
-          collectEmail: true,              // ✅ 이메일 수집 활성화
-          emailKey: '__USER_EMAIL__'       // ✅ 글로벌 변수명 지정
+          collectEmail: true,              // 이메일 수집 활성화
+          emailKey: '__USER_EMAIL__'       // 글로벌 변수명 지정
         });
-        console.log('[SDK] init 실행됨');
+        console.log('[SDK] init 실행됨:', apiUrl);
       } else {
         console.warn('[SDK] BehaviorSDK가 로드되지 않았습니다.');
       }
