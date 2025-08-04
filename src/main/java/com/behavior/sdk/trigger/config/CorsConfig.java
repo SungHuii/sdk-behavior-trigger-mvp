@@ -4,6 +4,7 @@ import com.behavior.sdk.trigger.project.entity.Project;
 import com.behavior.sdk.trigger.project.repository.ProjectRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 
@@ -11,6 +12,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Configuration
+@Profile("!test")
 public class CorsConfig {
 
     private final ProjectRepository projectRepository;
