@@ -50,6 +50,7 @@ public class SegmentTriggerJob {
 
             boolean notAlreadySegmented = !segmentRepository.existsByConditionIdAndNotDeletedAtIsNull(conditionId);
             if (uniqueEmails.size() >= minEmails && notAlreadySegmented) {
+
                 Segment segment = new Segment();
                 segment.setProjectId(projectId);
                 segment.setConditionId(conditionId);
