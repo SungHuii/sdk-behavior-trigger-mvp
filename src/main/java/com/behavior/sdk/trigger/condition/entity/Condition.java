@@ -36,6 +36,9 @@ public class Condition {
     @Column(name = "page_url", nullable = false)
     private String pageUrl;
 
+    @Column(name = "segment_min_emails")
+    private Integer segmentMinEmails;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 

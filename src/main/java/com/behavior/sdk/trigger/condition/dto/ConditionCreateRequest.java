@@ -38,4 +38,7 @@ public class ConditionCreateRequest {
     @Schema(description = "페이지 URL", example = "https://example.com")
     private String pageUrl;
 
+    @Schema(description = "세그먼트 최소 이메일 수", example = "10")
+    private Integer segmentMinEmails;
+
 }
