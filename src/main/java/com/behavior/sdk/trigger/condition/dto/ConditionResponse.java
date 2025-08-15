@@ -33,6 +33,9 @@ public class ConditionResponse {
     @Schema(description = "페이지 URL", example = "https://example.com")
     private String pageUrl;
 
+    @Schema(description = "세그먼트 최소 이메일 수", example = "10")
+    private Integer segmentMinEmails;
+
     @Schema(description = "Condition 생성 시각", example = "2023-10-01T12:00:00")
     private LocalDateTime createdAt;
 
