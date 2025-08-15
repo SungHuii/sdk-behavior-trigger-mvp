@@ -12,5 +12,5 @@ public interface ConditionRepository extends JpaRepository<Condition, UUID> {
     List<Condition> findByProjectId(UUID projectId);
 
     List<Condition> findAllByDeletedAtIsNull();
-    boolean existsByConditionIdAndDeletedAtIsNull(UUID conditionId);
+    boolean existsByIdAndDeletedAtIsNull(UUID conditionId);
 }
