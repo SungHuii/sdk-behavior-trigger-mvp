@@ -30,7 +30,7 @@ public class SegmentTriggerJob {
     public void run() {
         log.info("[SegmentTriggerJob] 세그먼트 자동 생성 스케줄러 실행 시작");
 
-        List<Condition> conditions = conditionRepository.findAll();
+        List<Condition> conditions = conditionRepository.findAllByDeletedAtIsNull();
         log.info("총 조건 수 : {}", conditions.size());
 
         for (Condition condition : conditions) {
@@ -40,12 +40,16 @@ public class SegmentTriggerJob {
             Integer threshold = condition.getThreshold();
             String pageUrl = condition.getPageUrl();
 
+            int minEmails = (condition.getSegmentMinEmails() != null) ? condition.getSegmentMinEmails() : 5;
+
             List<UUID> visitorIds = logEventRepository.findDistinctVisitorIdsByCondition(conditionId, pageUrl);
             List<String> uniqueEmails = visitorRepository.findDistinctEmailsByVisitorIds(visitorIds);
 
-            log.info("조건 ID : {} -> 유효 visitor 수 : {}, 유니크 이메일 수 : {} ", conditionId, visitorIds.size(), uniqueEmails.size());
+            log.info("조건 ID : {} -> 유효 visitor 수 : {}, 유니크 이메일 수 : {} (기준: {})",
+                    conditionId, visitorIds.size(), uniqueEmails.size(), minEmails);
 
-            if (uniqueEmails.size() >= 5 && !segmentRepository.existsByConditionIdAndNotDeletedAtIsNull(conditionId)) {
+            boolean notAlreadySegmented = !segmentRepository.existsByConditionIdAndNotDeletedAtIsNull(conditionId);
+            if (uniqueEmails.size() >= minEmails && notAlreadySegmented) {
                 Segment segment = new Segment();
                 segment.setProjectId(projectId);
                 segment.setConditionId(conditionId);
