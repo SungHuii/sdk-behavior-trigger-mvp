@@ -80,6 +80,11 @@
   <input type="number" id="threshold" value="5" />
 </label>
 
+<!-- 추가: 세그먼트 최소 이메일 수 -->
+<label>세그먼트 최소 이메일 수:
+  <input type="number" id="segmentMinEmails" value="5" min="1" />
+</label>
+
 <label>Page URL:
   <select id="pageUrl">
     <option disabled selected>도메인을 불러오는 중...</option>
@@ -117,6 +122,9 @@
         option.textContent = domain;
         pageUrlSelect.appendChild(option);
       });
+    })
+    .catch(() => {
+      pageUrlSelect.innerHTML = '<option disabled>도메인 불러오기 실패</option>';
     });
 
   // 조건 생성
@@ -124,12 +132,19 @@
     const selectedPageUrl = pageUrlSelect.value;
     if (!selectedPageUrl) return alert("Page URL을 선택해주세요.");
 
+    const threshold = parseInt(document.getElementById('threshold').value, 10);
+    const minEmails = parseInt(document.getElementById('segmentMinEmails').value, 10);
+
+    if (Number.isNaN(threshold)) return alert("Threshold를 입력해주세요.");
+    if (Number.isNaN(minEmails) || minEmails < 1) return alert("세그먼트 최소 이메일 수는 1 이상이어야 합니다.");
+
     const payload = {
       projectId,
       eventType: document.getElementById('eventType').value,
       operator: document.getElementById('operator').value,
-      threshold: parseInt(document.getElementById('threshold').value, 10),
-      pageUrl: selectedPageUrl
+      threshold,
+      pageUrl: selectedPageUrl,
+      segmentMinEmails: minEmails // 서버 전송
     };
 
     try {
