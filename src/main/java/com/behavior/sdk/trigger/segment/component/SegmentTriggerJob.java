@@ -48,7 +48,7 @@ public class SegmentTriggerJob {
             log.info("조건 ID : {} -> 유효 visitor 수 : {}, 유니크 이메일 수 : {} (기준: {})",
                     conditionId, visitorIds.size(), uniqueEmails.size(), minEmails);
 
-            boolean notAlreadySegmented = !segmentRepository.existsByConditionIdAndNotDeletedAtIsNull(conditionId);
+            boolean notAlreadySegmented = !segmentRepository.existsByConditionIdAndDeletedAtIsNull(conditionId);
             if (uniqueEmails.size() >= minEmails && notAlreadySegmented) {
                 Segment segment = new Segment();
                 segment.setProjectId(projectId);

@@ -20,7 +20,7 @@ public interface SegmentRepository extends JpaRepository<Segment, UUID> {
             WHERE s.conditionId = :conditionId
             AND s.deletedAt IS NULL
             """)
-    boolean existsByConditionIdAndNotDeletedAtIsNull(@Param("conditionId") UUID conditionId);
+    boolean existsByConditionIdAndDeletedAtIsNull(@Param("conditionId") UUID conditionId);
 
     @Query("""
             SELECT s FROM Segment s
