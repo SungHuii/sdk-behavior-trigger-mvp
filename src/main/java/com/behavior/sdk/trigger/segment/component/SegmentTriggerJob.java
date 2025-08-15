@@ -40,7 +40,9 @@ public class SegmentTriggerJob {
             Integer threshold = condition.getThreshold();
             String pageUrl = condition.getPageUrl();
 
-            int minEmails = (condition.getSegmentMinEmails() != null) ? condition.getSegmentMinEmails() : 5;
+            int minEmails = (condition.getSegmentMinEmails() != null)
+                    ? condition.getSegmentMinEmails()
+                    : 5;
 
             List<UUID> visitorIds = logEventRepository.findDistinctVisitorIdsByCondition(conditionId, pageUrl);
             List<String> uniqueEmails = visitorRepository.findDistinctEmailsByVisitorIds(visitorIds);
@@ -56,9 +58,9 @@ public class SegmentTriggerJob {
                 segment.setConditionId(conditionId);
                 segment.addVisitorsByIds(visitorIds);
                 segmentRepository.save(segment);
-                log.info("[Segment Trigger] 세그먼트 생성 완료 → conditionId={}, visitor 수: {}, 이메일 수: {}", conditionId, visitorIds.size(), uniqueEmails.size());
+                log.info("[Segment Trigger] 세그먼트 생성 완료 → conditionId={}, visitor 수: {}, 이메일 수: {} (기준: {})", conditionId, visitorIds.size(), uniqueEmails.size(), minEmails);
             } else {
-                log.info("[Segment Trigger] 조건 불충족 → conditionId={}, 유니크 이메일 수: {} < 기준값(5)", conditionId, uniqueEmails.size());
+                log.info("[Segment Trigger] 조건 불충족 → conditionId={}, 유니크 이메일 수: {} < 기준값({})", conditionId, uniqueEmails.size(), minEmails);
             }
             log.info("실제 visitorIds: {}", visitorIds);
             log.info("이메일이 있는 visitorIds: {}", uniqueEmails);
