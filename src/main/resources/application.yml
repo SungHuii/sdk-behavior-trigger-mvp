@@ -1,6 +1,11 @@
 spring:
   profiles:
     active: local # 기본 실행 시 local 활성화. Render 에서는 dev 로 덮어씀
+  mvc:
+    throw-exception-if-no-handler-found: true
+  web:
+    resources:
+      add-mappings: false # Swagger UI 충돌 방지
 
 # JWT
 jwt:

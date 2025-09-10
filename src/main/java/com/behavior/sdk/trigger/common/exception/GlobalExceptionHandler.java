@@ -132,6 +132,30 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(spec.httpStatus()).body(body);
     }
 
+    // 405 Method Not Allowed
+    @ExceptionHandler(org.springframework.web.HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<ErrorResponse> handleMethodNotSupported(
+            org.springframework.web.HttpRequestMethodNotSupportedException ex,
+            HttpServletRequest req
+    ) {
+        var spec = ErrorSpec.SYS_METHOD_NOT_ALLOWED; // numeric = 9002, status = 405
+        // 메서드 정보 보조로 실어주고 싶다면 details/hint 추가 가능
+        var detail = new FieldErrorDetail("method", "not supported", ex.getMethod());
+        return ResponseEntity.status(spec.httpStatus())
+                .body(ErrorResponses.fromSpec(spec, req, List.of(detail), null));
+    }
+
+    // 404 - (환경/버전에 따라 던져질 수 있는 예전 타입도 함께 대응)
+    @ExceptionHandler(org.springframework.web.servlet.NoHandlerFoundException.class)
+    public ResponseEntity<ErrorResponse> handleNoHandler(
+            org.springframework.web.servlet.NoHandlerFoundException ex,
+            HttpServletRequest req
+    ) {
+        var spec = ErrorSpec.SYS_FILE_NOT_FOUND; // numeric = 9004, status = 404
+        return ResponseEntity.status(spec.httpStatus())
+                .body(ErrorResponses.fromSpec(spec, req));
+    }
+
     @ExceptionHandler(ResponseStatusException.class)
     public ResponseEntity<ErrorResponse> handleRSE(ResponseStatusException ex,
                                                    HttpServletRequest req) {
