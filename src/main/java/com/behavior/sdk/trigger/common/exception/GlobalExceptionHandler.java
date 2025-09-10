@@ -15,6 +15,7 @@ import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import javax.naming.AuthenticationException;
@@ -129,6 +130,18 @@ public class GlobalExceptionHandler {
         ErrorSpec spec = ErrorSpec.SYS_INTERNAL_ERROR;
         ErrorResponse body = ErrorResponses.fromSpec(spec, req);
         return ResponseEntity.status(spec.httpStatus()).body(body);
+    }
+
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity<ErrorResponse> handleRSE(ResponseStatusException ex,
+                                                   HttpServletRequest req) {
+        ErrorSpec spec = switch (ex.getStatusCode().value()) {
+            case 405 -> ErrorSpec.SYS_METHOD_NOT_ALLOWED;
+            case 404 -> ErrorSpec.SYS_FILE_NOT_FOUND;
+            default -> ErrorSpec.SYS_INTERNAL_ERROR;
+        };
+        return ResponseEntity.status(ex.getStatusCode())
+                .body(ErrorResponses.fromSpec(spec, req, null, ex.getReason()));
     }
 
     // 헬퍼 메서드
