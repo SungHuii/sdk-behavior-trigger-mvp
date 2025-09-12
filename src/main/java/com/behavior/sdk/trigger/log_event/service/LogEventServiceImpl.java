@@ -35,7 +35,7 @@ public class LogEventServiceImpl implements LogEventService {
 
       if (!projectRepository.existsById(projectId)) {
          throw new ServiceException(
-                 ErrorSpec.SYS_FILE_NOT_FOUND,
+                 ErrorSpec.LOG_PROJECT_NOT_FOUND,
                     "프로젝트를 찾을 수 없습니다.",
                  List.of(
                          new FieldErrorDetail("projectId", "not found", projectId)

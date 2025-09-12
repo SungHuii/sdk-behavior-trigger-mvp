@@ -54,7 +54,7 @@ public class SendGridEmailService {
             throw new ServiceException(
                     ErrorSpec.MAIL_EMAIL_PROVIDER_ERROR,
                     "SendGrid API 요청 중 오류 발생",
-                    List.of(new FieldErrorDetail("exception", "io exception", e.getMessage()))
+                    List.of(new FieldErrorDetail("exception", "io exception", e.getClass().getSimpleName()))
             );
         }
 

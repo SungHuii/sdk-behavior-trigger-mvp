@@ -30,7 +30,7 @@ public class UserServiceImpl implements UserService{
     public SignupResponse signup(SignupRequest request) {
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
             throw new ServiceException(
-                    ErrorSpec.VALID_PARAM_VALIDATION_FAILED,
+                    ErrorSpec.USER_EMAIL_DUPLICATED,
                     "이미 사용중인 이메일입니다.",
                     List.of(new FieldErrorDetail("email", "duplicate email", request.getEmail()))
             );
@@ -54,14 +54,14 @@ public class UserServiceImpl implements UserService{
     public LoginResponse login(LoginRequest request) {
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new ServiceException(
-                        ErrorSpec.VALID_PARAM_VALIDATION_FAILED,
+                        ErrorSpec.USER_NOT_FOUND,
                         "존재하지 않는 이메일입니다.",
                         List.of(new FieldErrorDetail("email", "not found", request.getEmail()))
                 ));
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             throw new ServiceException(
-                    ErrorSpec.VALID_PARAM_VALIDATION_FAILED,
+                    ErrorSpec.AUTH_INVALID_CREDENTIALS,
                     "비밀번호가 일치하지 않습니다.",
                     List.of(new FieldErrorDetail("password", "mismatch", null))
             );
@@ -79,7 +79,7 @@ public class UserServiceImpl implements UserService{
         UUID userId = jwtUtils.getUserIdFromToken(token);
         return userRepository.findById(userId)
                 .orElseThrow(() -> new ServiceException(
-                        ErrorSpec.SYS_FILE_NOT_FOUND,
+                        ErrorSpec.USER_NOT_FOUND,
                         "사용자를 찾을 수 없습니다.",
                         List.of(new FieldErrorDetail("userId", "not found", userId)
                 )));
