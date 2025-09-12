@@ -1,5 +1,8 @@
 package com.behavior.sdk.trigger.segment.service;
 
+import com.behavior.sdk.trigger.common.exception.ErrorSpec;
+import com.behavior.sdk.trigger.common.exception.FieldErrorDetail;
+import com.behavior.sdk.trigger.common.exception.ServiceException;
 import com.behavior.sdk.trigger.condition.entity.Condition;
 import com.behavior.sdk.trigger.condition.repository.ConditionRepository;
 import com.behavior.sdk.trigger.log_event.repository.LogEventRepository;
@@ -32,7 +35,11 @@ public class SegmentServiceImpl implements SegmentService{
     public Segment createSegment(SegmentCreateRequest request) {
 
         Condition condition = conditionRepository.findById(request.getConditionId())
-                .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 조건입니다."));
+                .orElseThrow(() -> new ServiceException(
+                        ErrorSpec.COND_CONDITION_NOT_FOUND,
+                        "존재하지 않는 조건입니다.",
+                        List.of(new FieldErrorDetail("conditionId", "not found", request.getConditionId()))
+                ));
 
         Integer threshold = condition.getThreshold();
         String pageUrl = condition.getPageUrl();
@@ -70,7 +77,11 @@ public class SegmentServiceImpl implements SegmentService{
     @Override
     public SegmentResponse getSegment(UUID segmentId) {
         Segment segment = segmentRepository.findById(segmentId)
-                .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 세그먼트입니다."));
+                .orElseThrow(() -> new ServiceException(
+                        ErrorSpec.SEG_SEGMENT_NOT_FOUND,
+                        "존재하지 않는 세그먼트입니다.",
+                        List.of(new FieldErrorDetail("segmentId", "not found", segmentId))
+                ));
         List<UUID> visitorIds = segment.getSegmentVisitors().stream()
                 .map(segmentVisitor -> segmentVisitor.getVisitorId())
                 .toList();
@@ -86,7 +97,11 @@ public class SegmentServiceImpl implements SegmentService{
     @Override
     public void deleteSegment(UUID segmentId) {
         Segment segment = segmentRepository.findById(segmentId)
-                .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 세그먼트입니다."));
+                .orElseThrow(() -> new ServiceException(
+                        ErrorSpec.SEG_SEGMENT_NOT_FOUND,
+                        "존재하지 않는 세그먼트입니다.",
+                        List.of(new FieldErrorDetail("segmentId", "not found", segmentId))
+                ));
         segment.softDelete();
         segmentRepository.save(segment);
     }

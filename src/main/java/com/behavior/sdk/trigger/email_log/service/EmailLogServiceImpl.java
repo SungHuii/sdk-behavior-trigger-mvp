@@ -1,5 +1,8 @@
 package com.behavior.sdk.trigger.email_log.service;
 
+import com.behavior.sdk.trigger.common.exception.ErrorSpec;
+import com.behavior.sdk.trigger.common.exception.FieldErrorDetail;
+import com.behavior.sdk.trigger.common.exception.ServiceException;
 import com.behavior.sdk.trigger.email.enums.EmailStatus;
 import com.behavior.sdk.trigger.email_log.entity.EmailLog;
 import com.behavior.sdk.trigger.email_log.repository.EmailLogRepository;
@@ -47,7 +50,11 @@ public class EmailLogServiceImpl implements EmailLogService{
         log.info("Soft delete requested: emailLogId={}", emailLogId);
 
         EmailLog emailLog = emailLogRepository.findById(emailLogId)
-                .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 이메일 로그 ID"));
+                .orElseThrow(() -> new ServiceException(
+                        ErrorSpec.SYS_FILE_NOT_FOUND,
+                        "존재하지 않는 이메일 로그입니다.",
+                        List.of(new FieldErrorDetail("emailLogId", "not found", emailLogId))
+                ));
         log.info("Found EmailLog: id={}, status={}, deletedAt={}", emailLog.getId(), emailLog.getStatus(), emailLog.getDeletedAt());
 
         emailLog.setDeletedAt(LocalDateTime.now());

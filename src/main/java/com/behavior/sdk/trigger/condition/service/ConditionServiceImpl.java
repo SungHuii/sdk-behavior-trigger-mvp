@@ -1,5 +1,8 @@
 package com.behavior.sdk.trigger.condition.service;
 
+import com.behavior.sdk.trigger.common.exception.ErrorSpec;
+import com.behavior.sdk.trigger.common.exception.FieldErrorDetail;
+import com.behavior.sdk.trigger.common.exception.ServiceException;
 import com.behavior.sdk.trigger.condition.dto.ConditionCreateRequest;
 import com.behavior.sdk.trigger.condition.dto.ConditionResponse;
 import com.behavior.sdk.trigger.condition.entity.Condition;
@@ -46,7 +49,11 @@ public class ConditionServiceImpl implements ConditionService {
     @Override
     public void softDeleteCondition(UUID conditionId) {
         Condition condition = conditionRepository.findById(conditionId)
-                .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 Condition입니다."));
+                .orElseThrow(() -> new ServiceException(
+                        ErrorSpec.COND_CONDITION_NOT_FOUND,
+                        "존재하지 않는 조건입니다.",
+                        List.of(new FieldErrorDetail("conditionId", "not found", conditionId))
+                ));
         condition.softDelete();
         conditionRepository.save(condition);
     }
