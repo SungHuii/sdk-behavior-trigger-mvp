@@ -1,5 +1,8 @@
 package com.behavior.sdk.trigger.email.service;
 
+import com.behavior.sdk.trigger.common.exception.ErrorSpec;
+import com.behavior.sdk.trigger.common.exception.FieldErrorDetail;
+import com.behavior.sdk.trigger.common.exception.ServiceException;
 import com.behavior.sdk.trigger.email.dto.EmailSendRequest;
 import com.behavior.sdk.trigger.email.dto.EmailSendResponse;
 import com.behavior.sdk.trigger.email.enums.EmailStatus;
@@ -22,6 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -40,11 +44,19 @@ public class EmailServiceImpl implements EmailService{
     public EmailSendResponse sendEmail(EmailSendRequest request) {
 
         Visitor visitor = visitorRepository.findById(request.getVisitorId())
-                .orElseThrow(() -> new EntityNotFoundException("방문자를 찾을 수 없습니다."));
+                .orElseThrow(() -> new ServiceException(
+                        ErrorSpec.VALID_PARAM_VALIDATION_FAILED,
+                        "존재하지 않는 방문자입니다.",
+                        List.of(new FieldErrorDetail("visitorId", "not found", request.getVisitorId()))
+                ));
 
         String validEmail = visitor.getEmail();
         if (validEmail == null || validEmail.isEmpty()) {
-            throw new IllegalArgumentException("유효한 이메일 주소가 필요합니다.");
+            throw new ServiceException(
+                    ErrorSpec.VALID_PARAM_VALIDATION_FAILED,
+                    "방문자에 이메일이 존재하지 않습니다.",
+                    List.of(new FieldErrorDetail("visitorId", "email not found", request.getVisitorId()))
+            );
         }
 
         EmailStatus emailStatus;
@@ -79,7 +91,14 @@ public class EmailServiceImpl implements EmailService{
         Response response = sendGrid.api(request);
 
         if (response.getStatusCode() >= 400) {
-            throw new RuntimeException("SendGrid API 요청 실패: " + response.getBody());
+            throw new ServiceException(
+                    ErrorSpec.MAIL_EMAIL_PROVIDER_ERROR,
+                    "SendGrid API 요청 실패 : " + response.getBody(),
+                    List.of(
+                            new FieldErrorDetail("provider", "error status", response.getStatusCode()),
+                            new FieldErrorDetail("body", "upstream error", response.getBody())
+                    )
+            );
         }
     }
 }

@@ -1,5 +1,8 @@
 package com.behavior.sdk.trigger.email.service;
 
+import com.behavior.sdk.trigger.common.exception.ErrorSpec;
+import com.behavior.sdk.trigger.common.exception.FieldErrorDetail;
+import com.behavior.sdk.trigger.common.exception.ServiceException;
 import com.sendgrid.Method;
 import com.sendgrid.Request;
 import com.sendgrid.Response;
@@ -13,6 +16,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -37,10 +41,21 @@ public class SendGridEmailService {
             Response response = sendGrid.api(request);
 
             if (response.getStatusCode() >= 400) {
-                throw new RuntimeException("SendGrid API 요청 실패 : " + response.getBody());
+                throw new ServiceException(
+                        ErrorSpec.MAIL_EMAIL_PROVIDER_ERROR,
+                        "SendGrid API 요청 실패",
+                        List.of(
+                                new FieldErrorDetail("provider", "error status", response.getStatusCode()),
+                                new FieldErrorDetail("body", "upstream response", response.getBody())
+                        )
+                );
             }
         } catch (IOException e) {
-            throw new RuntimeException("SendGrid API 요청 중 오류 발생", e);
+            throw new ServiceException(
+                    ErrorSpec.MAIL_EMAIL_PROVIDER_ERROR,
+                    "SendGrid API 요청 중 오류 발생",
+                    List.of(new FieldErrorDetail("exception", "io exception", e.getClass().getSimpleName()))
+            );
         }
 
     }

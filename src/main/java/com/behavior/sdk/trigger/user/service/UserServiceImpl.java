@@ -1,5 +1,8 @@
 package com.behavior.sdk.trigger.user.service;
 
+import com.behavior.sdk.trigger.common.exception.ErrorSpec;
+import com.behavior.sdk.trigger.common.exception.FieldErrorDetail;
+import com.behavior.sdk.trigger.common.exception.ServiceException;
 import com.behavior.sdk.trigger.common.security.JwtUtils;
 import com.behavior.sdk.trigger.user.dto.LoginRequest;
 import com.behavior.sdk.trigger.user.dto.LoginResponse;
@@ -11,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -25,7 +29,11 @@ public class UserServiceImpl implements UserService{
     @Override
     public SignupResponse signup(SignupRequest request) {
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-            throw new IllegalArgumentException("이미 사용 중인 이메일입니다.");
+            throw new ServiceException(
+                    ErrorSpec.USER_EMAIL_DUPLICATED,
+                    "이미 사용중인 이메일입니다.",
+                    List.of(new FieldErrorDetail("email", "duplicate email", request.getEmail()))
+            );
         }
 
         User user = User.builder()
@@ -45,10 +53,18 @@ public class UserServiceImpl implements UserService{
     @Override
     public LoginResponse login(LoginRequest request) {
         User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 이메일입니다."));
+                .orElseThrow(() -> new ServiceException(
+                        ErrorSpec.USER_NOT_FOUND,
+                        "존재하지 않는 이메일입니다.",
+                        List.of(new FieldErrorDetail("email", "not found", request.getEmail()))
+                ));
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+            throw new ServiceException(
+                    ErrorSpec.AUTH_INVALID_CREDENTIALS,
+                    "비밀번호가 일치하지 않습니다.",
+                    List.of(new FieldErrorDetail("password", "mismatch", null))
+            );
         }
 
         String token = jwtUtils.generateToken(user);
@@ -62,6 +78,10 @@ public class UserServiceImpl implements UserService{
     public User getCurrentUser(String token) {
         UUID userId = jwtUtils.getUserIdFromToken(token);
         return userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> new ServiceException(
+                        ErrorSpec.USER_NOT_FOUND,
+                        "사용자를 찾을 수 없습니다.",
+                        List.of(new FieldErrorDetail("userId", "not found", userId)
+                )));
     }
 }

@@ -1,5 +1,8 @@
 package com.behavior.sdk.trigger.project.service;
 
+import com.behavior.sdk.trigger.common.exception.ErrorSpec;
+import com.behavior.sdk.trigger.common.exception.FieldErrorDetail;
+import com.behavior.sdk.trigger.common.exception.ServiceException;
 import com.behavior.sdk.trigger.condition.entity.Condition;
 import com.behavior.sdk.trigger.condition.repository.ConditionRepository;
 import com.behavior.sdk.trigger.project.dto.ProjectCreateRequest;
@@ -51,7 +54,11 @@ public class ProjectServiceImpl implements ProjectService {
     public ProjectResponse getProject(UUID projectId) {
         Project project = projectRepository
                 .findByIdAndDeletedAtIsNull(projectId)
-                .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 프로젝트입니다."));
+                .orElseThrow(() -> new ServiceException(
+                        ErrorSpec.LOG_PROJECT_NOT_FOUND,
+                        "존재하지 않는 프로젝트 입니다.",
+                        List.of(new FieldErrorDetail("projectId", "not found", projectId))
+                ));
         return toDto(project);
     }
 
@@ -67,7 +74,11 @@ public class ProjectServiceImpl implements ProjectService {
     @Transactional
     public ProjectResponse updateProject(UUID projectId, ProjectUpdateRequest request) {
         Project project = projectRepository.findByIdAndDeletedAtIsNull(projectId)
-                .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 프로젝트 입니다."));
+                .orElseThrow(() -> new ServiceException(
+                        ErrorSpec.LOG_PROJECT_NOT_FOUND,
+                        "존재하지 않는 프로젝트 입니다.",
+                        List.of(new FieldErrorDetail("projectId", "not found", projectId))
+                ));
 
         if (request.getName() != null && !request.getName().isBlank()) {
             project.setName(request.getName());
@@ -84,7 +95,11 @@ public class ProjectServiceImpl implements ProjectService {
     @Transactional
     public void deleteProject(UUID projectId) {
         Project project = projectRepository.findByIdAndDeletedAtIsNull(projectId)
-                .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 프로젝트입니다."));
+                .orElseThrow(() -> new ServiceException(
+                        ErrorSpec.LOG_PROJECT_NOT_FOUND,
+                        "존재하지 않는 프로젝트 입니다.",
+                        List.of(new FieldErrorDetail("projectId", "not found", projectId))
+                ));
 
         project.softDelete();
         projectRepository.save(project);

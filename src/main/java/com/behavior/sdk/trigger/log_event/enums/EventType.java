@@ -1,8 +1,13 @@
 package com.behavior.sdk.trigger.log_event.enums;
 
+import com.behavior.sdk.trigger.common.exception.ErrorSpec;
+import com.behavior.sdk.trigger.common.exception.FieldErrorDetail;
+import com.behavior.sdk.trigger.common.exception.ServiceException;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonValue;
+
+import java.util.List;
 
 public enum EventType {
    @JsonProperty("page_view")
@@ -40,6 +45,10 @@ public enum EventType {
             return eventType;
          }
       }
-      throw new IllegalArgumentException("알 수 없는 값: " + value);
+      throw new ServiceException(
+              ErrorSpec.VALID_PARAM_VALIDATION_FAILED,
+              "eventType 값을 확인해주세요.",
+              List.of(new FieldErrorDetail("eventType", "unknown enum value", value))
+      );
    }
 }

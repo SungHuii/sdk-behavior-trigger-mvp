@@ -1,5 +1,8 @@
 package com.behavior.sdk.trigger.email_template.service;
 
+import com.behavior.sdk.trigger.common.exception.ErrorSpec;
+import com.behavior.sdk.trigger.common.exception.FieldErrorDetail;
+import com.behavior.sdk.trigger.common.exception.ServiceException;
 import com.behavior.sdk.trigger.email_template.entity.EmailTemplate;
 import com.behavior.sdk.trigger.email_template.repository.EmailTemplateRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -32,7 +35,11 @@ public class EmailTemplateServiceImpl implements EmailTemplateService{
     @Override
     public void softDeleteTemplate(UUID templateId) {
         EmailTemplate emailTemplate = emailTemplateRepository.findById(templateId)
-                .orElseThrow(() -> new EntityNotFoundException("템플릿을 찾을 수 없습니다: " + templateId));
+                .orElseThrow(() -> new ServiceException(
+                        ErrorSpec.SYS_FILE_NOT_FOUND,
+                        "존재하지 않는 이메일 템플릿입니다.",
+                        List.of(new FieldErrorDetail("templateId", "not found", templateId))
+                ));
         emailTemplate.setDeletedAt(LocalDateTime.now());
         emailTemplateRepository.save(emailTemplate);
     }
