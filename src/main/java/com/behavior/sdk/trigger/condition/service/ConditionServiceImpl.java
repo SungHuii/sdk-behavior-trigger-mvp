@@ -28,6 +28,7 @@ public class ConditionServiceImpl implements ConditionService {
                 .operator(request.getOperator())
                 .threshold(request.getThreshold())
                 .pageUrl(request.getPageUrl())
+                .segmentMinEmails(request.getSegmentMinEmails())
                 .build();
         Condition savedCondition = conditionRepository.save(condition);
         return toDto(savedCondition);
@@ -58,6 +59,7 @@ public class ConditionServiceImpl implements ConditionService {
                 .operator(condition.getOperator())
                 .threshold(condition.getThreshold())
                 .pageUrl(condition.getPageUrl())
+                .segmentMinEmails(condition.getSegmentMinEmails())
                 .createdAt(condition.getCreatedAt())
                 .deletedAt(condition.getDeletedAt())
                 .build();

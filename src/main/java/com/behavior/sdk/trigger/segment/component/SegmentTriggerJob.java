@@ -30,7 +30,7 @@ public class SegmentTriggerJob {
     public void run() {
         log.info("[SegmentTriggerJob] 세그먼트 자동 생성 스케줄러 실행 시작");
 
-        List<Condition> conditions = conditionRepository.findAll();
+        List<Condition> conditions = conditionRepository.findAllByDeletedAtIsNull();
         log.info("총 조건 수 : {}", conditions.size());
 
         for (Condition condition : conditions) {
@@ -40,20 +40,27 @@ public class SegmentTriggerJob {
             Integer threshold = condition.getThreshold();
             String pageUrl = condition.getPageUrl();
 
+            int minEmails = (condition.getSegmentMinEmails() != null)
+                    ? condition.getSegmentMinEmails()
+                    : 5;
+
             List<UUID> visitorIds = logEventRepository.findDistinctVisitorIdsByCondition(conditionId, pageUrl);
             List<String> uniqueEmails = visitorRepository.findDistinctEmailsByVisitorIds(visitorIds);
 
-            log.info("조건 ID : {} -> 유효 visitor 수 : {}, 유니크 이메일 수 : {} ", conditionId, visitorIds.size(), uniqueEmails.size());
+            log.info("조건 ID : {} -> 유효 visitor 수 : {}, 유니크 이메일 수 : {} (기준: {})",
+                    conditionId, visitorIds.size(), uniqueEmails.size(), minEmails);
 
-            if (uniqueEmails.size() >= 5 && !segmentRepository.existsByConditionIdAndNotDeletedAtIsNull(conditionId)) {
+            boolean notAlreadySegmented = !segmentRepository.existsByConditionIdAndDeletedAtIsNull(conditionId);
+            if (uniqueEmails.size() >= minEmails && notAlreadySegmented) {
+
                 Segment segment = new Segment();
                 segment.setProjectId(projectId);
                 segment.setConditionId(conditionId);
                 segment.addVisitorsByIds(visitorIds);
                 segmentRepository.save(segment);
-                log.info("[Segment Trigger] 세그먼트 생성 완료 → conditionId={}, visitor 수: {}, 이메일 수: {}", conditionId, visitorIds.size(), uniqueEmails.size());
+                log.info("[Segment Trigger] 세그먼트 생성 완료 → conditionId={}, visitor 수: {}, 이메일 수: {} (기준: {})", conditionId, visitorIds.size(), uniqueEmails.size(), minEmails);
             } else {
-                log.info("[Segment Trigger] 조건 불충족 → conditionId={}, 유니크 이메일 수: {} < 기준값(5)", conditionId, uniqueEmails.size());
+                log.info("[Segment Trigger] 조건 불충족 → conditionId={}, 유니크 이메일 수: {} < 기준값({})", conditionId, uniqueEmails.size(), minEmails);
             }
             log.info("실제 visitorIds: {}", visitorIds);
             log.info("이메일이 있는 visitorIds: {}", uniqueEmails);
