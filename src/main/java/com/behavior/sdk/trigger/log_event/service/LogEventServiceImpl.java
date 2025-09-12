@@ -1,5 +1,8 @@
 package com.behavior.sdk.trigger.log_event.service;
 
+import com.behavior.sdk.trigger.common.exception.ErrorSpec;
+import com.behavior.sdk.trigger.common.exception.FieldErrorDetail;
+import com.behavior.sdk.trigger.common.exception.ServiceException;
 import com.behavior.sdk.trigger.condition.entity.Condition;
 import com.behavior.sdk.trigger.condition.repository.ConditionRepository;
 import com.behavior.sdk.trigger.log_event.dto.LogEventCreateRequest;
@@ -31,17 +34,33 @@ public class LogEventServiceImpl implements LogEventService {
    public LogEventResponse createLogEvent(UUID projectId, UUID visitorId, LogEventCreateRequest request) {
 
       if (!projectRepository.existsById(projectId)) {
-         throw new EntityNotFoundException("프로젝트를 찾을 수 없습니다.");
+         throw new ServiceException(
+                 ErrorSpec.SYS_FILE_NOT_FOUND,
+                    "프로젝트를 찾을 수 없습니다.",
+                 List.of(
+                         new FieldErrorDetail("projectId", "not found", projectId)
+                 )
+         );
       }
 
       if (!visitorRepository.existsById(visitorId)) {
-         throw new EntityNotFoundException("방문자를 찾을 수 없습니다.");
+         throw new ServiceException(
+                 ErrorSpec.LOG_VISITOR_NOT_FOUND,
+                 "방문자를 찾을 수 없습니다.",
+                 List.of(
+                         new FieldErrorDetail("visitorId", "not found", visitorId)
+                 )
+         );
       }
 
       Condition condition = null;
       if (request.getConditionId() != null) {
          condition = conditionRepository.findById(request.getConditionId())
-                 .orElseThrow(() -> new EntityNotFoundException("조건을 찾을 수 없습니다."));
+                 .orElseThrow(() -> new ServiceException(
+                         ErrorSpec.COND_CONDITION_NOT_FOUND,
+                         "조건을 찾을 수 없습니다.",
+                         List.of(new FieldErrorDetail("conditionId", "not found", request.getConditionId()))
+                 ));
       }
 
       LogEvent logEvent = LogEvent.builder()
@@ -60,10 +79,18 @@ public class LogEventServiceImpl implements LogEventService {
    public List<LogEventResponse> findLogEvents(UUID projectId, UUID visitorId) {
 
       if (projectId == null) {
-         throw new IllegalArgumentException("프로젝트 ID는 필수입니다.");
+         throw new ServiceException(
+                 ErrorSpec.VALID_PARAM_VALIDATION_FAILED,
+                    "프로젝트 ID는 필수입니다.",
+                 List.of(new FieldErrorDetail("projectId", "required", null))
+         );
       }
       if(!projectRepository.existsById(projectId)) {
-         throw new EntityNotFoundException("프로젝트를 찾을 수 없습니다.");
+         throw new ServiceException(
+                 ErrorSpec.SYS_FILE_NOT_FOUND,
+                    "프로젝트를 찾을 수 없습니다.",
+                 List.of(new FieldErrorDetail("projectId", "not found", projectId))
+         );
       }
 
       List<LogEvent> logEventList;
@@ -71,7 +98,13 @@ public class LogEventServiceImpl implements LogEventService {
          logEventList = logEventRepository.findAllByProjectId(projectId);
       } else {
          if(!visitorRepository.existsById(visitorId)) {
-            throw new EntityNotFoundException("방문자를 찾을 수 없습니다.");
+            throw new ServiceException(
+                    ErrorSpec.LOG_VISITOR_NOT_FOUND,
+                    "방문자를 찾을 수 없습니다.",
+                    List.of(
+                            new FieldErrorDetail("visitorId", "not found", visitorId)
+                    )
+            );
          }
          logEventList = logEventRepository.findAllByProjectIdAndVisitorId(projectId, visitorId);
       }
@@ -85,7 +118,11 @@ public class LogEventServiceImpl implements LogEventService {
    @Override
    public void softDeleteLogEvent(UUID logEventId) {
       LogEvent logEvent = logEventRepository.findById(logEventId)
-            .orElseThrow(() -> new EntityNotFoundException("로그를 찾을 수 없습니다."));
+            .orElseThrow(() -> new ServiceException(
+                    ErrorSpec.SYS_FILE_NOT_FOUND,
+                    "로그를 찾을 수 없습니다.",
+                    List.of(new FieldErrorDetail("logEventId", "not found", logEventId))
+            ));
 
       logEvent.softDelete();
       logEventRepository.save(logEvent);
