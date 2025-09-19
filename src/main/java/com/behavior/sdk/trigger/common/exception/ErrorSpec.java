@@ -20,6 +20,9 @@ public enum ErrorSpec {
     AUTH_EXPIRED_TOKEN("AUTH", "EXPIRED_TOKEN",
             "AUTH-EXPIRED_TOKEN", 1005, HttpStatus.UNAUTHORIZED,
             "만료된 토큰입니다.", "인증 만료"),
+    AUTH_INVALID_CREDENTIALS("AUTH", "INVALID_CREDENTIALS",
+            "AUTH-INVALID_CREDENTIALS", 1006, HttpStatus.UNAUTHORIZED,
+            "이메일 또는 비밀번호가 올바르지 않습니다.", "인증 실패"),
 
     // ===== VALID (2000대) =====
     VALID_BODY_VALIDATION_FAILED("VALID", "BODY_VALIDATION_FAILED",
@@ -79,6 +82,9 @@ public enum ErrorSpec {
     LOG_VISITOR_NOT_FOUND("LOG", "VISITOR_NOT_FOUND",
             "LOG-VISITOR_NOT_FOUND", 5005, HttpStatus.NOT_FOUND,
             "방문자 정보를 찾을 수 없습니다.", "리소스를 찾을 수 없습니다"),
+    LOG_PROJECT_NOT_FOUND("LOG", "PROJECT_NOT_FOUND",
+            "LOG-PROJECT_NOT_FOUND", 5006, HttpStatus.NOT_FOUND,
+            "프로젝트 정보를 찾을 수 없습니다.", "리소스를 찾을 수 없습니다"),
 
     // ===== MAIL (6000대) =====
     MAIL_EMAIL_PROVIDER_TIMEOUT("MAIL", "EMAIL_PROVIDER_TIMEOUT",
@@ -101,6 +107,15 @@ public enum ErrorSpec {
     RATE_TOO_MANY_REQUESTS("RATE", "TOO_MANY_REQUESTS",
             "RATE-TOO_MANY_REQUESTS", 7001, HttpStatus.TOO_MANY_REQUESTS,
             "요청이 너무 많습니다. 잠시 후 다시 시도해 주세요.", "요청 제한"),
+
+    // ===== USER (8000대) =====
+    USER_EMAIL_DUPLICATED("USER", "EMAIL_DUPLICATED",
+            "USER-EMAIL_DUPLICATED", 8001, HttpStatus.CONFLICT,
+            "이미 사용 중인 이메일입니다.", "중복 오류"),
+    USER_NOT_FOUND("USER", "USER_NOT_FOUND",
+            "USER-USER_NOT_FOUND", 8002, HttpStatus.NOT_FOUND,
+            "사용자 정보를 찾을 수 없습니다.", "리소스를 찾을 수 없습니다"),
+
 
     // ===== SYS (9000대) =====
     SYS_INTERNAL_ERROR("SYS", "INTERNAL_ERROR",
