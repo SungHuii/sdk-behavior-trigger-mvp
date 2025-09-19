@@ -1,5 +1,8 @@
 package com.behavior.sdk.trigger.common.interceptor;
 
+import com.behavior.sdk.trigger.common.exception.ErrorSpec;
+import com.behavior.sdk.trigger.common.exception.FieldErrorDetail;
+import com.behavior.sdk.trigger.common.exception.ServiceException;
 import com.behavior.sdk.trigger.project.entity.Project;
 import com.behavior.sdk.trigger.project.repository.ProjectRepository;
 import jakarta.servlet.http.HttpServletRequest;
@@ -37,8 +40,11 @@ public class ProjectDomainValidationInterceptor implements HandlerInterceptor {
         String projectIdStr = request.getParameter("projectId");
         if (projectIdStr == null) {
             log.warn("[Interceptor] projectId 파라미터 누락");
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Missing projectId parameter");
-            return false;
+            throw new ServiceException(
+                ErrorSpec.VALID_PARAM_VALIDATION_FAILED, // 2002, 400
+                "프로젝트 ID는 필수입니다.",
+                List.of(new FieldErrorDetail("projectId", "required", null))
+            );
         }
 
         UUID projectId;
@@ -46,16 +52,22 @@ public class ProjectDomainValidationInterceptor implements HandlerInterceptor {
             projectId = UUID.fromString(projectIdStr);
         } catch (IllegalArgumentException e) {
             log.warn("[Interceptor] projectId 형식 오류: {}", projectIdStr);
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid projectId format");
-            return false;
+            throw new ServiceException(
+                ErrorSpec.VALID_PARAM_VALIDATION_FAILED, // 2002, 400
+                "projectId 형식이 올바르지 않습니다.",
+                List.of(new FieldErrorDetail("projectId", "invalid format", projectIdStr))
+            );
         }
 
         // 프로젝트 조회
         Optional<Project> projectOpt = projectRepository.findById(projectId);
         if (projectOpt.isEmpty()) {
             log.warn("[Interceptor] 존재하지 않는 프로젝트: {}", projectId);
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Project not found");
-            return false;
+            throw new ServiceException(
+                ErrorSpec.LOG_PROJECT_NOT_FOUND,
+                "프로젝트를 찾을 수 없습니다.",
+                List.of(new FieldErrorDetail("projectId", "not found", projectId))
+            );
         }
 
         Project project = projectOpt.get();
@@ -73,8 +85,11 @@ public class ProjectDomainValidationInterceptor implements HandlerInterceptor {
 
         if (domainToCheck.isBlank()) {
             log.warn("[Interceptor] 도메인 정보가 없습니다 (X-Domain, Origin, Referer 모두 없음)");
-            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Missing domain information");
-            return false;
+            throw new ServiceException(
+                ErrorSpec.AUTH_UNAUTHORIZED_ORIGIN, // 1001, 403
+                "도메인 정보가 없습니다.",
+                List.of(new FieldErrorDetail("domain", "missing", null))
+            );
         }
 
         String normalizedRequestUrl = normalizeUrlWithoutProtocol(domainToCheck);
@@ -85,8 +100,12 @@ public class ProjectDomainValidationInterceptor implements HandlerInterceptor {
 
         if (!isAllowed) {
             log.warn("[Interceptor] 요청 URL 불일치 - 요청: {}, 허용 목록: {}", normalizedRequestUrl, allowedDomains);
-            response.sendError(HttpServletResponse.SC_FORBIDDEN, "URL not allowed");
-            return false;
+            throw new ServiceException(
+                ErrorSpec.AUTH_UNAUTHORIZED_ORIGIN, // 1001, 403
+                "허용되지 않은 도메인입니다.",
+                List.of(new FieldErrorDetail("requestDomain", "not allowed", normalizedRequestUrl),
+                        new FieldErrorDetail("allowedDomains", "configured", allowedDomains))
+            );
         }
 
         log.info("[Interceptor] 도메인 검증 성공: {}", normalizedRequestUrl);
