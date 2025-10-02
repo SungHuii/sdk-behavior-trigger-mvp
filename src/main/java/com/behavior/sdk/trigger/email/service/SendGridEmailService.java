@@ -13,12 +13,14 @@ import com.sendgrid.helpers.mail.objects.Email;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.List;
 
-@Service
+//@Service
+@Component
 @RequiredArgsConstructor
 public class SendGridEmailService {
 
