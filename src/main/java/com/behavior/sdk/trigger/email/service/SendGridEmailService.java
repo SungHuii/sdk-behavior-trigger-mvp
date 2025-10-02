@@ -25,6 +25,15 @@ public class SendGridEmailService {
     @Value("${sendgrid.api-key:dummy-key}")
     private String sendGridApiKey;
 
+    public void sendText(String fromAddress, String fromName,
+                         String to, String subject, String body) {
+
+        Email from = new Email(fromAddress, fromName);
+        Email toEmail = new Email(to);
+        Content content = new Content("text/plain", body);
+        Mail mail = new Mail(from, subject, toEmail, content);
+    }
+
     public void sendEmail(String to, String subject, String body) {
         Email fromEmail = new Email("gkemg2017@gmail.com");
         Email toEmail = new Email(to);
