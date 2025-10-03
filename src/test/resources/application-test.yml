@@ -7,31 +7,40 @@ spring:
     driver-class-name: org.h2.Driver
     username: sa
     password:
+
   jpa:
     hibernate:
       ddl-auto: create-drop
     properties:
       hibernate:
         dialect: org.hibernate.dialect.H2Dialect
-  # Hibernate SQL 로그
-  logging:
-    level:
-      org.hibernate: DEBUG
-      org.springframework.web.servlet.DispatcherServlet: DEBUG # DispatcherServlet 디버그 로그 활성화
-      org.springframework.web.filter.OncePerRequestFilter: DEBUG # 모든 Spring 필터 디버그 로그 활성화
-      org.springframework.web.cors: DEBUG # CORS 관련 디버그 로그 활성화
-      com.behavior.sdk.trigger: DEBUG # 여러분의 애플리케이션 패키지 전체 디버그 로그 활성화
-      # 변경된 부분 끝
+
+  task:
+    scheduling:
+      enabled: false  # ✅ 스케줄러 비활성화 (통합테스트에서 run() 직접 호출)
+
+sendgrid:
+  api-key: dummy
 
 app:
   sdk:
     projectId: 00000000-0000-0000-0000-000000000000
 
-sendgrid:
-  api-key: dummy
-
-scheduling.enabled: false
-
-# JWT
+# JWT (테스트용)
 jwt:
   secret: thisIsMySuperSecretKeyThatIsAtLeast32CharsLong!
+
+springdoc:
+  api-docs:
+    enabled: false   # ✅ Swagger API 문서 비활성화
+  swagger-ui:
+    enabled: false   # ✅ Swagger UI 비활성화
+
+# ✅ 로깅은 최상위에 위치해야 함
+logging:
+  level:
+    org.hibernate: DEBUG
+    org.springframework.web.servlet.DispatcherServlet: DEBUG
+    org.springframework.web.filter.OncePerRequestFilter: DEBUG
+    org.springframework.web.cors: DEBUG
+    com.behavior.sdk.trigger: DEBUG
