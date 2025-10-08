@@ -34,11 +34,19 @@ dependencies {
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.1.0'
+
+	// H2 Database (테스트용 인메모리 데이터베이스)
 	testImplementation 'com.h2database:h2'
 	testRuntimeOnly 'com.h2database:h2'
+
+	// 이메일 전송 및 템플릿 엔진
 	implementation 'org.springframework.boot:spring-boot-starter-mail'
 	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
-	implementation 'com.sendgrid:sendgrid-java:4.10.1' // SendGrid 이메일 전송 라이브러리
+
+	// sendGrid 이메일 전송 라이브러리
+	implementation 'com.sendgrid:sendgrid-java:4.10.1'
+
+	// 유효성 검사 및 보안
 	implementation 'org.springframework.boot:spring-boot-starter-validation' // 유효성 검사 지원
 	implementation 'org.springframework.boot:spring-boot-starter-security' // Spring Security 지원
 	testImplementation 'org.springframework.security:spring-security-test' // Spring Security 테스트 지원
@@ -47,6 +55,20 @@ dependencies {
 	implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
 	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
 	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
+
+	// 런타임 : RabbitMQ(Spring AMQP)
+	implementation 'org.springframework.boot:spring-boot-starter-amqp'
+	implementation 'com.fasterxml.jackson.core:jackson-databind'
+
+	// 재시도/관찰
+	implementation 'org.springframework.retry:spring-retry'
+	implementation 'org.springframework.boot:spring-boot-starter-aop'
+
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+
+	// 통합테스트용 RabbitMQ 테스트 컨테이너
+	testImplementation 'org.testcontainers:junit-jupiter'
+	testImplementation 'org.testcontainers:rabbitmq'
 }
 
 tasks.named('test') {
