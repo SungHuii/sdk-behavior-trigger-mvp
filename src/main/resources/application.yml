@@ -6,6 +6,15 @@ spring:
   web:
     resources:
       add-mappings: false # Swagger UI 충돌 방지
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+    listener:
+        simple:
+          default-requeue-rejected: false # 재시도 방지
+          acknowledge-mode: AUTO # AUTO, MANUAL, NONE
 
 # JWT
 jwt:
