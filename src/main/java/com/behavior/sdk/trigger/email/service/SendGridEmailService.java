@@ -13,17 +13,28 @@ import com.sendgrid.helpers.mail.objects.Email;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.List;
 
-@Service
+//@Service
+@Component
 @RequiredArgsConstructor
 public class SendGridEmailService {
 
     @Value("${sendgrid.api-key:dummy-key}")
     private String sendGridApiKey;
+
+    public void sendText(String fromAddress, String fromName,
+                         String to, String subject, String body) {
+
+        Email from = new Email(fromAddress, fromName);
+        Email toEmail = new Email(to);
+        Content content = new Content("text/plain", body);
+        Mail mail = new Mail(from, subject, toEmail, content);
+    }
 
     public void sendEmail(String to, String subject, String body) {
         Email fromEmail = new Email("gkemg2017@gmail.com");

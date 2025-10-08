@@ -6,6 +6,9 @@ import com.behavior.sdk.trigger.common.exception.ServiceException;
 import com.behavior.sdk.trigger.email.dto.EmailSendRequest;
 import com.behavior.sdk.trigger.email.dto.EmailSendResponse;
 import com.behavior.sdk.trigger.email.enums.EmailStatus;
+import com.behavior.sdk.trigger.email.support.DisplayNameResolver;
+import com.behavior.sdk.trigger.email.support.FromResolver;
+import com.behavior.sdk.trigger.email.template.SimpleTemplates;
 import com.behavior.sdk.trigger.email_log.entity.EmailLog;
 import com.behavior.sdk.trigger.email_log.service.EmailLogService;
 import com.behavior.sdk.trigger.visitor.entity.Visitor;
@@ -36,6 +39,7 @@ public class EmailServiceImpl implements EmailService{
     private final VisitorRepository visitorRepository;
 //    private final EmailTemplateRepository emailTemplateRepository;
     private final EmailLogService emailLogService;
+    private final SendGridEmailService sendGridEmailService;
 
     @Value("${sendgrid.api-key:dummy-key}")
     private String sendGridApiKey;
@@ -43,7 +47,7 @@ public class EmailServiceImpl implements EmailService{
     @Override
     public EmailSendResponse sendEmail(EmailSendRequest request) {
 
-        Visitor visitor = visitorRepository.findById(request.getVisitorId())
+        var visitor = visitorRepository.findById(request.getVisitorId())
                 .orElseThrow(() -> new ServiceException(
                         ErrorSpec.VALID_PARAM_VALIDATION_FAILED,
                         "존재하지 않는 방문자입니다.",
@@ -59,16 +63,26 @@ public class EmailServiceImpl implements EmailService{
             );
         }
 
+        // 표시 이름 : 이메일 로컬 파트 기반
+        String displayName = DisplayNameResolver.fromEmailLocalPart(validEmail);
+
+        // From 결정 (프로젝트 기반)
+        var fromEmail = FromResolver.resolve(null /*projectName*/, null /*allowedDomain*/);
+
+        // 하드코딩 템플릿 적용
+        String subject = SimpleTemplates.subjectForGreeting(displayName);
+        String body = SimpleTemplates.bodyForGreetingText(displayName);
+
         EmailStatus emailStatus;
         try {
-            sendWithSendGrid(validEmail, "임시 제목", "임시 내용");
+            sendGridEmailService.sendText(fromEmail.address(), fromEmail.name(), validEmail, subject, body);
             emailStatus = EmailStatus.SENT;
         } catch (Exception e) {
             log.error("SendGrid 이메일 전송 실패: {}", e.getMessage());
             emailStatus = EmailStatus.FAILED;
         }
 
-        EmailLog emailLog = emailLogService.createEmailLog(request.getVisitorId(), null, emailStatus);
+        var emailLog = emailLogService.createEmailLog(request.getVisitorId(), null, emailStatus);
 
         return EmailSendResponse.builder()
                 .logId(emailLog.getId())

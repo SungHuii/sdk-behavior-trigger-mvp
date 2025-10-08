@@ -5,7 +5,6 @@ import com.behavior.sdk.trigger.common.exception.FieldErrorDetail;
 import com.behavior.sdk.trigger.common.exception.ServiceException;
 import com.behavior.sdk.trigger.email_template.entity.EmailTemplate;
 import com.behavior.sdk.trigger.email_template.repository.EmailTemplateRepository;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

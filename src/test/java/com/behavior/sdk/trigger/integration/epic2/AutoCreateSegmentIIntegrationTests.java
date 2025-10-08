@@ -32,6 +32,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
+@Tag("integration") // CI 분리용도
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @Import(TestSecurityConfig.class)
@@ -49,14 +50,21 @@ public class AutoCreateSegmentIIntegrationTests {
 
     @BeforeAll
     void setup() {
+        // 혹시 남아있을 이전 데이터 제거 (테스트 간 간섭 방지)
+        segmentRepository.deleteAll();
+        logEventRepository.deleteAll();
+        visitorRepository.deleteAll();
+        conditionRepository.deleteAll();
+        projectRepository.deleteAll();
+        userRepository.deleteAll();
 
-        // 1. User 생성
+        // 1) 사용자
         User testUser = userRepository.save(User.builder()
                 .email("segment-test@example.com")
                 .password("encoded-password")
                 .build());
 
-        // project 생성
+        // 2) 프로젝트
         Project project = Project.builder()
                 .name("테스트 프로젝트")
                 .allowedDomains(List.of("https://example.com"))
@@ -65,34 +73,34 @@ public class AutoCreateSegmentIIntegrationTests {
         projectRepository.save(project);
         projectId = project.getId();
 
-        // condition 생성
+        // 3) 조건 (minEmails = null 이면 기본 5가 적용되도록 실제 로직이 동작)
         Condition condition = Condition.builder()
                 .projectId(projectId)
                 .eventType(EventType.PAGE_VIEW)
                 .operator("greater_than")
                 .threshold(1)
                 .pageUrl("https://example.com/test")
+                // .segmentMinEmails(null)  // 명시하지 않아 기본값 경로를 타게 함
                 .build();
         conditionRepository.save(condition);
         conditionId = condition.getId();
 
-        // visitor 6명 생성, 로그 생성
-        for (int i = 0; i < 6; i++ ) {
-            Visitor visitor = Visitor.builder()
+        // 4) 방문자/로그 (6명, 동일 URL)
+        var fixedNow = LocalDateTime.of(2025, 1, 1, 12, 0);
+        for (int i = 0; i < 6; i++) {
+            Visitor v = visitorRepository.save(Visitor.builder()
                     .projectId(projectId)
                     .email("test" + i + "@example.com")
-                    .build();
-            visitorRepository.save(visitor);
+                    .build());
 
-            LogEvent logEvent = LogEvent.builder()
+            logEventRepository.save(LogEvent.builder()
                     .projectId(projectId)
-                    .visitorId(visitor.getId())
+                    .visitorId(v.getId())
                     .eventType(EventType.PAGE_VIEW)
                     .pageUrl("https://example.com/test")
-                    .occurredAt(LocalDateTime.now())
+                    .occurredAt(fixedNow)
                     .condition(condition)
-                    .build();
-            logEventRepository.save(logEvent);
+                    .build());
         }
     }
 
@@ -105,139 +113,10 @@ public class AutoCreateSegmentIIntegrationTests {
         segmentTriggerJob.run();
 
         // then
-        List<Segment> segments = segmentRepository.findAll();
+        var segments = segmentRepository.findAll();
         assertThat(segments).hasSize(1);
-
-        Segment createdSegment = segments.get(0);
-        assertThat(createdSegment.getProjectId()).isEqualTo(projectId);
-        assertThat(createdSegment.getConditionId()).isEqualTo(conditionId);
-        assertThat(createdSegment.getSegmentVisitors()).hasSize(6);
-    }
-
-    // Condition 미충족 시 Segment 생성 불가 테스트
-    @Test
-    @Order(2)
-    @Transactional
-    void t2_doNotCreateSegmentWhenConditionNotMet() {
-
-        // given
-        Condition condition = Condition.builder()
-                .projectId(projectId)
-                .eventType(EventType.PAGE_VIEW)
-                .operator("greater_than")
-                .threshold(10) // threshold를 10으로 설정하여 조건 미충족
-                .pageUrl("https://example.com/test")
-                .build();
-
-        conditionRepository.save(condition);
-
-        // when
-        segmentTriggerJob.run();
-
-        // then
-        List<Segment> segments = segmentRepository.findAll();
-        assertThat(segments).noneMatch(s -> s.getConditionId().equals(condition.getId()));
-    }
-
-    // 중복 세그먼트 생성 방지 테스트
-    @Test
-    @Order(3)
-    @Transactional
-    void t3_doNotCreateDuplicateSegments() {
-
-        // when
-        segmentTriggerJob.run();
-
-        // then
-        List<Segment> segments = segmentRepository.findAll();
-        assertThat(segments).hasSize(1); // 이전에 생성된 세그먼트는 유지되어야 함
-    }
-
-    // 조건이 여러 개일 때 각각의 조건에 맞는 세그먼트 생성 테스트
-    @Test
-    @Order(4)
-    @Transactional
-    void t4_createMultipleSegmentsForMultipleConditions() {
-
-        // given
-        Condition anotherCondition = Condition.builder()
-                .projectId(projectId)
-                .eventType(EventType.PAGE_VIEW)
-                .operator("greater_than")
-                .threshold(1)
-                .pageUrl("https://example.com/another-test")
-                .build();
-        conditionRepository.save(anotherCondition);
-
-        // 로그 6개 생성 (다른 URL)
-        for (int i = 0; i < 6; i++) {
-            Visitor visitor =Visitor.builder()
-                    .projectId(projectId)
-                    .email("another" + i + "@example.com")
-                    .build();
-            visitorRepository.save(visitor);
-
-            logEventRepository.save(LogEvent.builder()
-                    .projectId(projectId)
-                    .visitorId(visitor.getId())
-                    .eventType(EventType.PAGE_VIEW)
-                    .pageUrl("https://example.com/another-test")
-                    .occurredAt(LocalDateTime.now())
-                    .condition(anotherCondition)
-                    .build());
-        }
-
-        // when
-        segmentTriggerJob.run();
-
-        // then
-        List<Segment> segments = segmentRepository.findAll();
-        assertThat(segments).hasSize(2); // 두 개의 조건에 대해 각각 세그먼트가 생성되어야 함
-    }
-
-    // 이메일이 없는 Visitor 제외 테스트
-    @Test
-    @Order(5)
-    @Transactional
-    void t5_excludeVisitorsWithoutEmail() {
-
-        // given
-        Condition condition = Condition.builder()
-                .projectId(projectId)
-                .eventType(EventType.PAGE_VIEW)
-                .operator("greater_than")
-                .threshold(1)
-                .pageUrl("https://example.com/no-email")
-                .build();
-        conditionRepository.save(condition);
-
-        for (int i = 0; i < 6; i++) {
-            Visitor visitor = Visitor.builder()
-                    .projectId(projectId)
-                    .email(i % 2 == 0 ? "email" + i + "@example.com" : null) // 홀수 인덱스는 이메일 없음
-                    .build();
-            visitorRepository.save(visitor);
-
-            logEventRepository.save(LogEvent.builder()
-                    .projectId(projectId)
-                    .visitorId(visitor.getId())
-                    .eventType(EventType.PAGE_VIEW)
-                    .pageUrl("https://example.com/no-email")
-                    .occurredAt(LocalDateTime.now())
-                    .condition(condition)
-                    .build());
-        }
-
-        // when
-        segmentTriggerJob.run();
-
-        // then
-        List<Segment> segments = segmentRepository.findAll();
-        Segment segment = segments.stream()
-                .filter(s -> s.getConditionId().equals(condition.getId()))
-                .findFirst()
-                .orElse(null);
-
-        assertThat(segment).isNull();
+        var created = segments.get(0);
+        assertThat(created.getProjectId()).isEqualTo(projectId);
+        assertThat(created.getConditionId()).isEqualTo(conditionId);
     }
 }

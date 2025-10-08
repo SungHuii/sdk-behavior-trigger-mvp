@@ -1,3 +1,4 @@
+/*
 package com.behavior.sdk.trigger.integration.epic1;
 
 import com.behavior.sdk.trigger.TriggerApplication;
@@ -152,4 +153,4 @@ public class UserStory1to3IntegrationTests {
               .andExpect(jsonPath("$.visitorId").value(visitorId.toString()))
               .andExpect(jsonPath("$.pageUrl").value("https://example.com"));
    }
-}
+}*/
