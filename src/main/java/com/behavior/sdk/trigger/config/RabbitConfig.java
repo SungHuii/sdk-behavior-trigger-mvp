@@ -1,11 +1,13 @@
 package com.behavior.sdk.trigger.config;
 
 import org.springframework.amqp.core.*;
+import org.springframework.amqp.rabbit.annotation.EnableRabbit;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
+@EnableRabbit // RabbitMQ 관련 어노테이션 활성화
 public class RabbitConfig {
 
     public static final String EX_LOG = "ex.log";
