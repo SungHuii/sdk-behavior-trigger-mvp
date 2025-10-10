@@ -1,3 +1,4 @@
+/*
 package com.behavior.sdk.trigger.mq.dto;
 
 import lombok.*;
@@ -18,3 +19,4 @@ public class LogEventMessage {
     private String pageUrl;
     private LocalDateTime occurredAt;
 }
+*/

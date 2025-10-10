@@ -1,3 +1,4 @@
+/*
 package com.behavior.sdk.trigger.mq.consumer;
 
 import com.behavior.sdk.trigger.config.RabbitConfig;
@@ -32,3 +33,4 @@ public class LogEventConsumer {
                 .build());
     }
 }
+*/

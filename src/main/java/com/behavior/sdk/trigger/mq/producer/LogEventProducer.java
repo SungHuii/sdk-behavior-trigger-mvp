@@ -1,3 +1,4 @@
+/*
 package com.behavior.sdk.trigger.mq.producer;
 
 import com.behavior.sdk.trigger.config.RabbitConfig;
@@ -23,3 +24,4 @@ public class LogEventProducer {
         log.info("[MQ] published : {}", message);
     }
 }
+*/
