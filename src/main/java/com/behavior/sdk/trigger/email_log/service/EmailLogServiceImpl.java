@@ -63,5 +63,18 @@ public class EmailLogServiceImpl implements EmailLogService{
         emailLogRepository.save(emailLog);
     }
 
+    @Override
+    public void updateEmailStatus(UUID logId, EmailStatus status) {
+        EmailLog log = emailLogRepository.findById(logId)
+                .orElseThrow(() -> new ServiceException(
+                        ErrorSpec.SYS_FILE_NOT_FOUND,
+                        "존재하지 않는 이메일 로그입니다.",
+                        List.of(new FieldErrorDetail("logId", "not found", logId))
+                ));
+        log.setStatus(status);
+        log.setUpdatedAt(LocalDateTime.now());
+        emailLogRepository.save(log);
+    }
+
 
 }
