@@ -8,6 +8,7 @@ import java.util.UUID;
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
 public class EmailSendMessage {
 
+    private UUID logId;     // 로그 연계
     private UUID projectId;
     private UUID visitorId;     // 로그 & 추적 연계
     private String to;

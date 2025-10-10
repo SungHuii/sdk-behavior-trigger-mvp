@@ -26,16 +26,20 @@ public class EmailSendConsumer {
 
         EmailStatus status = null;
         try {
+            // 실제 이메일 발송
             sendGridEmailService.sendEmail(msg.getTo(), msg.getSubject(), msg.getBody());
+
+            // 성공 -> 로그 업데이트
+            emailLogService.updateEmailStatus(msg.getLogId(), EmailStatus.SENT);
+            log.info("[MQ][email] sent ok: logId={}, to={}", msg.getLogId(), msg.getTo());
             status = EmailStatus.SENT;
         } catch (Exception e) {
-            log.error("[MQ][email] send failed: {}", e.getMessage(), e);
+            log.error("[MQ][email] send failed: logId={}, to={}, error={}", msg.getLogId(), msg.getTo(), e.getMessage(), e);
+            // 실패 -> 로그 업데이트
+            emailLogService.updateEmailStatus(msg.getLogId(), EmailStatus.FAILED);
             status = EmailStatus.FAILED;
             // 예외 던지면 requeue=false 설정 시 DLQ로 이동함
             throw e;
-        } finally {
-            // 로그 발송 성공 / 실패 모두 기록
-            emailLogService.createEmailLog(msg.getVisitorId(), msg.getTemplateId(), status);
         }
     }
 }

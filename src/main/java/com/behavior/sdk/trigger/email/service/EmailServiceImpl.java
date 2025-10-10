@@ -6,6 +6,8 @@ import com.behavior.sdk.trigger.common.exception.ServiceException;
 import com.behavior.sdk.trigger.email.dto.EmailSendRequest;
 import com.behavior.sdk.trigger.email.dto.EmailSendResponse;
 import com.behavior.sdk.trigger.email.enums.EmailStatus;
+import com.behavior.sdk.trigger.email.messaging.dto.EmailSendMessage;
+import com.behavior.sdk.trigger.email.messaging.producer.EmailSendProducer;
 import com.behavior.sdk.trigger.email.support.DisplayNameResolver;
 import com.behavior.sdk.trigger.email.support.FromResolver;
 import com.behavior.sdk.trigger.email.template.SimpleTemplates;
@@ -28,6 +30,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -39,7 +42,7 @@ public class EmailServiceImpl implements EmailService{
     private final VisitorRepository visitorRepository;
 //    private final EmailTemplateRepository emailTemplateRepository;
     private final EmailLogService emailLogService;
-    private final SendGridEmailService sendGridEmailService;
+    private final EmailSendProducer emailSendProducer;
 
     @Value("${sendgrid.api-key:dummy-key}")
     private String sendGridApiKey;
@@ -47,7 +50,8 @@ public class EmailServiceImpl implements EmailService{
     @Override
     public EmailSendResponse sendEmail(EmailSendRequest request) {
 
-        var visitor = visitorRepository.findById(request.getVisitorId())
+        // 방문자 조회 + 검증
+        Visitor visitor = visitorRepository.findById(request.getVisitorId())
                 .orElseThrow(() -> new ServiceException(
                         ErrorSpec.VALID_PARAM_VALIDATION_FAILED,
                         "존재하지 않는 방문자입니다.",
@@ -73,20 +77,34 @@ public class EmailServiceImpl implements EmailService{
         String subject = SimpleTemplates.subjectForGreeting(displayName);
         String body = SimpleTemplates.bodyForGreetingText(displayName);
 
-        EmailStatus emailStatus;
-        try {
-            sendGridEmailService.sendText(fromEmail.address(), fromEmail.name(), validEmail, subject, body);
-            emailStatus = EmailStatus.SENT;
-        } catch (Exception e) {
-            log.error("SendGrid 이메일 전송 실패: {}", e.getMessage());
-            emailStatus = EmailStatus.FAILED;
-        }
+        // EmailLog를 먼저 QUEUED로 생성 -> logId 획득
+        EmailLog queuedLog = emailLogService.createEmailLog(
+                request.getVisitorId(),
+                null, // 템플릿 비활성화 상태
+                EmailStatus.QUEUED
+        );
 
-        var emailLog = emailLogService.createEmailLog(request.getVisitorId(), null, emailStatus);
+        // MQ 메시지 구성, 발행 (컨슈머가 실제 발송 후 로그 상태를 SENT/FAILED로 업데이트)
+        EmailSendMessage msg = EmailSendMessage.builder()
+                .logId(queuedLog.getId()) // 나중에 상태 업데이트
+                .projectId(visitor.getProjectId())
+                .visitorId(visitor.getId())
+                .to(validEmail)
+                .subject(subject)
+                .body(body)
+                .templateId(null) // 템플릿 비활성화 상태
+                .requestedAt(LocalDateTime.now())
+                .dedupKey(visitor.getId()+":"+System.currentTimeMillis())
+                .build();
 
+        emailSendProducer.publish(msg);
+        log.info("[EmailService] queued email: logId={}, to={}, fromName={}, fromAddr={}",
+                queuedLog.getId(), validEmail, fromEmail.name(), fromEmail.address());
+
+        // 응답 : 접수(QUEUED) 상태로 반환
         return EmailSendResponse.builder()
-                .logId(emailLog.getId())
-                .status(emailStatus)
+                .logId(queuedLog.getId())
+                .status(EmailStatus.QUEUED)
                 .build();
     }
 
