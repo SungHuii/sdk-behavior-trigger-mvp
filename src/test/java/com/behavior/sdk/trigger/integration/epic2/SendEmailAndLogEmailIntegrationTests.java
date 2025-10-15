@@ -3,6 +3,8 @@ package com.behavior.sdk.trigger.integration.epic2;
 import com.behavior.sdk.trigger.config.TestSecurityConfig;
 import com.behavior.sdk.trigger.email.dto.EmailSendRequest;
 import com.behavior.sdk.trigger.email.enums.EmailStatus;
+import com.behavior.sdk.trigger.email.messaging.dto.EmailSendMessage;
+import com.behavior.sdk.trigger.email.messaging.producer.EmailSendProducer;
 import com.behavior.sdk.trigger.email.service.EmailServiceImpl;
 import com.behavior.sdk.trigger.email_log.entity.EmailLog;
 import com.behavior.sdk.trigger.email_log.repository.EmailLogRepository;
@@ -33,7 +35,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -60,6 +62,8 @@ public class SendEmailAndLogEmailIntegrationTests {
 
     @MockitoSpyBean
     private EmailServiceImpl emailServiceImpl;
+    @MockitoBean
+    private EmailSendProducer emailSendProducer;
 
     @BeforeAll
     void setup() throws Exception {
@@ -77,6 +81,8 @@ public class SendEmailAndLogEmailIntegrationTests {
 
         doNothing().when(emailServiceImpl).sendWithSendGrid(any(), any(), any());
         emailLogRepository.deleteAll();
+
+        doNothing().when(emailSendProducer).publish(any(EmailSendMessage.class));
 
         String project = mockMvc.perform(post("/api/projects")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -97,6 +103,11 @@ public class SendEmailAndLogEmailIntegrationTests {
                 .andExpect(status().isOk());
     }
 
+    @BeforeEach
+    void resetMocks() {
+        reset(emailSendProducer);
+    }
+
     @Test
     @Order(1)
     @DisplayName("이메일 전송 및 로그 저장")
@@ -112,27 +123,31 @@ public class SendEmailAndLogEmailIntegrationTests {
                 .content(body))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.logId").exists())
-                .andExpect(jsonPath("$.status").value("SENT"))
+                .andExpect(jsonPath("$.status").value("QUEUED"))
                 .andReturn().getResponse().getContentAsString();
 
         UUID logId = UUID.fromString(om.readTree(response).get("logId").asText());
 
+        verify(emailSendProducer, times(1)).publish(any(EmailSendMessage.class));
         EmailLog emailLog = emailLogRepository.findById(logId).orElseThrow();
         assertThat(emailLog.getVisitorId()).isEqualTo(visitorId);
-        assertThat(emailLog.getStatus()).isEqualTo(EmailStatus.SENT);
+        assertThat(emailLog.getStatus()).isEqualTo(EmailStatus.QUEUED);
     }
 
     @Test
     @Order(2)
     @DisplayName("이메일 로그 조회")
     void t2_getEmailLogs() throws Exception {
+
         mockMvc.perform(get("/api/email-logs")
                 .param("visitorId", visitorId.toString()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(1)))
                 .andExpect(jsonPath("$[0].visitorId").value(visitorId.toString()))
-                .andExpect(jsonPath("$[0].status").value(EmailStatus.SENT.toString()))
+                .andExpect(jsonPath("$[0].status").value(EmailStatus.QUEUED.toString()))
                 .andExpect(jsonPath("$[0].createdAt").exists());
+
+        verify(emailSendProducer, times(1)).publish(any(EmailSendMessage.class));
     }
 
     @Test
@@ -148,5 +163,7 @@ public class SendEmailAndLogEmailIntegrationTests {
                 .param("visitorId", visitorId.toString()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(0)));
+
+        verify(emailSendProducer, times(1)).publish(any(EmailSendMessage.class));
     }
 }
