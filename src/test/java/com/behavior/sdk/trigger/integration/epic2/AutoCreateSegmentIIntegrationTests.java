@@ -9,7 +9,6 @@ import com.behavior.sdk.trigger.log_event.repository.LogEventRepository;
 import com.behavior.sdk.trigger.project.entity.Project;
 import com.behavior.sdk.trigger.project.repository.ProjectRepository;
 import com.behavior.sdk.trigger.segment.component.SegmentTriggerJob;
-import com.behavior.sdk.trigger.segment.entity.Segment;
 import com.behavior.sdk.trigger.segment.repository.SegmentRepository;
 import com.behavior.sdk.trigger.user.entity.User;
 import com.behavior.sdk.trigger.user.repository.UserRepository;

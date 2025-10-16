@@ -11,7 +11,6 @@ import com.behavior.sdk.trigger.log_event.entity.LogEvent;
 import com.behavior.sdk.trigger.log_event.repository.LogEventRepository;
 import com.behavior.sdk.trigger.project.repository.ProjectRepository;
 import com.behavior.sdk.trigger.visitor.repository.VisitorRepository;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

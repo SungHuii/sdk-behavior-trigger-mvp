@@ -6,7 +6,6 @@ import com.behavior.sdk.trigger.common.exception.ServiceException;
 import com.behavior.sdk.trigger.email.enums.EmailStatus;
 import com.behavior.sdk.trigger.email_log.entity.EmailLog;
 import com.behavior.sdk.trigger.email_log.repository.EmailLogRepository;
-import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -61,6 +60,19 @@ public class EmailLogServiceImpl implements EmailLogService{
         log.info("Setting deletedAt: id={}, deletedAt={}", emailLog.getId(), emailLog.getDeletedAt());
 
         emailLogRepository.save(emailLog);
+    }
+
+    @Override
+    public void updateEmailStatus(UUID logId, EmailStatus status) {
+        EmailLog log = emailLogRepository.findById(logId)
+                .orElseThrow(() -> new ServiceException(
+                        ErrorSpec.SYS_FILE_NOT_FOUND,
+                        "존재하지 않는 이메일 로그입니다.",
+                        List.of(new FieldErrorDetail("logId", "not found", logId))
+                ));
+        log.setStatus(status);
+        log.setUpdatedAt(LocalDateTime.now());
+        emailLogRepository.save(log);
     }
 
 

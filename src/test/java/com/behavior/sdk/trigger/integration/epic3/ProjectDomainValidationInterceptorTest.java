@@ -17,8 +17,6 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
-import java.util.UUID;
-
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -36,8 +34,6 @@ public class ProjectDomainValidationInterceptorTest {
     private ProjectRepository projectRepository;
     @Autowired
     private UserRepository userRepository;
-
-    private UUID validProjectId;
 
     @BeforeAll
     void setUp() {
@@ -60,7 +56,7 @@ public class ProjectDomainValidationInterceptorTest {
                 .user(testUser)
                 .build();
         projectRepository.deleteAll();
-        validProjectId = projectRepository.save(project).getId();
+        projectRepository.save(project).getId();
     }
 
     @Test

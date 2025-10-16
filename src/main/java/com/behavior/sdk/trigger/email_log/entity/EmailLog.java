@@ -43,6 +43,9 @@ public class EmailLog {
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
 
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
@@ -50,5 +53,9 @@ public class EmailLog {
 
     public void softDelete() {
         this.deletedAt = LocalDateTime.now();
+    }
+
+    public void setUpdatedAt() {
+        this.updatedAt = LocalDateTime.now();
     }
 }

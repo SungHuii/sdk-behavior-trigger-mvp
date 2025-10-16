@@ -13,4 +13,6 @@ public interface EmailLogService {
     List<EmailLog> listLogsByVisitorId(UUID visitorId);
 
     void softDeleteEmailLog(UUID emailLogId);
+
+    void updateEmailStatus(UUID logId, EmailStatus status);
 }
