@@ -5,7 +5,6 @@ import com.behavior.sdk.trigger.common.exception.FieldErrorDetail;
 import com.behavior.sdk.trigger.common.exception.ServiceException;
 import com.behavior.sdk.trigger.user.entity.User;
 import com.behavior.sdk.trigger.user.repository.UserRepository;
-import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

@@ -7,8 +7,6 @@ import com.behavior.sdk.trigger.condition.dto.ConditionCreateRequest;
 import com.behavior.sdk.trigger.condition.dto.ConditionResponse;
 import com.behavior.sdk.trigger.condition.entity.Condition;
 import com.behavior.sdk.trigger.condition.repository.ConditionRepository;
-import com.behavior.sdk.trigger.log_event.enums.EventType;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

@@ -5,7 +5,6 @@ import com.behavior.sdk.trigger.email.enums.EmailStatus;
 import com.behavior.sdk.trigger.email.service.EmailService;
 import com.behavior.sdk.trigger.email_log.entity.EmailLog;
 import com.behavior.sdk.trigger.email_log.repository.EmailLogRepository;
-import com.behavior.sdk.trigger.email_log.repository.EmailLogRepositoryImpl;
 import com.behavior.sdk.trigger.segment.dto.EmailBatchResponse;
 import com.behavior.sdk.trigger.segment.entity.EmailBatch;
 import com.behavior.sdk.trigger.segment.repository.EmailBatchRepository;
@@ -15,7 +14,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
