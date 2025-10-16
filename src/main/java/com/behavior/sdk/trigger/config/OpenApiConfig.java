@@ -2,6 +2,7 @@ package com.behavior.sdk.trigger.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
@@ -12,6 +13,7 @@ import io.swagger.v3.oas.models.security.SecurityScheme;
 public class OpenApiConfig {
 
     @Bean
+    @Primary
     public OpenAPI baseOpenAPI() {
         final String BEARER = "bearerAuth";
         return new OpenAPI()
