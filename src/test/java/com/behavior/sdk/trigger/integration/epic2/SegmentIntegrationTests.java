@@ -1,6 +1,8 @@
 package com.behavior.sdk.trigger.integration.epic2;
 
 import com.behavior.sdk.trigger.config.TestSecurityConfig;
+import com.behavior.sdk.trigger.email.messaging.dto.EmailSendMessage;
+import com.behavior.sdk.trigger.email.messaging.producer.EmailSendProducer;
 import com.behavior.sdk.trigger.email_template.entity.EmailTemplate;
 import com.behavior.sdk.trigger.email_template.repository.EmailTemplateRepository;
 import com.behavior.sdk.trigger.segment.dto.SegmentCreateRequest;
@@ -28,13 +30,12 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -68,6 +69,9 @@ public class SegmentIntegrationTests {
 
     @MockitoBean
     private JavaMailSender mailSender;
+
+    @MockitoBean
+    private EmailSendProducer emailSendProducer;
 
     @BeforeAll
     void setup() throws Exception {
@@ -208,6 +212,7 @@ public class SegmentIntegrationTests {
           "templateId": "%s"
         }
         """.formatted(templateId);
+        doNothing().when(emailSendProducer).publish(any(EmailSendMessage.class));
 
         mockMvc.perform(post("/api/segments/{id}/send-email", segmentId)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -216,5 +221,6 @@ public class SegmentIntegrationTests {
                 .andExpect(jsonPath("$.batchId").exists())
                 .andExpect(jsonPath("$.sentCount").value(1))
                 .andExpect(jsonPath("$.failedCount").value(0));
+        verify(emailSendProducer, times(1)).publish(any(EmailSendMessage.class));
     }
 }

@@ -1,14 +1,11 @@
 package com.behavior.sdk.trigger.email_log.repository;
 
 import com.behavior.sdk.trigger.email.enums.EmailStatus;
-import com.behavior.sdk.trigger.email_log.entity.EmailLog;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Repository

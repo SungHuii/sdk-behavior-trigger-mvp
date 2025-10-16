@@ -64,8 +64,6 @@ dependencies {
 	implementation 'org.springframework.retry:spring-retry'
 	implementation 'org.springframework.boot:spring-boot-starter-aop'
 
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-
 	// 통합테스트용 RabbitMQ 테스트 컨테이너
 	testImplementation 'org.testcontainers:junit-jupiter'
 	testImplementation 'org.testcontainers:rabbitmq'

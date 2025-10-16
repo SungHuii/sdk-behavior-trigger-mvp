@@ -1,15 +1,11 @@
 package com.behavior.sdk.trigger.project.controller;
 
-import com.behavior.sdk.trigger.condition.entity.Condition;
-import com.behavior.sdk.trigger.condition.repository.ConditionRepository;
 import com.behavior.sdk.trigger.project.dto.ProjectCreateRequest;
 import com.behavior.sdk.trigger.project.dto.ProjectResponse;
 import com.behavior.sdk.trigger.project.dto.ProjectUpdateRequest;
-import com.behavior.sdk.trigger.project.entity.Project;
 import com.behavior.sdk.trigger.project.service.ProjectService;
 import com.behavior.sdk.trigger.user.entity.User;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -32,8 +28,6 @@ import java.util.UUID;
 public class ProjectController {
 
    private final ProjectService projectService;
-   private final ConditionRepository conditionRepository;
-
    @ApiResponses({
            @ApiResponse(responseCode = "201", description = "프로젝트 생성 성공",
                    content = @Content(schema = @Schema(implementation = ProjectResponse.class))),

@@ -3,18 +3,15 @@ package com.behavior.sdk.trigger.visitor.service;
 import com.behavior.sdk.trigger.common.exception.ErrorSpec;
 import com.behavior.sdk.trigger.common.exception.FieldErrorDetail;
 import com.behavior.sdk.trigger.common.exception.ServiceException;
-import com.behavior.sdk.trigger.project.entity.Project;
 import com.behavior.sdk.trigger.project.repository.ProjectRepository;
 import com.behavior.sdk.trigger.visitor.dto.VisitorResponse;
 import com.behavior.sdk.trigger.visitor.entity.Visitor;
 import com.behavior.sdk.trigger.visitor.repository.VisitorRepository;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service

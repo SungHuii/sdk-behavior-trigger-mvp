@@ -10,9 +10,6 @@ import com.behavior.sdk.trigger.segment.dto.SegmentCreateRequest;
 import com.behavior.sdk.trigger.segment.dto.SegmentResponse;
 import com.behavior.sdk.trigger.segment.entity.Segment;
 import com.behavior.sdk.trigger.segment.repository.SegmentRepository;
-import com.behavior.sdk.trigger.segment.repository.SegmentVisitorRepository;
-import com.behavior.sdk.trigger.visitor.repository.VisitorRepository;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,9 +23,7 @@ import java.util.UUID;
 public class SegmentServiceImpl implements SegmentService{
 
     private final SegmentRepository segmentRepository;
-    private final SegmentVisitorRepository segmentVisitorRepository;
     private final LogEventRepository logEventRepository;
-    private final VisitorRepository visitorRepository;
     private final ConditionRepository conditionRepository;
 
     @Override
@@ -41,7 +36,6 @@ public class SegmentServiceImpl implements SegmentService{
                         List.of(new FieldErrorDetail("conditionId", "not found", request.getConditionId()))
                 ));
 
-        Integer threshold = condition.getThreshold();
         String pageUrl = condition.getPageUrl();
 
         List<UUID> visitorIds = logEventRepository.findDistinctVisitorIdsByCondition(condition.getId(), pageUrl);

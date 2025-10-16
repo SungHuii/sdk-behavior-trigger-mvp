@@ -2,8 +2,6 @@ package com.behavior.sdk.trigger.log_event.dto;
 
 import com.behavior.sdk.trigger.log_event.enums.EventType;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 import java.time.LocalDateTime;
