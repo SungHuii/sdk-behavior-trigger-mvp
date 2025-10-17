@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>이메일 템플릿 테스트</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .section { border: 1px solid #ddd; padding: 20px; margin: 20px 0; border-radius: 8px; }
+        .form-group { margin: 15px 0; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input, textarea, select { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
+        button { background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; margin: 5px; }
+        button:hover { background: #0056b3; }
+        .result { background: #f8f9fa; padding: 15px; margin: 10px 0; border-radius: 4px; white-space: pre-wrap; }
+        .error { background: #f8d7da; color: #721c24; }
+        .success { background: #d4edda; color: #155724; }
+    </style>
+</head>
+<body>
+    <h1>📧 이메일 템플릿 테스트 페이지</h1>
+    
+    <!-- 1. 템플릿 생성 섹션 -->
+    <div class="section">
+        <h2>1️⃣ 이메일 템플릿 생성</h2>
+        <div class="form-group">
+            <label>조건 ID (Condition ID):</label>
+            <input type="text" id="conditionId" placeholder="예: 3f8b1c2e-4d3a-4b5e-8c7f-9a0d1e2f3a4b">
+        </div>
+        <div class="form-group">
+            <label>이메일 제목:</label>
+            <input type="text" id="templateSubject" placeholder="예: 안녕하세요, {{visitorName}}님!">
+        </div>
+        <div class="form-group">
+            <label>이메일 본문:</label>
+            <textarea id="templateBody" rows="5" placeholder="예: 안녕하세요, {{visitorName}}님!&#10;{{projectName}}에서 보내는 메일입니다.&#10;이메일: {{visitorEmail}}"></textarea>
+        </div>
+        <button onclick="createTemplate()">템플릿 생성</button>
+        <div id="createResult" class="result" style="display:none;"></div>
+    </div>
+
+    <!-- 2. 템플릿 조회 섹션 -->
+    <div class="section">
+        <h2>2️⃣ 템플릿 조회</h2>
+        <div class="form-group">
+            <label>조건 ID로 템플릿 조회:</label>
+            <input type="text" id="searchConditionId" placeholder="조건 ID 입력">
+        </div>
+        <button onclick="searchTemplates()">템플릿 조회</button>
+        <div id="searchResult" class="result" style="display:none;"></div>
+    </div>
+
+    <!-- 3. 이메일 발송 테스트 섹션 -->
+    <div class="section">
+        <h2>3️⃣ 템플릿 적용 이메일 발송</h2>
+        <div class="form-group">
+            <label>방문자 ID (Visitor ID):</label>
+            <input type="text" id="visitorId" placeholder="예: 3f8b1c2e-4d3a-4b5e-8c7f-9a0d1e2f3a4b">
+        </div>
+        <div class="form-group">
+            <label>발송 방식 선택:</label>
+            <select id="sendType">
+                <option value="template">특정 템플릿 사용</option>
+                <option value="condition">조건 기반 템플릿 사용</option>
+                <option value="default">기본 템플릿 사용</option>
+            </select>
+        </div>
+        <div class="form-group" id="templateIdGroup">
+            <label>템플릿 ID:</label>
+            <input type="text" id="templateId" placeholder="템플릿 ID 입력">
+        </div>
+        <div class="form-group" id="conditionIdGroup" style="display:none;">
+            <label>조건 ID:</label>
+            <input type="text" id="emailConditionId" placeholder="조건 ID 입력">
+        </div>
+        <button onclick="sendEmail()">이메일 발송</button>
+        <div id="sendResult" class="result" style="display:none;"></div>
+    </div>
+
+    <!-- 4. 이메일 로그 조회 섹션 -->
+    <div class="section">
+        <h2>4️⃣ 이메일 발송 로그 조회</h2>
+        <div class="form-group">
+            <label>방문자 ID로 로그 조회:</label>
+            <input type="text" id="logVisitorId" placeholder="방문자 ID 입력">
+        </div>
+        <button onclick="getEmailLogs()">로그 조회</button>
+        <div id="logResult" class="result" style="display:none;"></div>
+    </div>
+
+    <!-- 5. 테스트용 단순 이메일 발송 -->
+    <div class="section">
+        <h2>5️⃣ 테스트용 단순 이메일 발송</h2>
+        <div class="form-group">
+            <label>받을 이메일 주소:</label>
+            <input type="email" id="testEmail" placeholder="test@example.com">
+        </div>
+        <button onclick="sendTestEmail()">테스트 이메일 발송</button>
+        <div id="testResult" class="result" style="display:none;"></div>
+    </div>
+
+    <script>
+        const API_BASE = window.location.origin; // 로컬 개발 시
+        
+        // 발송 방식에 따른 입력 필드 제어
+        document.getElementById('sendType').addEventListener('change', function() {
+            const templateIdGroup = document.getElementById('templateIdGroup');
+            const conditionIdGroup = document.getElementById('conditionIdGroup');
+            
+            if (this.value === 'template') {
+                templateIdGroup.style.display = 'block';
+                conditionIdGroup.style.display = 'none';
+            } else if (this.value === 'condition') {
+                templateIdGroup.style.display = 'none';
+                conditionIdGroup.style.display = 'block';
+            } else {
+                templateIdGroup.style.display = 'none';
+                conditionIdGroup.style.display = 'none';
+            }
+        });
+
+        // 1. 템플릿 생성
+        async function createTemplate() {
+            const conditionId = document.getElementById('conditionId').value;
+            const subject = document.getElementById('templateSubject').value;
+            const body = document.getElementById('templateBody').value;
+            
+            if (!conditionId || !subject || !body) {
+                showResult('createResult', '모든 필드를 입력해주세요.', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/api/email-templates`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        conditionId: conditionId,
+                        subject: subject,
+                        body: body
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showResult('createResult', `✅ 템플릿 생성 성공!\n템플릿 ID: ${result.id}\n제목: ${result.subject}\n본문: ${result.body}`, 'success');
+                } else {
+                    showResult('createResult', `❌ 템플릿 생성 실패: ${result.message || '알 수 없는 오류'}`, 'error');
+                }
+            } catch (error) {
+                showResult('createResult', `❌ 오류 발생: ${error.message}`, 'error');
+            }
+        }
+
+        // 2. 템플릿 조회
+        async function searchTemplates() {
+            const conditionId = document.getElementById('searchConditionId').value;
+            
+            if (!conditionId) {
+                showResult('searchResult', '조건 ID를 입력해주세요.', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/api/email-templates/${conditionId}`);
+                const result = await response.json();
+                
+                if (response.ok) {
+                    if (result.length === 0) {
+                        showResult('searchResult', '해당 조건에 연결된 템플릿이 없습니다.', 'error');
+                    } else {
+                        let output = `✅ 템플릿 조회 성공! (${result.length}개)\n\n`;
+                        result.forEach((template, index) => {
+                            output += `템플릿 ${index + 1}:\n`;
+                            output += `- ID: ${template.id}\n`;
+                            output += `- 제목: ${template.subject}\n`;
+                            output += `- 본문: ${template.body}\n`;
+                            output += `- 생성일: ${template.createdAt}\n\n`;
+                        });
+                        showResult('searchResult', output, 'success');
+                    }
+                } else {
+                    showResult('searchResult', `❌ 조회 실패: ${result.message || '알 수 없는 오류'}`, 'error');
+                }
+            } catch (error) {
+                showResult('searchResult', `❌ 오류 발생: ${error.message}`, 'error');
+            }
+        }
+
+        // 3. 이메일 발송
+        async function sendEmail() {
+            const visitorId = document.getElementById('visitorId').value;
+            const sendType = document.getElementById('sendType').value;
+            
+            if (!visitorId) {
+                showResult('sendResult', '방문자 ID를 입력해주세요.', 'error');
+                return;
+            }
+
+            let requestBody = { visitorId: visitorId };
+            
+            if (sendType === 'template') {
+                const templateId = document.getElementById('templateId').value;
+                if (!templateId) {
+                    showResult('sendResult', '템플릿 ID를 입력해주세요.', 'error');
+                    return;
+                }
+                requestBody.templateId = templateId;
+            } else if (sendType === 'condition') {
+                const conditionId = document.getElementById('emailConditionId').value;
+                if (!conditionId) {
+                    showResult('sendResult', '조건 ID를 입력해주세요.', 'error');
+                    return;
+                }
+                requestBody.conditionId = conditionId;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/api/emails`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showResult('sendResult', `✅ 이메일 발송 요청 성공!\n로그 ID: ${result.logId}\n상태: ${result.status}\n\n※ 비동기 발송이므로 실제 이메일은 잠시 후 도착합니다.`, 'success');
+                } else {
+                    showResult('sendResult', `❌ 발송 실패: ${result.message || '알 수 없는 오류'}`, 'error');
+                }
+            } catch (error) {
+                showResult('sendResult', `❌ 오류 발생: ${error.message}`, 'error');
+            }
+        }
+
+        // 4. 이메일 로그 조회
+        async function getEmailLogs() {
+            const visitorId = document.getElementById('logVisitorId').value;
+            
+            if (!visitorId) {
+                showResult('logResult', '방문자 ID를 입력해주세요.', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/api/email-logs/visitor/${visitorId}`);
+                const result = await response.json();
+                
+                if (response.ok) {
+                    if (result.length === 0) {
+                        showResult('logResult', '해당 방문자의 이메일 발송 로그가 없습니다.', 'error');
+                    } else {
+                        let output = `✅ 이메일 로그 조회 성공! (${result.length}개)\n\n`;
+                        result.forEach((log, index) => {
+                            output += `로그 ${index + 1}:\n`;
+                            output += `- 로그 ID: ${log.id}\n`;
+                            output += `- 방문자 ID: ${log.visitorId}\n`;
+                            output += `- 템플릿 ID: ${log.templateId || '(없음)'}\n`;
+                            output += `- 상태: ${log.status}\n`;
+                            output += `- 생성일: ${log.createdAt}\n\n`;
+                        });
+                        showResult('logResult', output, 'success');
+                    }
+                } else {
+                    showResult('logResult', `❌ 조회 실패: ${result.message || '알 수 없는 오류'}`, 'error');
+                }
+            } catch (error) {
+                showResult('logResult', `❌ 오류 발생: ${error.message}`, 'error');
+            }
+        }
+
+        // 5. 테스트 이메일 발송
+        async function sendTestEmail() {
+            const email = document.getElementById('testEmail').value;
+            
+            if (!email) {
+                showResult('testResult', '이메일 주소를 입력해주세요.', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/api/test-emails`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email: email })
+                });
+
+                if (response.ok) {
+                    showResult('testResult', `✅ 테스트 이메일 발송 성공!\n받는 사람: ${email}\n\n※ 실제 이메일을 확인해보세요!`, 'success');
+                } else {
+                    const result = await response.json();
+                    showResult('testResult', `❌ 발송 실패: ${result.message || '알 수 없는 오류'}`, 'error');
+                }
+            } catch (error) {
+                showResult('testResult', `❌ 오류 발생: ${error.message}`, 'error');
+            }
+        }
+
+        function showResult(elementId, message, type) {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.style.display = 'block';
+            element.className = `result ${type}`;
+        }
+    </script>
+</body>
+</html>
