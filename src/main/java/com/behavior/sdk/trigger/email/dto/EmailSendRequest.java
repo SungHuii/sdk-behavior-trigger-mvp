@@ -22,4 +22,12 @@ public class EmailSendRequest {
     @Schema(name = "templateId", description = "템플릿 ID", example = "3f8b1c2e-4d3a-4b5e-8c7f-9a0d1e2f3a4b")
     private UUID templateId;
 
+    @Schema(name = "conditionId", description = "조건 ID", example = "3f8b1c2e-4d3a-4b5e-8c7f-9a0d1e2f3a4b")
+    private UUID conditionId;
+
+    // 수동으로 getter 추가 (Lombok 문제 해결용)
+    public UUID getConditionId() {
+        return conditionId;
+    }
+
 }
