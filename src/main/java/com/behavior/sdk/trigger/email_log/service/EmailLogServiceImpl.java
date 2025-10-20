@@ -29,11 +29,12 @@ public class EmailLogServiceImpl implements EmailLogService{
 
         EmailLog emailLog = EmailLog.builder()
                 .visitorId(visitorId)
+                .templateId(templateId)
                 .status(status)
                 .createdAt(LocalDateTime.now())
                 .build();
-        log.info("EmailLog 생성 시 데이터: id={}, visitorId={}, status={}",
-                emailLog.getId(), emailLog.getVisitorId(), emailLog.getStatus());
+        log.info("EmailLog 생성 시 데이터: id={}, visitorId={}, templateId={}, status={}",
+                emailLog.getId(), emailLog.getVisitorId(), emailLog.getTemplateId(), emailLog.getStatus());
         emailLog = emailLogRepository.save(emailLog);
 
         return emailLog;

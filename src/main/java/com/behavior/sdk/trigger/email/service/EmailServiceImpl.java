@@ -10,9 +10,14 @@ import com.behavior.sdk.trigger.email.messaging.dto.EmailSendMessage;
 import com.behavior.sdk.trigger.email.messaging.producer.EmailSendProducer;
 import com.behavior.sdk.trigger.email.support.DisplayNameResolver;
 import com.behavior.sdk.trigger.email.support.FromResolver;
+import com.behavior.sdk.trigger.email.template.EmailTemplateProcessor;
 import com.behavior.sdk.trigger.email.template.SimpleTemplates;
 import com.behavior.sdk.trigger.email_log.entity.EmailLog;
 import com.behavior.sdk.trigger.email_log.service.EmailLogService;
+import com.behavior.sdk.trigger.email_template.entity.EmailTemplate;
+import com.behavior.sdk.trigger.email_template.service.EmailTemplateService;
+import com.behavior.sdk.trigger.project.entity.Project;
+import com.behavior.sdk.trigger.project.repository.ProjectRepository;
 import com.behavior.sdk.trigger.visitor.entity.Visitor;
 import com.behavior.sdk.trigger.visitor.repository.VisitorRepository;
 import com.sendgrid.Method;
@@ -31,6 +36,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -39,9 +46,11 @@ import java.util.List;
 public class EmailServiceImpl implements EmailService{
 
     private final VisitorRepository visitorRepository;
-//    private final EmailTemplateRepository emailTemplateRepository;
     private final EmailLogService emailLogService;
     private final EmailSendProducer emailSendProducer;
+    private final EmailTemplateProcessor emailTemplateProcessor;
+    private final EmailTemplateService emailTemplateService;
+    private final ProjectRepository projectRepository;
 
     @Value("${sendgrid.api-key:dummy-key}")
     private String sendGridApiKey;
@@ -66,20 +75,57 @@ public class EmailServiceImpl implements EmailService{
             );
         }
 
-        // 표시 이름 : 이메일 로컬 파트 기반
-        String displayName = DisplayNameResolver.fromEmailLocalPart(validEmail);
+        // 프로젝트 정보 조회
+        Project project = projectRepository.findById(visitor.getProjectId())
+                .orElseThrow(() -> new ServiceException(
+                        ErrorSpec.VALID_PARAM_VALIDATION_FAILED,
+                        "존재하지 않는 프로젝트입니다.",
+                        List.of(new FieldErrorDetail("projectId", "not found", visitor.getProjectId()))
+                ));
 
         // From 결정 (프로젝트 기반)
-        var fromEmail = FromResolver.resolve(null /*projectName*/, null /*allowedDomain*/);
+        var fromEmail = FromResolver.resolve(project.getName(), null);
 
-        // 하드코딩 템플릿 적용
-        String subject = SimpleTemplates.subjectForGreeting(displayName);
-        String body = SimpleTemplates.bodyForGreetingText(displayName);
+        // 템플릿 처리 로직
+        String subject;
+        String body;
+        UUID templateIdForMessage = null;
+
+        if (request.getTemplateId() != null) {
+            // ✅ templateId 직접 지정
+            EmailTemplate template = emailTemplateService.findById(request.getTemplateId())
+                    .orElseThrow(() -> new ServiceException(
+                            ErrorSpec.VALID_PARAM_VALIDATION_FAILED,
+                            "지정한 템플릿이 존재하지 않습니다.",
+                            List.of(new FieldErrorDetail("templateId", "not found", request.getTemplateId()))
+                    ));
+            subject = emailTemplateProcessor.processTemplate(template.getSubject(), buildVars(visitor, project));
+            body = emailTemplateProcessor.processTemplate(template.getBody(), buildVars(visitor, project));
+            templateIdForMessage = template.getId();
+
+        } else if (request.getConditionId() != null) {
+            // ✅ conditionId 기반 최신 템플릿 사용
+            EmailTemplate template = emailTemplateService.findLatestActiveByConditionId(request.getConditionId())
+                    .orElseThrow(() -> new ServiceException(
+                            ErrorSpec.VALID_PARAM_VALIDATION_FAILED,
+                            "해당 조건에 연결된 활성 템플릿이 없습니다.",
+                            List.of(new FieldErrorDetail("conditionId", "template not found", request.getConditionId()))
+                    ));
+            subject = emailTemplateProcessor.processTemplate(template.getSubject(), buildVars(visitor, project));
+            body = emailTemplateProcessor.processTemplate(template.getBody(), buildVars(visitor, project));
+            templateIdForMessage = template.getId();
+
+        } else {
+            // ⚠️ 둘 다 없으면 기본 SimpleTemplates 사용
+            String displayName = DisplayNameResolver.fromEmailLocalPart(validEmail);
+            subject = SimpleTemplates.subjectForGreeting(displayName);
+            body = SimpleTemplates.bodyForGreetingText(displayName);
+        }
 
         // EmailLog를 먼저 QUEUED로 생성 -> logId 획득
         EmailLog queuedLog = emailLogService.createEmailLog(
                 request.getVisitorId(),
-                null, // 템플릿 비활성화 상태
+                templateIdForMessage,
                 EmailStatus.QUEUED
         );
 
@@ -91,20 +137,35 @@ public class EmailServiceImpl implements EmailService{
                 .to(validEmail)
                 .subject(subject)
                 .body(body)
-                .templateId(null) // 템플릿 비활성화 상태
+                .templateId(templateIdForMessage) // 템플릿 ID 연결
                 .requestedAt(LocalDateTime.now())
                 .dedupKey(visitor.getId()+":"+System.currentTimeMillis())
                 .build();
 
         emailSendProducer.publish(msg);
-        log.info("[EmailService] queued email: logId={}, to={}, fromName={}, fromAddr={}",
-                queuedLog.getId(), validEmail, fromEmail.name(), fromEmail.address());
+        log.info("[EmailService] queued email: logId={}, to={}, fromName={}, fromAddr={}, templateId={}",
+                queuedLog.getId(), validEmail, fromEmail.name(), fromEmail.address(), templateIdForMessage);
 
         // 응답 : 접수(QUEUED) 상태로 반환
         return EmailSendResponse.builder()
                 .logId(queuedLog.getId())
                 .status(EmailStatus.QUEUED)
                 .build();
+    }
+
+    /**
+     * 템플릿 변수 치환을 위한 변수 맵 생성
+     */
+    private Map<String, String> buildVars(Visitor visitor, Project project) {
+        String displayName = DisplayNameResolver.fromEmailLocalPart(visitor.getEmail());
+        
+        return Map.of(
+            "visitorName", displayName,
+            "visitorEmail", visitor.getEmail(),
+            "projectName", project.getName(),
+            "visitorId", visitor.getId().toString(),
+            "projectId", project.getId().toString()
+        );
     }
 
     public void sendWithSendGrid(String to, String subject, String body) throws IOException {

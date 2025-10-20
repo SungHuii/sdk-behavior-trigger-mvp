@@ -88,6 +88,7 @@
 
 
 <button onclick="location.href='/condition.html'">조건 생성</button>
+<button onclick="location.href='/email-template-test.html'">📧 이메일 템플릿 테스트</button>
 
 <!-- 5) DB에 쌓인 로그를 조회해 보여주는 버튼/영역 -->
 <button id="btnFetchLogs">로그 조회</button>
@@ -101,7 +102,7 @@
     document.getElementById('btnClick')
       .addEventListener('click', () => console.log('버튼 클릭!'));
 
-    // (2) 이메일 발송 API 호출
+    // (2) 이메일 발송 API 호출 (기존 테스트 이메일)
     document.getElementById('btnSendEmail')
     .addEventListener('click', async () => {
       const host = window.location.hostname;

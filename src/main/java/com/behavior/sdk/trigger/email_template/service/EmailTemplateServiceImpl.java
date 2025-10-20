@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -41,5 +42,17 @@ public class EmailTemplateServiceImpl implements EmailTemplateService{
                 ));
         emailTemplate.setDeletedAt(LocalDateTime.now());
         emailTemplateRepository.save(emailTemplate);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<EmailTemplate> findById(UUID templateId) {
+        return emailTemplateRepository.findById(templateId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<EmailTemplate> findLatestActiveByConditionId(UUID conditionId) {
+        return emailTemplateRepository.findLatestByConditionId(conditionId);
     }
 }
